@@ -6766,6 +6766,3912 @@ var Japan = new function() {
 }();
 
 </script>
+<script type="text/x-shanshui" id="Europe">
+  // European Romantic landscape elements: cottages, churches, castles,
+  // windmills, bridges, ruins and sailing boats, drawn in the same pencil
+  // idiom as Arch and Man. Concatenated after the original generator.
+  var Europe = new function() {
+    var ink = function(a) {
+      return "rgba(100,100,100," + Math.max(0, Math.min(1, a)).toFixed(3) + ")";
+    };
+    var lerp2 = function(p0, p1, t) {
+      return [p0[0] * (1 - t) + p1[0] * t, p0[1] * (1 - t) + p1[1] * t];
+    };
+    var add2 = function(p, v, k) {
+      k = k == undefined ? 1 : k;
+      return [p[0] + v[0] * k, p[1] + v[1] * k];
+    };
+    var lift = function(p, h) {
+      return [p[0], p[1] - h];
+    };
+    var unit = function(v) {
+      var l = Math.sqrt(v[0] * v[0] + v[1] * v[1]) || 1;
+      return [v[0] / l, v[1] / l];
+    };
+    var mover = function(xoff, yoff, dir, sca) {
+      sca = sca == undefined ? 1 : sca;
+      var tf = function(p) {
+        return [xoff + p[0] * dir * sca, yoff + p[1] * sca];
+      };
+      tf.sca = sca;
+      return tf;
+    };
+    var bounds = function(plist) {
+      var b = {
+        xmin: plist[0][0],
+        xmax: plist[0][0],
+        ymin: plist[0][1],
+        ymax: plist[0][1],
+      };
+      for (var i = 1; i < plist.length; i++) {
+        b.xmin = Math.min(b.xmin, plist[i][0]);
+        b.xmax = Math.max(b.xmax, plist[i][0]);
+        b.ymin = Math.min(b.ymin, plist[i][1]);
+        b.ymax = Math.max(b.ymax, plist[i][1]);
+      }
+      return b;
+    };
+    var inside = function(pt, plist) {
+      var c = false;
+      for (var i = 0, j = plist.length - 1; i < plist.length; j = i++) {
+        var a = plist[i];
+        var b = plist[j];
+        if (
+          a[1] > pt[1] != b[1] > pt[1] &&
+          pt[0] < ((b[0] - a[0]) * (pt[1] - a[1])) / (b[1] - a[1]) + a[0]
+        ) {
+          c = !c;
+        }
+      }
+      return c;
+    };
+    var area = function(plist) {
+      var s = 0;
+      for (var i = 0; i < plist.length; i++) {
+        var p = plist[i];
+        var q = plist[(i + 1) % plist.length];
+        s += p[0] * q[1] - q[0] * p[1];
+      }
+      return s / 2;
+    };
+    // one polyline with holes: holes are wound against the outline, so the
+    // default nonzero fill leaves them open
+    var holed = function(outer, holes) {
+      var sa = area(outer);
+      var out = outer.concat([outer[0]]);
+      for (var i = 0; i < holes.length; i++) {
+        var h = holes[i];
+        if (area(h) * sa > 0) {
+          h = h.slice().reverse();
+        }
+        out = out.concat(h).concat([h[0], outer[0]]);
+      }
+      return out;
+    };
+    var rdiv = function(plist, step) {
+      var out = [];
+      for (var i = 0; i < plist.length - 1; i++) {
+        var n = Math.max(1, Math.ceil(distance(plist[i], plist[i + 1]) / step));
+        for (var j = 0; j < n; j++) {
+          out.push(lerp2(plist[i], plist[i + 1], j / n));
+        }
+      }
+      out.push(plist[plist.length - 1]);
+      return out;
+    };
+
+    // a hand-drawn pencil line along a polyline (local coords, tf maps out)
+    var line = function(tf, plist, args) {
+      var args = args != undefined ? args : {};
+      var wid = args.wid != undefined ? args.wid : 1.2;
+      var col = args.col != undefined ? args.col : ink(0.45);
+      var amp = args.amp != undefined ? args.amp : 0.35;
+      var ext = args.ext != undefined ? args.ext : 1;
+      var noi = args.noi != undefined ? args.noi : 0.7;
+      var out = args.out != undefined ? args.out : 1;
+      var stp = args.stp != undefined ? args.stp : 3;
+      var fun =
+        args.fun != undefined
+          ? args.fun
+          : function(x) {
+              return 1;
+            };
+      if (plist.length < 2) {
+        return "";
+      }
+      var tl = 0;
+      for (var i = 0; i < plist.length - 1; i++) {
+        tl += distance(plist[i], plist[i + 1]);
+      }
+      if (tl < 0.6) {
+        return "";
+      }
+      var p = plist.slice();
+      var n = p.length - 1;
+      if (ext > 0) {
+        p[0] = add2(
+          p[0],
+          unit([p[0][0] - p[1][0], p[0][1] - p[1][1]]),
+          ext * Math.random(),
+        );
+        p[n] = add2(
+          p[n],
+          unit([p[n][0] - p[n - 1][0], p[n][1] - p[n - 1][1]]),
+          ext * Math.random(),
+        );
+      }
+      p = rdiv(p, Math.max(0.25, Math.min(stp, tl / 3)));
+      var n0 = Math.random() * 100;
+      p = p.map(function(v, i) {
+        return tf([
+          v[0] + (Noise.noise(i * 0.35, n0) - 0.5) * amp * 2,
+          v[1] + (Noise.noise(i * 0.35, n0 + 31) - 0.5) * amp * 2,
+        ]);
+      });
+      return stroke(p, { wid: wid, col: col, noi: noi, out: out, fun: fun });
+    };
+    var edges = function(tf, plist, closed, args) {
+      var canv = "";
+      var n = closed ? plist.length : plist.length - 1;
+      for (var i = 0; i < n; i++) {
+        canv += line(tf, [plist[i], plist[(i + 1) % plist.length]], args);
+      }
+      return canv;
+    };
+    var fill = function(tf, plist, cls) {
+      return poly(plist.map(tf), { fil: "white", str: "none", cls: cls });
+    };
+    var dark = function(tf, plist, a) {
+      return poly(plist.map(tf), { fil: ink(a), str: "none" });
+    };
+    var thin = function(a) {
+      return { wid: 0.6, col: ink(a), amp: 0.2, ext: 0.4, out: 0.4 };
+    };
+
+    // parallel shading strokes clipped to a polygon; keep(pt) masks them
+    var hatch = function(tf, plist, args) {
+      var args = args != undefined ? args : {};
+      var ang = args.ang != undefined ? args.ang : -1;
+      var gap = args.gap != undefined ? args.gap : 2.5;
+      var alp = args.alp != undefined ? args.alp : [0.08, 0.16];
+      var wid = args.wid != undefined ? args.wid : 0.7;
+      var cut = args.cut != undefined ? args.cut : 0.15;
+      var den = args.den != undefined ? args.den : 1;
+      var keep = args.keep;
+      gap = gap / Math.max(0.35, Math.min(1, tf.sca || 1));
+      var ca = Math.cos(ang);
+      var sa = Math.sin(ang);
+      var rot = plist.map(function(p) {
+        return [p[0] * ca + p[1] * sa, -p[0] * sa + p[1] * ca];
+      });
+      var back = function(x, y) {
+        return [x * ca - y * sa, x * sa + y * ca];
+      };
+      var bb = bounds(rot);
+      var canv = "";
+      for (
+        var y = bb.ymin + gap * Math.random();
+        y < bb.ymax;
+        y += gap * normRand(0.75, 1.25)
+      ) {
+        if (Math.random() > den) {
+          continue;
+        }
+        var xs = [];
+        for (var i = 0; i < rot.length; i++) {
+          var p = rot[i];
+          var q = rot[(i + 1) % rot.length];
+          if ((p[1] <= y && q[1] > y) || (q[1] <= y && p[1] > y)) {
+            xs.push(p[0] + ((y - p[1]) / (q[1] - p[1])) * (q[0] - p[0]));
+          }
+        }
+        xs.sort(function(a, b) {
+          return a - b;
+        });
+        for (var k = 0; k + 1 < xs.length; k += 2) {
+          var l = xs[k + 1] - xs[k];
+          var x0 = xs[k] + l * cut * Math.random();
+          var x1 = xs[k + 1] - l * cut * Math.random();
+          var runs = [];
+          if (keep) {
+            var cur = null;
+            for (var x = x0; x <= x1; x += 0.8) {
+              if (keep(back(x, y))) {
+                if (cur == null) {
+                  cur = [x, x];
+                  runs.push(cur);
+                }
+                cur[1] = x;
+              } else {
+                cur = null;
+              }
+            }
+          } else {
+            runs = [[x0, x1]];
+          }
+          for (var r = 0; r < runs.length; r++) {
+            if (runs[r][1] - runs[r][0] < 1.2) {
+              continue;
+            }
+            canv += line(tf, [back(runs[r][0], y), back(runs[r][1], y)], {
+              wid: wid,
+              col: ink(normRand(alp[0], alp[1])),
+              amp: 0.2,
+              ext: 0,
+              out: 0.3,
+              noi: 0.5,
+              fun: function(x) {
+                return Math.min(1, Math.sin(x * Math.PI) * 3);
+              },
+            });
+          }
+        }
+      }
+      return canv;
+    };
+
+    // a wall face: points at (s along the face, h up) from its origin
+    var fp = function(f, s, h) {
+      return [f.o[0] + f.u[0] * s, f.o[1] + f.u[1] * s - h];
+    };
+    var fpl = function(f, plist) {
+      return plist.map(function(v) {
+        return fp(f, v[0], v[1]);
+      });
+    };
+    var toFace = function(f, plist) {
+      return plist.map(function(v) {
+        var s = (v[0] - f.o[0]) / f.u[0];
+        return [s, f.o[1] + f.u[1] * s - v[1]];
+      });
+    };
+    var FLAT = { o: [0, 0], u: [1, 0] };
+
+    // stonework drawn inside a face-space shape
+    var masonry = function(tf, f, shape, args) {
+      var args = args != undefined ? args : {};
+      var sty = args.sty != undefined ? args.sty : 1;
+      var ch = args.ch != undefined ? args.ch : 4;
+      var den = args.den != undefined ? args.den : 0.5;
+      var alp = args.alp != undefined ? args.alp : 0.22;
+      var excl = args.excl != undefined ? args.excl : [];
+      var ok = function(p) {
+        if (!inside(p, shape)) {
+          return false;
+        }
+        for (var i = 0; i < excl.length; i++) {
+          if (inside(p, excl[i])) {
+            return false;
+          }
+        }
+        return true;
+      };
+      var bb = bounds(shape);
+      var canv = "";
+      if (sty == 2) {
+        for (
+          var h = bb.ymin + ch * normRand(0.6, 1);
+          h < bb.ymax - 1;
+          h += ch * normRand(0.85, 1.15)
+        ) {
+          var s = bb.xmin + Math.random() * 4;
+          while (s < bb.xmax) {
+            var l = normRand(5, 13);
+            if (Math.random() < den && ok([s, h]) && ok([s + l, h])) {
+              canv += line(
+                tf,
+                fpl(f, [
+                  [s, h],
+                  [s + l, h],
+                ]),
+                thin(alp * normRand(0.6, 1.2)),
+              );
+              if (Math.random() < 0.6 && ok([s + l, h + ch * 0.9])) {
+                canv += line(
+                  tf,
+                  fpl(f, [
+                    [s + l, h],
+                    [s + l, h + ch],
+                  ]),
+                  thin(alp * 0.8),
+                );
+              }
+            }
+            s += l + normRand(0, 2.5);
+          }
+        }
+      } else {
+        var cnt =
+          (((bb.xmax - bb.xmin) * (bb.ymax - bb.ymin)) / (ch * ch * 2.2)) * den;
+        for (var i = 0; i < cnt; i++) {
+          var s = normRand(bb.xmin, bb.xmax);
+          var h = normRand(bb.ymin, bb.ymax);
+          var w = (ch * normRand(0.7, 1.4)) / 2;
+          var t = (ch * normRand(0.4, 0.7)) / 2;
+          if (
+            !ok([s - w, h]) ||
+            !ok([s + w, h]) ||
+            !ok([s, h - t]) ||
+            !ok([s, h + t])
+          ) {
+            continue;
+          }
+          var st = [
+            [s - w, h],
+            [s - w * 0.6, h - t],
+            [s + w * 0.5, h - t],
+            [s + w, h - t * 0.1],
+            [s + w * 0.7, h + t * 0.9],
+            [s - w * 0.4, h + t],
+          ];
+          if (Math.random() < 0.55) {
+            canv += line(
+              tf,
+              fpl(f, st.slice(0, 4)),
+              thin(alp * normRand(0.7, 1.2)),
+            );
+          } else {
+            canv += line(
+              tf,
+              fpl(f, st.concat([st[0]])),
+              thin(alp * normRand(0.5, 0.9)),
+            );
+          }
+        }
+      }
+      return canv;
+    };
+    var quoins = function(tf, f, hei, wq, alp) {
+      var canv = "";
+      var k = 0;
+      for (var h = 0; h < hei - 3; h += normRand(3.5, 4.5)) {
+        var w = k % 2 ? wq : wq * 0.55;
+        var hh = Math.min(3.8, hei - h);
+        canv += line(
+          tf,
+          fpl(f, [
+            [0, h + hh],
+            [w, h + hh],
+            [w, h],
+          ]),
+          thin(alp),
+        );
+        k++;
+      }
+      return canv;
+    };
+
+    // two-centred arch from left springing over to right springing; f is
+    // radius / span (0.5 round, near 1 lancet). (x, h-up) coords
+    var archPts = function(w, hs, f, n) {
+      var r = Math.max(w * f, w * 0.5);
+      var cl = -w / 2 + r;
+      var ta = Math.acos(Math.max(-1, Math.min(1, (w / 2 - r) / r)));
+      var pts = [];
+      for (var i = 0; i <= n; i++) {
+        var t = Math.PI + (ta - Math.PI) * (i / n);
+        pts.push([cl + r * Math.cos(t), hs + r * Math.sin(t)]);
+      }
+      for (var i = n - 1; i >= 0; i--) {
+        pts.push([-pts[i][0], pts[i][1]]);
+      }
+      return pts;
+    };
+    var archTop = function(w, hs, f) {
+      var r = Math.max(w * f, w * 0.5);
+      var ta = Math.acos(Math.max(-1, Math.min(1, (w / 2 - r) / r)));
+      return hs + r * Math.sin(ta);
+    };
+    var shiftPts = function(plist, dx, dy) {
+      return plist.map(function(v) {
+        return [v[0] + dx, v[1] + dy];
+      });
+    };
+    // offset a polyline sideways (positive d = left of travel, h-up coords)
+    var offset = function(plist, d) {
+      return plist.map(function(p, i) {
+        var a = plist[Math.max(0, i - 1)];
+        var b = plist[Math.min(plist.length - 1, i + 1)];
+        var t = unit([b[0] - a[0], b[1] - a[1]]);
+        return [p[0] - t[1] * d, p[1] + t[0] * d];
+      });
+    };
+    // a stone bar of thickness th along a polyline (face coords)
+    var band = function(tf, f, plist, th, cls) {
+      var l = offset(plist, th / 2);
+      var r = offset(plist, -th / 2);
+      var canv = fill(tf, fpl(f, l.concat(r.slice().reverse())), cls);
+      canv += line(tf, fpl(f, l), {
+        wid: 0.7,
+        col: ink(0.45),
+        amp: 0.2,
+        ext: 0,
+      });
+      canv += line(tf, fpl(f, r), {
+        wid: 0.7,
+        col: ink(0.4),
+        amp: 0.2,
+        ext: 0,
+      });
+      return canv;
+    };
+
+    // stepped, broken top of ruined masonry along p -> q (local coords)
+    var brokenTop = function(p, q, hs) {
+      var pts = [];
+      var n = hs.length - 1;
+      var ts = [0];
+      for (var i = 1; i < n; i++) {
+        ts.push((i + normRand(-0.3, 0.3)) / n);
+      }
+      ts.push(1);
+      for (var i = 0; i < n; i++) {
+        var a = lerp2(p, q, ts[i]);
+        var b = lerp2(p, q, ts[i + 1]);
+        var h = hs[i];
+        var r = Math.random();
+        if (r < 0.45) {
+          pts.push(lift(a, h), lift(b, h));
+        } else if (r < 0.75) {
+          pts.push(
+            lift(a, h),
+            lift(lerp2(a, b, normRand(0.3, 0.7)), h - normRand(0.5, 2.5)),
+            lift(b, (hs[i] + hs[i + 1]) / 2),
+          );
+        } else {
+          pts.push(
+            lift(a, h),
+            lift(lerp2(a, b, 0.5), (hs[i] + hs[i + 1]) / 2 + normRand(-1, 1.5)),
+          );
+        }
+      }
+      pts.push(lift(q, Math.min(hs[n], hs[n - 1])));
+      return pts;
+    };
+    var ruinHeights = function(n, hmax, hmin, seed, k) {
+      var hs = [];
+      var n0 = Math.random() * 100;
+      for (var i = 0; i <= n; i++) {
+        var v = Noise.noise(i * k, n0, seed);
+        var j = Noise.noise(i * 0.8, n0 + 9, seed) - 0.5;
+        var h =
+          hmin +
+          (hmax - hmin) * Math.min(1, Math.max(0, v * 2.2 - 0.55 + j * 0.35));
+        if (Math.random() < 0.15) {
+          h -= normRand(1.5, 4);
+        }
+        hs.push(
+          Math.max(
+            hmin,
+            Math.min(hmax, Math.round(h / 1.8) * 1.8 + normRand(-0.5, 0.5)),
+          ),
+        );
+      }
+      return hs;
+    };
+
+    var tufts = function(tf, p0, p1, n) {
+      var canv = "";
+      for (var i = 0; i < n; i++) {
+        var p = lerp2(p0, p1, Math.random());
+        var m = 2 + Math.floor(Math.random() * 3);
+        for (var j = 0; j < m; j++) {
+          var a = -Math.PI / 2 + normRand(-0.7, 0.7);
+          var l = normRand(2.5, 5.5);
+          canv += stroke(
+            [
+              p,
+              add2(p, [Math.cos(a), Math.sin(a)], l * 0.5),
+              add2(p, [Math.cos(a) * 1.3, Math.sin(a)], l),
+            ].map(tf),
+            { wid: 0.8, col: ink(normRand(0.25, 0.5)), noi: 0.3 },
+          );
+        }
+      }
+      return canv;
+    };
+    // ground along a building's base: a soft line just in front, and grass
+    var groundLine = function(tf, plist) {
+      var pts = plist.map(function(v) {
+        return lift(v, -0.8);
+      });
+      var canv = line(tf, pts, { wid: 1.1, col: ink(0.3), amp: 0.6, ext: 5 });
+      for (var i = 0; i < pts.length - 1; i++) {
+        canv += tufts(
+          tf,
+          lift(pts[i], -0.6),
+          lift(pts[i + 1], -0.6),
+          Math.ceil(distance(pts[i], pts[i + 1]) / 16),
+        );
+      }
+      return canv;
+    };
+    // a climbing mass of leaves from p0 towards p1
+    var ivy = function(tf, p0, p1, n, spread) {
+      var canv = "";
+      var sc = tf.sca || 1;
+      var stem = [];
+      for (var i = 0; i <= 6; i++) {
+        stem.push(
+          add2(lerp2(p0, p1, i / 6), [normRand(-1, 1) * spread * 0.4, 0]),
+        );
+      }
+      canv += line(tf, stem, { wid: 0.7, col: ink(0.35), amp: 0.6, ext: 0 });
+      for (var i = 0; i < n; i++) {
+        var t = Math.pow(Math.random(), 1.4);
+        var r = spread * (1.2 - t * 0.6);
+        var p = add2(lerp2(p0, p1, t), [
+          normRand(-1, 1) * r,
+          normRand(-0.6, 0.6) * r,
+        ]);
+        var g = tf(p);
+        canv += blob(g[0], g[1], {
+          len: normRand(4, 8) * sc,
+          wid: normRand(3, 5.5) * sc,
+          ang: normRand(-0.9, 0.9),
+          col: ink(normRand(0.18, 0.42)),
+        });
+      }
+      return canv;
+    };
+    var rubble = function(tf, x0, x1, y, n, sz, hp) {
+      var stones = [];
+      for (var i = 0; i < n; i++) {
+        var t = Math.random();
+        var hump = Math.sin(t * Math.PI);
+        stones.push([
+          x0 + (x1 - x0) * t,
+          y + normRand(-hp * hump, 2.5),
+          normRand(0.5, 1.3) * sz * (0.6 + 0.4 * hump),
+        ]);
+      }
+      stones.sort(function(a, b) {
+        return a[1] - b[1];
+      });
+      var canv = "";
+      for (var i = 0; i < stones.length; i++) {
+        var s = stones[i];
+        var w = s[2];
+        var h = w * normRand(0.45, 0.75);
+        var pts = [
+          [s[0] - w / 2, s[1]],
+          [s[0] - w * normRand(0.3, 0.5), s[1] - h * 0.8],
+          [s[0] + normRand(-0.1, 0.2) * w, s[1] - h],
+          [s[0] + w * 0.5, s[1] - h * normRand(0.4, 0.7)],
+          [s[0] + w * 0.45, s[1]],
+        ];
+        canv += fill(tf, pts, "st");
+        canv += line(tf, pts.slice(0, 4), {
+          wid: 0.6,
+          col: ink(normRand(0.25, 0.4)),
+          amp: 0.2,
+          ext: 0,
+        });
+        canv += line(tf, [pts[3], pts[4], pts[0]], {
+          wid: 0.9,
+          col: ink(normRand(0.35, 0.5)),
+          amp: 0.2,
+          ext: 0,
+        });
+        if (w > 4) {
+          canv += hatch(
+            tf,
+            [pts[2], pts[3], pts[4], lerp2(pts[0], pts[4], 0.5)],
+            { ang: -1, gap: 1.1, alp: [0.1, 0.2] },
+          );
+        }
+      }
+      return canv;
+    };
+
+    // ---- buildings ----
+
+    // gabled block: face A carries the eaves, face B the gable
+    var gableGeo = function(o, ua, la, ub, lb, H, R, eo, vo, vo2) {
+      vo2 = vo2 == undefined ? vo : vo2;
+      var g = {
+        o: o,
+        ua: ua,
+        la: la,
+        ub: ub,
+        lb: lb,
+        H: H,
+        R: R,
+        eo: eo,
+        vo: vo,
+        vo2: vo2,
+      };
+      g.fa = { o: o, u: ua };
+      g.fb = { o: o, u: ub };
+      var dh = (eo * 2 * R) / lb;
+      g.apex = fp(g.fb, lb / 2, H + R);
+      g.ridge = function(t) {
+        return add2(g.apex, ua, t);
+      };
+      g.eave = function(t) {
+        return add2(fp(g.fa, t, H - dh), ub, -eo);
+      };
+      g.beave = function(t) {
+        return add2(add2(fp(g.fb, lb, H - dh), ub, eo), ua, t);
+      };
+      g.wallA = [
+        fp(g.fa, 0, 0),
+        fp(g.fa, la, 0),
+        fp(g.fa, la, H),
+        fp(g.fa, 0, H),
+      ];
+      g.wallB = [
+        fp(g.fb, 0, 0),
+        fp(g.fb, lb, 0),
+        fp(g.fb, lb, H),
+        g.apex,
+        fp(g.fb, 0, H),
+      ];
+      g.shapeA = [
+        [0, 0],
+        [la, 0],
+        [la, H],
+        [0, H],
+      ];
+      g.shapeB = [
+        [0, 0],
+        [lb, 0],
+        [lb, H],
+        [lb / 2, H + R],
+        [0, H],
+      ];
+      g.slope = [
+        g.eave(-vo),
+        g.eave(la + vo2),
+        g.ridge(la + vo2),
+        g.ridge(-vo),
+      ];
+      return g;
+    };
+
+    var slateRoof = function(tf, g, cls, ha) {
+      var q = g.slope;
+      var canv = fill(tf, q, cls);
+      var L = distance(q[0], q[3]);
+      var nc = Math.max(2, Math.floor(L / 2.8));
+      for (var i = 1; i < nc; i++) {
+        var a = lerp2(q[0], q[3], i / nc);
+        var b = lerp2(q[1], q[2], i / nc);
+        var u = Math.random() * 0.1;
+        while (u < 1) {
+          var du = normRand(0.08, 0.3);
+          if (Math.random() < 0.55) {
+            canv += line(
+              tf,
+              [lerp2(a, b, u), lerp2(a, b, Math.min(1, u + du))],
+              thin(normRand(0.12, 0.3)),
+            );
+          }
+          u += du + normRand(0.02, 0.12);
+        }
+      }
+      canv += hatch(tf, q, {
+        ang: ha * 1.15,
+        gap: 3,
+        alp: [0.04, 0.1],
+        den: 0.7,
+      });
+      canv += line(tf, [q[0], q[1]], { wid: 1.3, col: ink(0.5) });
+      canv += line(tf, [q[3], q[2]], { wid: 1.6, col: ink(0.55) });
+      canv += line(tf, [q[1], q[2]], { wid: 1.1, col: ink(0.45) });
+      return canv;
+    };
+
+    var thatchRoof = function(tf, g) {
+      var q = g.slope;
+      var th = 2.5;
+      var e0 = lift(q[0], -th);
+      var e1 = lift(q[1], -th);
+      var canv = fill(tf, [e0, e1, q[1], q[2], q[3], q[0]], "th");
+      var L = distance(e0, q[3]);
+      var bmax = 1 - 5.5 / L;
+      var Q = function(a, b) {
+        return lerp2(lerp2(e0, e1, a), lerp2(q[3], q[2], a), b);
+      };
+      var ni = Math.max(4, Math.round(distance(e0, e1) / 3));
+      var nj = 10;
+      var grid = [];
+      for (var i = 0; i < ni; i++) {
+        grid.push([]);
+        for (var j = 0; j < nj; j++) {
+          grid[i].push(tf(Q(i / (ni - 1), bmax * (1 - j / (nj - 1)))));
+        }
+      }
+      canv += texture(grid, {
+        tex: Math.round((distance(e0, e1) * L) / 11),
+        wid: 0.7,
+        len: 0.45,
+        sha: 0,
+        col: function(x) {
+          return ink(normRand(0.04, 0.2));
+        },
+        noi: function(x) {
+          return 1.2;
+        },
+        dis: function() {
+          return Math.random();
+        },
+      });
+      // block-cut ridge
+      var zz = [];
+      var nz = Math.max(3, Math.round(distance(q[3], q[2]) / 4.5));
+      for (var i = 0; i <= nz; i++) {
+        zz.push(Q(i / nz, bmax));
+        if (i < nz) {
+          zz.push(Q((i + 0.5) / nz, bmax - 2.2 / L));
+        }
+      }
+      canv += line(tf, zz, { wid: 0.8, col: ink(0.4), amp: 0.2, ext: 0 });
+      canv += line(tf, [Q(0, bmax + 2.2 / L), Q(1, bmax + 2.2 / L)], thin(0.3));
+      canv += line(tf, [e0, e1], { wid: 1.8, col: ink(0.5), amp: 0.5 });
+      canv += line(tf, [q[0], q[1]], thin(0.25));
+      canv += line(tf, [q[3], q[2]], { wid: 1.5, col: ink(0.5) });
+      canv += line(tf, [q[1], e1], { wid: 1, col: ink(0.45) });
+      canv += line(tf, [q[2], q[1]], { wid: 1.2, col: ink(0.45) });
+      return canv;
+    };
+
+    // the roof edge seen over the gable
+    var vergeBand = function(tf, g, th, cls, ha) {
+      var a = g.eave(-g.vo);
+      var b = g.ridge(-g.vo);
+      var c = g.beave(-g.vo);
+      var w0 = fp(g.fb, 0, g.H);
+      var w1 = fp(g.fb, g.lb, g.H);
+      var pts = [
+        a,
+        b,
+        c,
+        lift(c, -th),
+        lift(w1, -th * 0.5),
+        lift(g.apex, -th),
+        lift(w0, -th * 0.5),
+      ];
+      var canv = fill(tf, pts, cls);
+      canv += hatch(
+        tf,
+        [
+          lift(a, -th * 0.3),
+          b,
+          c,
+          lift(c, -th),
+          lift(g.apex, -th),
+          lift(w0, -th * 0.5),
+        ],
+        {
+          ang: ha * 0.6,
+          gap: 1.4,
+          alp: [0.1, 0.22],
+        },
+      );
+      canv += line(tf, [a, b, c], { wid: 1.4, col: ink(0.5) });
+      canv += line(
+        tf,
+        [lift(w0, -th * 0.5), lift(g.apex, -th), lift(c, -th)],
+        thin(0.35),
+      );
+      return canv;
+    };
+
+    var chimney = function(tf, base, ua, ub, cw, cd, ch, ha) {
+      var c0 = add2(add2(base, ua, -cw / 2), ub, -cd / 2);
+      var c1 = add2(c0, ua, cw);
+      var c2 = add2(c0, ub, cd);
+      var t0 = lift(c0, ch);
+      var t1 = lift(c1, ch);
+      var t2 = lift(c2, ch);
+      var t3 = add2(t1, ub, cd);
+      var b0 = lift(c0, -7);
+      var b1 = lift(c1, -7);
+      var b2 = lift(c2, -7);
+      var canv = "";
+      canv += fill(tf, [b0, b1, t1, t0], "wl");
+      canv += fill(tf, [b0, b2, t2, t0], "wl");
+      canv += hatch(tf, [b0, b2, t2, t0], {
+        ang: ha,
+        gap: 1.2,
+        alp: [0.15, 0.3],
+      });
+      canv += fill(tf, [t0, t1, t3, t2], "wl");
+      canv += edges(tf, [b1, t1, t0, b0], false, { wid: 1, col: ink(0.5) });
+      canv += edges(tf, [t0, t2, b2], false, { wid: 1, col: ink(0.45) });
+      canv += edges(tf, [t1, t3, t2], false, thin(0.35));
+      // cap course
+      canv += line(
+        tf,
+        [
+          lift(add2(c1, ua, 0.6), ch - 1.6),
+          lift(add2(c0, ua, -0.6), ch - 1.6),
+          lift(c2, ch - 1.6),
+        ],
+        thin(0.45),
+      );
+      var pots = [];
+      var np = randChoice([0, 1, 2]);
+      for (var i = 0; i < np; i++) {
+        var pc = lift(
+          lerp2(
+            lerp2(t0, t1, (i + 1) / (np + 1)),
+            lerp2(t2, t3, (i + 1) / (np + 1)),
+            0.5,
+          ),
+          0,
+        );
+        var pw = 0.9;
+        var phh = normRand(2, 3.2);
+        var pp = [
+          [pc[0] - pw, pc[1]],
+          [pc[0] + pw, pc[1]],
+          [pc[0] + pw * 0.85, pc[1] - phh],
+          [pc[0] - pw * 0.85, pc[1] - phh],
+        ];
+        canv += fill(tf, pp, "wl") + edges(tf, pp, true, thin(0.5));
+        pots.push(lift(pc, phh));
+      }
+      var top = pots.length ? pots[0] : lift(lerp2(t1, t2, 0.5), 0.5);
+      return { s: canv, top: top };
+    };
+
+    var smoke = function(tf, p, len, dir) {
+      var canv = "";
+      var wnd = dir * normRand(0.5, 1);
+      var n0 = Math.random() * 100;
+      for (var k = 0; k < 4; k++) {
+        var pts = [];
+        var ph = normRand(0, 6);
+        var ln = len * normRand(0.6, 1.1);
+        for (var i = 0; i <= 24; i++) {
+          var t = i / 24;
+          var cx =
+            wnd * t * t * ln * 0.9 + (Noise.noise(t * 2, n0, k) - 0.5) * 10 * t;
+          var rr = 1.5 + t * 5;
+          pts.push([
+            p[0] + cx + Math.cos(t * 9 + ph) * rr * 0.6,
+            p[1] - t * ln + Math.sin(t * 9 + ph) * rr * 0.35,
+          ]);
+        }
+        canv += stroke(pts.map(tf), {
+          wid: normRand(0.6, 1.2),
+          col: ink(normRand(0.06, 0.13)),
+          noi: 0.6,
+          out: 0.3,
+        });
+      }
+      return canv;
+    };
+
+    var casement = function(tf, f, s, h, w, hh, ha) {
+      var q = fpl(f, [
+        [s - w / 2, h],
+        [s + w / 2, h],
+        [s + w / 2, h + hh],
+        [s - w / 2, h + hh],
+      ]);
+      var canv = dark(tf, q, normRand(0.22, 0.32));
+      var bw = 0.35;
+      canv += poly(
+        fpl(f, [
+          [s - bw, h],
+          [s + bw, h],
+          [s + bw, h + hh],
+          [s - bw, h + hh],
+        ]).map(tf),
+        { fil: "white", str: "none" },
+      );
+      canv += poly(
+        fpl(f, [
+          [s - w / 2, h + hh * 0.55 - bw],
+          [s + w / 2, h + hh * 0.55 - bw],
+          [s + w / 2, h + hh * 0.55 + bw],
+          [s - w / 2, h + hh * 0.55 + bw],
+        ]).map(tf),
+        { fil: "white", str: "none" },
+      );
+      canv += edges(tf, q, true, { wid: 0.7, col: ink(0.5), ext: 0.6 });
+      canv += line(
+        tf,
+        fpl(f, [
+          [s - w / 2 - 1.2, h - 0.5],
+          [s + w / 2 + 1.2, h - 0.5],
+        ]),
+        { wid: 1, col: ink(0.45) },
+      );
+      canv += line(
+        tf,
+        fpl(f, [
+          [s - w / 2 - 0.8, h + hh + 0.9],
+          [s + w / 2 + 0.8, h + hh + 0.9],
+        ]),
+        thin(0.4),
+      );
+      return canv;
+    };
+    var plankDoor = function(tf, f, s, w, hh) {
+      var q = fpl(f, [
+        [s - w / 2, 0],
+        [s + w / 2, 0],
+        [s + w / 2, hh],
+        [s - w / 2, hh],
+      ]);
+      var canv = dark(tf, q, normRand(0.1, 0.16));
+      for (var k = 1; k < 4; k++) {
+        var x = s - w / 2 + (w * k) / 4;
+        canv += line(
+          tf,
+          fpl(f, [
+            [x, 0.5],
+            [x, hh - 0.5],
+          ]),
+          thin(0.25),
+        );
+      }
+      canv += edges(tf, [q[0], q[3], q[2], q[1]], false, {
+        wid: 0.9,
+        col: ink(0.55),
+      });
+      canv += line(
+        tf,
+        fpl(f, [
+          [s - w / 2 - 1.5, hh + 1],
+          [s + w / 2 + 1.5, hh + 1],
+        ]),
+        { wid: 1.4, col: ink(0.45) },
+      );
+      canv += line(
+        tf,
+        fpl(f, [
+          [s + w * 0.3, hh * 0.45],
+          [s + w * 0.3, hh * 0.48],
+        ]),
+        { wid: 1, col: ink(0.6), ext: 0 },
+      );
+      return canv;
+    };
+    // pointed or round-headed opening, dark or as an outline (face coords)
+    var lancet = function(tf, f, s, h0, w, hs, fr, a) {
+      var pts = [[s - w / 2, h0]]
+        .concat(shiftPts(archPts(w, hs, fr, 5), s, 0))
+        .concat([[s + w / 2, h0]]);
+      var q = fpl(f, pts);
+      var canv = dark(tf, q, a);
+      canv += line(tf, q.concat([q[0]]), { wid: 0.8, col: ink(0.5), ext: 0 });
+      return canv;
+    };
+
+    // a gabled building: walls, openings, roof
+    var house = function(tf, g, args) {
+      var args = args != undefined ? args : {};
+      var wcl = args.wcl != undefined ? args.wcl : "wl";
+      var roo = args.roo != undefined ? args.roo : "rf";
+      var mas = args.mas != undefined ? args.mas : 0;
+      var sha = args.sha != undefined ? args.sha : "b";
+      var ha = args.ha != undefined ? args.ha : -1;
+      var nil = function() {
+        return "";
+      };
+      var decA = args.decA != undefined ? args.decA : nil;
+      var decB = args.decB != undefined ? args.decB : nil;
+      var pre = args.pre != undefined ? args.pre : nil;
+      var quo = args.quo != undefined ? args.quo : false;
+      var canv = pre();
+
+      canv += fill(tf, g.wallB, wcl);
+      if (mas) {
+        canv += masonry(tf, g.fb, g.shapeB, { sty: mas, den: 0.45, alp: 0.2 });
+      }
+      if (sha == "b") {
+        canv += hatch(tf, g.wallB, { ang: ha, gap: 2, alp: [0.06, 0.15] });
+      }
+      if (quo) {
+        canv += quoins(
+          tf,
+          { o: fp(g.fb, g.lb, 0), u: [-g.ub[0], -g.ub[1]] },
+          g.H,
+          3,
+          0.3,
+        );
+      }
+      canv += edges(tf, [g.wallB[0], g.wallB[1], g.wallB[2]], false, {
+        wid: 1.1,
+        col: ink(0.45),
+      });
+      canv += decB(g.fb);
+
+      canv += fill(tf, g.wallA, wcl);
+      if (mas) {
+        canv += masonry(tf, g.fa, g.shapeA, { sty: mas, den: 0.45, alp: 0.22 });
+      }
+      if (sha == "a") {
+        canv += hatch(tf, g.wallA, { ang: ha, gap: 2, alp: [0.06, 0.15] });
+      }
+      if (quo) {
+        canv += quoins(tf, g.fa, g.H, 5, 0.32);
+        canv += quoins(
+          tf,
+          { o: fp(g.fa, g.la, 0), u: [-g.ua[0], -g.ua[1]] },
+          g.H,
+          5,
+          0.32,
+        );
+      }
+      canv += edges(tf, [g.wallA[1], g.wallA[0], g.wallA[3]], false, {
+        wid: 1.2,
+        col: ink(0.5),
+      });
+      canv += line(tf, [g.wallA[1], g.wallA[2]], { wid: 1.1, col: ink(0.45) });
+      canv += hatch(
+        tf,
+        [
+          fp(g.fa, 0, g.H),
+          fp(g.fa, g.la, g.H),
+          fp(g.fa, g.la, g.H - 3.5),
+          fp(g.fa, 0, g.H - 3.5),
+        ],
+        {
+          ang: ha,
+          gap: 1.3,
+          alp: [0.1, 0.2],
+        },
+      );
+      canv += decA(g.fa);
+
+      if (roo == "th") {
+        canv += thatchRoof(tf, g);
+        canv += vergeBand(tf, g, 3.2, "th", ha);
+      } else {
+        canv += slateRoof(tf, g, roo, ha);
+        canv += vergeBand(tf, g, 1.4, roo, ha);
+      }
+      return canv;
+    };
+
+    var cross = function(tf, p, s) {
+      var c = lift(p, s * 1.05);
+      return (
+        line(tf, [p, lift(p, s * 1.6)], { wid: 0.9, col: ink(0.55), ext: 0 }) +
+        line(
+          tf,
+          [
+            [c[0] - s * 0.5, c[1]],
+            [c[0] + s * 0.5, c[1]],
+          ],
+          { wid: 0.8, col: ink(0.55), ext: 0 },
+        )
+      );
+    };
+
+    var VA = unit([-1, -0.07]);
+    var VB = unit([1, -0.42]);
+
+    this.cottage = function(xoff, yoff, seed, args) {
+      var args = args != undefined ? args : {};
+      var wid = args.wid != undefined ? args.wid : normRand(44, 60);
+      var dep = args.dep != undefined ? args.dep : wid * normRand(0.32, 0.4);
+      var hei = args.hei != undefined ? args.hei : normRand(31, 35);
+      var roo =
+        args.roo != undefined ? args.roo : randChoice(["th", "rf", "rf"]);
+      var rise =
+        args.rise != undefined
+          ? args.rise
+          : roo == "th"
+            ? normRand(22, 27)
+            : normRand(15, 20);
+      var wal = args.wal != undefined ? args.wal : randChoice([0, 1, 1]);
+      var chi = args.chi != undefined ? args.chi : randChoice([1, 2, 2]);
+      var smo = args.smo != undefined ? args.smo : Math.random() < 0.5;
+      var lea = args.lea != undefined ? args.lea : Math.random() < 0.35;
+      var fli = args.fli != undefined ? args.fli : Math.random() < 0.5;
+      var sca = args.sca != undefined ? args.sca : 1;
+
+      seed = seed != undefined ? seed : 0;
+      var dir = fli ? -1 : 1;
+      var tf = mover(xoff, yoff, dir, sca);
+      var ha = -dir;
+      var o = [(wid * -VA[0] - dep * VB[0]) / 2, 1.5];
+      var g = gableGeo(
+        o,
+        VA,
+        wid,
+        VB,
+        dep,
+        hei,
+        rise,
+        roo == "th" ? 2.6 : 1.6,
+        roo == "th" ? 2.5 : 2,
+      );
+      var canv = "";
+
+      if (lea) {
+        var lw = normRand(12, 17);
+        var lh = hei * normRand(0.5, 0.6);
+        var hh = hei * normRand(0.82, 0.92);
+        var ld = dep * 0.85;
+        var lwall = [
+          fp(g.fa, wid, 0),
+          fp(g.fa, wid + lw, 0),
+          fp(g.fa, wid + lw, lh),
+          fp(g.fa, wid, hh),
+        ];
+        var r0 = add2(fp(g.fa, wid - 0.5, hh + 0.8), VB, -1.4);
+        var r1 = add2(fp(g.fa, wid + lw + 1.6, lh - 1), VB, -1.4);
+        var lroof = [r0, r1, add2(r1, VB, ld), add2(r0, VB, ld)];
+        canv += fill(tf, lwall, "wl");
+        if (wal) {
+          canv += masonry(
+            tf,
+            g.fa,
+            [
+              [wid, 0],
+              [wid + lw, 0],
+              [wid + lw, lh],
+              [wid, hh],
+            ],
+            { sty: 1, den: 0.4, alp: 0.2 },
+          );
+        }
+        canv += edges(tf, [lwall[0], lwall[1], lwall[2]], false, {
+          wid: 1.1,
+          col: ink(0.5),
+        });
+        canv += casement(tf, g.fa, wid + lw / 2, lh * 0.35, 5, 5.5, ha);
+        canv += fill(tf, lroof, "rf");
+        for (var k = 1; k < 5; k++) {
+          canv += line(
+            tf,
+            [
+              lerp2(lroof[0], lroof[3], k / 5),
+              lerp2(lroof[1], lroof[2], k / 5),
+            ],
+            thin(0.2),
+          );
+        }
+        canv += hatch(tf, lroof, { ang: ha * 1.15, gap: 3, alp: [0.04, 0.1] });
+        canv += edges(tf, [lroof[3], lroof[0], lroof[1], lroof[2]], false, {
+          wid: 1,
+          col: ink(0.5),
+        });
+      }
+
+      var tops = [];
+      var cts = chi == 1 ? [randChoice([0.1, 0.9, 0.5])] : [0.1, 0.9];
+      var chimneys = "";
+      for (var i = 0; i < cts.length; i++) {
+        var cw = normRand(5, 6.5);
+        var c = chimney(
+          tf,
+          g.ridge(wid * cts[i]),
+          VA,
+          VB,
+          cw,
+          normRand(3.5, 4.5),
+          normRand(6, 10),
+          ha,
+        );
+        chimneys += c.s;
+        tops.push(c.top);
+      }
+
+      var dw = normRand(10, 12);
+      var dh = Math.min(hei - 3.5, normRand(26, 29));
+      var ds = wid * normRand(0.38, 0.6);
+      canv += house(tf, g, {
+        roo: roo,
+        mas: wal ? 1 : 0,
+        quo: wal == 1 && Math.random() < 0.6,
+        ha: ha,
+        pre: function() {
+          return chimneys;
+        },
+        decA: function(f) {
+          var s = plankDoor(tf, f, ds, dw, dh);
+          var ww = normRand(8, 9.5);
+          var wh = normRand(8, 9.5);
+          var gap = normRand(5, 8);
+          var wy = normRand(12, 14);
+          var sl = [ds - dw / 2 - gap - ww / 2, ds + dw / 2 + gap + ww / 2];
+          for (var k = 0; k < sl.length; k++) {
+            if (sl[k] > ww / 2 + 3 && sl[k] < wid - ww / 2 - 3) {
+              s += casement(tf, f, sl[k], wy, ww, wh, ha);
+            }
+          }
+          s += line(
+            tf,
+            fpl(f, [
+              [ds - dw / 2 - 2, -0.3],
+              [ds + dw / 2 + 2, -0.3],
+            ]),
+            { wid: 1.2, col: ink(0.4) },
+          );
+          return s;
+        },
+        decB: function(f) {
+          if (dep > 16 && Math.random() < 0.6) {
+            return casement(tf, f, dep / 2, hei * 0.62, 4.5, 6, ha);
+          }
+          return "";
+        },
+      });
+      if (smo && tops.length) {
+        canv += smoke(
+          tf,
+          randChoice(tops),
+          normRand(35, 55),
+          randChoice([-1, 1]),
+        );
+      }
+      canv += groundLine(tf, [
+        add2(o, VA, wid + (lea ? 19 : 3)),
+        o,
+        add2(o, VB, dep + 3),
+      ]);
+      return canv;
+    };
+
+    // flat-topped tower with optional battlements, pinnacles and spire
+    var squareTower = function(tf, o, la, lb, H, args) {
+      var args = args != undefined ? args : {};
+      var bat = args.bat != undefined ? args.bat : true;
+      var pin = args.pin != undefined ? args.pin : false;
+      var spi = args.spi != undefined ? args.spi : 0;
+      var ha = args.ha != undefined ? args.ha : -1;
+      var mas = args.mas != undefined ? args.mas : 2;
+      var cls = args.cls != undefined ? args.cls : "st";
+      var ruin = args.ruin != undefined ? args.ruin : false;
+      var seed = args.seed != undefined ? args.seed : 0;
+      var deco =
+        args.deco != undefined
+          ? args.deco
+          : function() {
+              return "";
+            };
+      var fa = { o: o, u: VA };
+      var fb = { o: o, u: VB };
+      var canv = "";
+      var ps = 1.8;
+      var mh = 2.6;
+      var mw = 2.6;
+      var c0 = fp(fa, 0, H);
+      var c1 = fp(fa, la, H);
+      var c2 = fp(fb, lb, H);
+      var c3 = add2(c1, VB, lb);
+      var wa = [fp(fa, 0, 0), fp(fa, la, 0), c1, c0];
+      var wb = [fp(fb, 0, 0), fp(fb, lb, 0), c2, c0];
+
+      if (ruin) {
+        var na = Math.max(3, Math.round(la / 3));
+        var nb = Math.max(2, Math.round(lb / 3));
+        var hA = ruinHeights(na, H, H * 0.45, seed, 0.25);
+        var hB = ruinHeights(nb, H, H * 0.45, seed + 3, 0.3);
+        hB[0] = hA[0];
+        var tA = brokenTop(fp(fa, la, 0), o, hA.slice().reverse());
+        var tB = brokenTop(o, fp(fb, lb, 0), hB);
+        var bc = add2(fp(fa, la, 0), VB, lb);
+        var hbA = ruinHeights(nb, H, H * 0.6, seed + 1, 0.35);
+        var hbB = ruinHeights(na, H, H * 0.6, seed + 2, 0.3);
+        hbA[0] = Math.max(hbA[0], hA[na] + 2);
+        hbB[na] = Math.max(hbB[na], hB[nb] + 2);
+        var e1 = brokenTop(fp(fa, la, 0), bc, hbA);
+        var e2 = brokenTop(bc, fp(fb, lb, 0), hbB);
+        var back = [fp(fa, la, 0)]
+          .concat(e1)
+          .concat(e2)
+          .concat([fp(fb, lb, 0), o]);
+        canv += fill(tf, back, cls);
+        canv += hatch(tf, back, { ang: ha, gap: 1.5, alp: [0.1, 0.22] });
+        canv += line(tf, e1, thin(0.4)) + line(tf, e2, thin(0.4));
+        var pa = [fp(fa, la, 0)].concat(tA).concat([o]);
+        var pb = [o].concat(tB).concat([fp(fb, lb, 0)]);
+        canv += fill(tf, pb, cls);
+        canv += hatch(tf, pb, { ang: ha, gap: 2, alp: [0.07, 0.16] });
+        var mA = Math.min.apply(null, hA);
+        var mB = Math.min.apply(null, hB);
+        canv += masonry(
+          tf,
+          fb,
+          [
+            [0, 0],
+            [lb, 0],
+            [lb, mB],
+            [0, mB],
+          ],
+          { sty: mas, den: 0.35, alp: 0.2 },
+        );
+        canv += fill(tf, pa, cls);
+        canv += masonry(
+          tf,
+          fa,
+          [
+            [0, 0],
+            [la, 0],
+            [la, mA],
+            [0, mA],
+          ],
+          { sty: mas, den: 0.4, alp: 0.2 },
+        );
+        canv += deco(fa, fb, mA, mB);
+        canv += line(tf, tA, { wid: 1, col: ink(0.5), ext: 0 });
+        canv += line(tf, tB, { wid: 1, col: ink(0.45), ext: 0 });
+        canv += line(tf, [pa[0], o, pb[pb.length - 1]], {
+          wid: 1.2,
+          col: ink(0.45),
+        });
+        canv += line(tf, [o, lift(o, hA[0])], { wid: 1, col: ink(0.5) });
+        canv += line(tf, [pa[0], pa[1]], { wid: 1, col: ink(0.45) });
+        canv += line(tf, [pb[pb.length - 1], pb[pb.length - 2]], {
+          wid: 1,
+          col: ink(0.4),
+        });
+        return canv;
+      }
+
+      var crenel = function(p, q, a, front) {
+        var L = distance(p, q);
+        var n = Math.max(1, Math.round(L / mw));
+        if (n % 2 == 0) {
+          n += 1;
+        }
+        var top = [];
+        for (var k = 0; k < n; k++) {
+          var h = k % 2 == 0 ? ps + mh : ps;
+          top.push(
+            lift(lerp2(p, q, k / n), h),
+            lift(lerp2(p, q, (k + 1) / n), h),
+          );
+        }
+        var pts = [p].concat(top).concat([q]);
+        var s = fill(tf, pts, cls);
+        if (!front) {
+          s += hatch(tf, pts, { ang: ha, gap: 1.3, alp: [0.12, 0.22] });
+        }
+        s += poly(
+          top.map(function(v) {
+            return tf([
+              v[0] + normRand(-0.15, 0.15),
+              v[1] + normRand(-0.15, 0.15),
+            ]);
+          }),
+          { fil: "none", str: ink(a), wid: 0.9 },
+        );
+        s +=
+          line(tf, [p, top[0]], thin(a)) +
+          line(tf, [q, top[top.length - 1]], thin(a));
+        return s;
+      };
+      var pinnacle = function(p) {
+        var b = lift(p, ps + mh);
+        var pts = [add2(b, [-1.2, 0]), add2(b, [1.2, 0]), lift(b, 5.5)];
+        return fill(tf, pts, cls) + edges(tf, pts, true, thin(0.5));
+      };
+
+      if (bat) {
+        canv += crenel(c1, c3, 0.3, false) + crenel(c3, c2, 0.3, false);
+        if (pin) {
+          canv += pinnacle(c3);
+        }
+      }
+      canv += fill(tf, [c0, c1, c3, c2], cls);
+      canv += hatch(tf, [c0, c1, c3, c2], {
+        ang: ha,
+        gap: 1.6,
+        alp: [0.06, 0.12],
+      });
+
+      canv += fill(tf, wb, cls);
+      canv += masonry(
+        tf,
+        fb,
+        [
+          [0, 0],
+          [lb, 0],
+          [lb, H],
+          [0, H],
+        ],
+        { sty: mas, den: 0.4, alp: 0.2 },
+      );
+      canv += hatch(tf, wb, { ang: ha, gap: 1.8, alp: [0.07, 0.17] });
+      canv += fill(tf, wa, cls);
+      canv += masonry(
+        tf,
+        fa,
+        [
+          [0, 0],
+          [la, 0],
+          [la, H],
+          [0, H],
+        ],
+        { sty: mas, den: 0.4, alp: 0.2 },
+      );
+      canv += deco(fa, fb, H, H);
+      canv += edges(tf, [wa[1], wa[0], wb[1], wb[2]], false, {
+        wid: 1.2,
+        col: ink(0.5),
+      });
+      canv += line(tf, [wa[0], c0], { wid: 1.2, col: ink(0.5) });
+      canv += line(tf, [wa[1], c1], { wid: 1.1, col: ink(0.45) });
+
+      if (spi > 0) {
+        var ins = bat ? 1.6 : -0.6;
+        var cen = lerp2(c0, c3, 0.5);
+        var s0 = lerp2(c0, cen, ins / (la * 0.5));
+        var s1 = lerp2(c1, cen, ins / (la * 0.5));
+        var s2 = lerp2(c2, cen, ins / (la * 0.5));
+        var ap = lift(cen, spi);
+        canv += fill(tf, [s1, s0, s2, ap], "rf");
+        canv += hatch(tf, [s0, s2, ap], {
+          ang: ha * 1.3,
+          gap: 1.3,
+          alp: [0.12, 0.26],
+        });
+        for (var k = 1; k < 4; k++) {
+          canv += line(
+            tf,
+            [lerp2(s1, s0, k / 4), lerp2(lerp2(s1, s0, k / 4), ap, 0.85)],
+            thin(0.18),
+          );
+        }
+        canv += edges(tf, [s1, ap, s2], false, { wid: 1, col: ink(0.5) });
+        canv += line(tf, [s0, ap], { wid: 0.9, col: ink(0.45) });
+        canv += line(tf, [s1, s0, s2], thin(0.4));
+        canv += cross(tf, lift(ap, 0.5), 2.2);
+      }
+      if (bat) {
+        canv += crenel(c1, c0, 0.5, true) + crenel(c0, c2, 0.45, false);
+        if (pin) {
+          canv += pinnacle(c0) + pinnacle(c1) + pinnacle(c2);
+        }
+      } else {
+        canv += edges(tf, [c1, c0, c2], false, { wid: 1.1, col: ink(0.5) });
+      }
+      return canv;
+    };
+
+    this.church = function(xoff, yoff, seed, args) {
+      var args = args != undefined ? args : {};
+      var wid = args.wid != undefined ? args.wid : normRand(70, 92);
+      var hei = args.hei != undefined ? args.hei : normRand(58, 76);
+      var spi = args.spi != undefined ? args.spi : Math.random() < 0.45;
+      var fli = args.fli != undefined ? args.fli : Math.random() < 0.5;
+      var sca = args.sca != undefined ? args.sca : 1;
+
+      seed = seed != undefined ? seed : 0;
+      var dir = fli ? -1 : 1;
+      var tf = mover(xoff, yoff, dir, sca);
+      var ha = -dir;
+      var canv = "";
+
+      var tw = normRand(15, 18);
+      var td = tw * 0.42;
+      var Ln = wid * normRand(0.46, 0.54);
+      var Lc = wid * normRand(0.2, 0.25);
+      var dn = normRand(17, 20);
+      var dc = dn * 0.74;
+      var H = normRand(27, 31);
+      var R = normRand(14, 17);
+      var Hc = H * 0.86;
+      var Rc = R * 0.82;
+      var tot = tw * -VA[0] + Ln * -VA[0] + Lc * -VA[0] + dc * VB[0];
+      var on = [
+        tot / 2 - Lc * -VA[0] - dc * VB[0] - ((dn - dc) / 2) * VB[0],
+        1.5 + Lc * VA[1] - ((dn - dc) / 2) * VB[1],
+      ];
+      var oc = add2(add2(on, VA, -Lc), VB, (dn - dc) / 2);
+      var ot = add2(add2(on, VA, Ln), VB, (dn - td) / 2);
+      var gn = gableGeo(on, VA, Ln, VB, dn, H, R, 1.5, 1.5, -0.5);
+      var gc = gableGeo(oc, VA, Lc, VB, dc, Hc, Rc, 1.3, 1.3, -0.5);
+
+      // west tower
+      canv += squareTower(tf, ot, tw, td, hei, {
+        bat: !spi || Math.random() < 0.5,
+        pin: !spi && Math.random() < 0.6,
+        spi: spi ? normRand(30, 42) : 0,
+        ha: ha,
+        deco: function(fa, fb) {
+          var s = "";
+          var bh = hei * 0.74;
+          s += line(
+            tf,
+            fpl(fa, [
+              [0, hei * 0.42],
+              [tw, hei * 0.42],
+            ]),
+            thin(0.4),
+          );
+          s += line(
+            tf,
+            fpl(fb, [
+              [0, hei * 0.42],
+              [td, hei * 0.42],
+            ]),
+            thin(0.35),
+          );
+          s += line(
+            tf,
+            fpl(fa, [
+              [0, bh - 1.5],
+              [tw, bh - 1.5],
+            ]),
+            thin(0.45),
+          );
+          s += line(
+            tf,
+            fpl(fb, [
+              [0, bh - 1.5],
+              [td, bh - 1.5],
+            ]),
+            thin(0.4),
+          );
+          var nl = randChoice([1, 2]);
+          for (var k = 0; k < nl; k++) {
+            var sx = nl == 1 ? tw / 2 : tw / 2 + (k - 0.5) * 4.2;
+            s += lancet(
+              tf,
+              fa,
+              sx,
+              bh,
+              nl == 1 ? 4 : 2.8,
+              hei * 0.86,
+              0.85,
+              0.4,
+            );
+            for (var j = 1; j < 4; j++) {
+              s += line(
+                tf,
+                fpl(fa, [
+                  [sx - 1.2, bh + j * 2],
+                  [sx + 1.2, bh + j * 2],
+                ]),
+                thin(0.15),
+              );
+            }
+          }
+          s += lancet(tf, fb, td / 2, bh, 2.2, hei * 0.86, 0.85, 0.42);
+          s += lancet(tf, fa, tw / 2, hei * 0.5, 2.6, hei * 0.58, 0.9, 0.35);
+          s += line(
+            tf,
+            fpl(fa, [
+              [1.6, 0],
+              [1.6, hei * 0.4],
+            ]),
+            thin(0.25),
+          );
+          s += line(
+            tf,
+            fpl(fa, [
+              [tw - 1.6, 0],
+              [tw - 1.6, hei * 0.4],
+            ]),
+            thin(0.25),
+          );
+          return s;
+        },
+      });
+
+      // nave
+      var nw = Math.max(2, Math.floor(Ln / 11));
+      canv += house(tf, gn, {
+        wcl: "wl",
+        roo: "rf",
+        mas: 2,
+        ha: ha,
+        decA: function(f) {
+          var s = "";
+          for (var k = 0; k < nw; k++) {
+            var sx = (Ln * (k + 0.5)) / nw;
+            s += lancet(tf, f, sx, H * 0.3, 4.4, H * 0.66, 0.85, 0.3);
+            s += line(
+              tf,
+              fpl(f, [
+                [sx - 2.8, H * 0.3 - 0.4],
+                [sx + 2.8, H * 0.3 - 0.4],
+              ]),
+              thin(0.4),
+            );
+          }
+          for (var k = 0; k <= nw; k++) {
+            if (k == 0 || k == nw) {
+              continue;
+            }
+            var bx = (Ln * k) / nw;
+            var bh = H * 0.62;
+            var b0 = add2(fp(f, bx - 1.3, 0), VB, -2.2);
+            var b1 = add2(fp(f, bx + 1.3, 0), VB, -2.2);
+            var w0 = fp(f, bx - 1.3, 0);
+            var side = [b0, w0, fp(f, bx - 1.3, bh + 2.5), lift(b0, bh)];
+            var front = [b0, b1, lift(b1, bh), lift(b0, bh)];
+            var top = [
+              lift(b0, bh),
+              lift(b1, bh),
+              fp(f, bx + 1.3, bh + 2.5),
+              fp(f, bx - 1.3, bh + 2.5),
+            ];
+            s +=
+              fill(tf, side, "wl") +
+              hatch(tf, side, { ang: ha, gap: 1, alp: [0.15, 0.25] });
+            s += fill(tf, front, "wl") + fill(tf, top, "wl");
+            s += edges(
+              tf,
+              [b1, lift(b1, bh), lift(b0, bh), b0],
+              false,
+              thin(0.5),
+            );
+            s += edges(
+              tf,
+              [lift(b1, bh), fp(f, bx + 1.3, bh + 2.5)],
+              false,
+              thin(0.4),
+            );
+            s += edges(
+              tf,
+              [lift(b0, bh), fp(f, bx - 1.3, bh + 2.5)],
+              false,
+              thin(0.4),
+            );
+          }
+          return s;
+        },
+      });
+      canv += cross(tf, lift(gn.ridge(0.6), 0), 2.6);
+
+      // chancel
+      canv += house(tf, gc, {
+        wcl: "wl",
+        roo: "rf",
+        mas: 2,
+        ha: ha,
+        decA: function(f) {
+          return lancet(tf, f, Lc * 0.5, Hc * 0.32, 3.8, Hc * 0.66, 0.85, 0.3);
+        },
+        decB: function(f) {
+          var s = "";
+          if (Math.random() < 0.5) {
+            s += lancet(tf, f, dc / 2, Hc * 0.3, 4.5, Hc * 0.82, 0.9, 0.32);
+            s += line(
+              tf,
+              fpl(f, [
+                [dc / 2, Hc * 0.3],
+                [dc / 2, Hc * 0.82],
+              ]),
+              thin(0.35),
+            );
+          } else {
+            for (var k = -1; k <= 1; k++) {
+              s += lancet(
+                tf,
+                f,
+                dc / 2 + k * 3,
+                Hc * 0.3,
+                2.2,
+                Hc * (k == 0 ? 0.86 : 0.76),
+                0.9,
+                0.32,
+              );
+            }
+          }
+          return s;
+        },
+      });
+      canv += cross(tf, lift(gc.ridge(0.6), 0), 2.2);
+
+      // porch
+      if (Math.random() < 0.75) {
+        var pw = normRand(13, 15);
+        var pd = normRand(6, 8);
+        var sp = Ln * normRand(0.6, 0.75);
+        if (sp + pw > Ln - 1) {
+          sp = Ln - pw - 1;
+        }
+        var op = add2(fp(gn.fa, sp, 0), VB, -pd);
+        var gp = gableGeo(op, VB, pd, VA, pw, H * 0.72, 8, 1, 1, -0.5);
+        canv += house(tf, gp, {
+          wcl: "wl",
+          roo: "rf",
+          mas: 2,
+          sha: "a",
+          ha: ha,
+          decB: function(f) {
+            var pts = [[pw / 2 - 4, 0]]
+              .concat(shiftPts(archPts(8, H * 0.5, 0.8, 5), pw / 2, 0))
+              .concat([[pw / 2 + 4, 0]]);
+            return (
+              dark(tf, fpl(f, pts), 0.4) +
+              line(tf, fpl(f, pts), { wid: 0.8, col: ink(0.55), ext: 0 })
+            );
+          },
+        });
+      }
+
+      // churchyard stones
+      var ng = randChoice([0, 2, 3, 4, 5]);
+      var gxs = [];
+      for (var k = 0; k < ng; k++) {
+        gxs.push([normRand(-wid * 0.42, wid * 0.42), normRand(3, 9)]);
+      }
+      gxs.sort(function(a, b) {
+        return a[1] - b[1];
+      });
+      for (var k = 0; k < ng; k++) {
+        var gx = gxs[k][0];
+        var gy = gxs[k][1];
+        var gw = normRand(3.4, 4.4);
+        var gh = normRand(6, 8);
+        var tl = normRand(-0.12, 0.12);
+        var pts = [
+          [-gw / 2, 0],
+          [-gw / 2, -gh + gw / 2],
+        ]
+          .concat(
+            archPts(gw, gh - gw / 2, 0.5, 3).map(function(v) {
+              return [v[0], -v[1]];
+            }),
+          )
+          .concat([
+            [gw / 2, -gh + gw / 2],
+            [gw / 2, 0],
+          ])
+          .map(function(v) {
+            return [gx + v[0] + v[1] * tl, gy + v[1]];
+          });
+        canv +=
+          fill(tf, pts, "st") +
+          line(tf, pts, { wid: 0.7, col: ink(0.5), ext: 0 });
+        canv += hatch(
+          tf,
+          pts.slice(Math.floor(pts.length / 2)).concat([[gx, gy]]),
+          { ang: ha, gap: 1, alp: [0.1, 0.2] },
+        );
+        canv += line(
+          tf,
+          [
+            [gx - 4, gy + 0.3],
+            [gx + 4, gy + 0.3],
+          ],
+          { wid: 0.8, col: ink(0.3), amp: 0.4 },
+        );
+      }
+      canv += groundLine(tf, [
+        add2(ot, VA, tw + 3),
+        on,
+        oc,
+        add2(oc, VB, dc + 3),
+      ]);
+      return canv;
+    };
+
+    // ---- castles ----
+
+    var roundTower = function(tf, cx, by, r, h, args) {
+      var args = args != undefined ? args : {};
+      var roof = args.roof != undefined ? args.roof : false;
+      var ruin = args.ruin != undefined ? args.ruin : false;
+      var ha = args.ha != undefined ? args.ha : -1;
+      var seed = args.seed != undefined ? args.seed : 0;
+      var e = 0.2;
+      var n = 16;
+      var canv = "";
+      var arc = function(y, rr, front, hs) {
+        var pts = [];
+        for (var i = 0; i <= n; i++) {
+          var t = front ? i / n : 1 - i / n;
+          var a = Math.PI * (1 - t);
+          var hh = hs ? hs[front ? i : n - i] : 0;
+          pts.push([
+            cx + rr * Math.cos(a),
+            y - hh + (front ? 1 : -1) * e * rr * Math.sin(a),
+          ]);
+        }
+        return pts;
+      };
+      var top = by - h;
+      var shade = function(poly0, ytop) {
+        var s = hatch(tf, poly0, {
+          ang: -Math.PI / 2 + 0.12 * ha,
+          gap: 1.5,
+          alp: [0.06, 0.15],
+          keep: function(p) {
+            return (p[0] - cx) * ha * -1 > r * 0.25;
+          },
+        });
+        s += hatch(tf, poly0, {
+          ang: -Math.PI / 2 + 0.12 * ha,
+          gap: 1.2,
+          alp: [0.08, 0.18],
+          keep: function(p) {
+            return (p[0] - cx) * ha * -1 > r * 0.65;
+          },
+        });
+        return s;
+      };
+      var courses = function(ytop) {
+        var s = "";
+        for (var y = by - 4; y > ytop + 3; y -= normRand(3.5, 5)) {
+          var a0 = normRand(0.05, 0.5);
+          var a1 = a0 + normRand(0.15, 0.45);
+          var pts = [];
+          for (var t = a0; t < Math.min(0.97, a1); t += 0.05) {
+            var a = Math.PI * (1 - t);
+            pts.push([cx + r * Math.cos(a), y + e * r * Math.sin(a)]);
+          }
+          if (pts.length > 2 && Math.random() < 0.7) {
+            s += line(tf, pts, thin(normRand(0.12, 0.25)));
+          }
+        }
+        return s;
+      };
+      var slits = function(ytop) {
+        var s = "";
+        var ns = Math.floor((by - ytop) / 16);
+        for (var i = 0; i < ns; i++) {
+          var a = Math.PI * normRand(0.3, 0.7);
+          var sx = cx + r * Math.cos(a);
+          var sy = by - 8 - i * 15 - normRand(0, 4) + e * r * Math.sin(a);
+          if (sy - 7 < ytop + 3) {
+            continue;
+          }
+          var w = 0.7 * Math.sin(a);
+          s += dark(
+            tf,
+            [
+              [sx - w, sy],
+              [sx + w, sy],
+              [sx + w, sy - 6],
+              [sx - w, sy - 6],
+            ],
+            0.55,
+          );
+        }
+        return s;
+      };
+
+      if (ruin) {
+        var hold = function(hs) {
+          var out = [];
+          for (var i = 0; i <= n; i++) {
+            out.push(hs[Math.floor(i / 2)]);
+          }
+          return out;
+        };
+        var hb = hold(ruinHeights(n / 2, h, h * 0.82, seed, 0.4)).map(
+          function(v, i, a) {
+            return (a[Math.max(0, i - 1)] + v + a[Math.min(n, i + 1)]) / 3;
+          },
+        );
+        var hf = hold(ruinHeights(n / 2, h * 0.9, h * 0.4, seed + 7, 0.35));
+        var bt = arc(
+          top,
+          r,
+          false,
+          hb.map(function(v) {
+            return v - h;
+          }),
+        );
+        var inner = bt.concat(arc(by, r, true));
+        canv += fill(tf, inner, "st");
+        canv += hatch(tf, inner, { ang: ha, gap: 1.5, alp: [0.1, 0.2] });
+        canv += courses(top - h * 0.1);
+        canv += line(tf, bt, { wid: 0.9, col: ink(0.45), ext: 0 });
+        var ft = arc(
+          top,
+          r,
+          true,
+          hf.map(function(v) {
+            return v - h;
+          }),
+        );
+        var shell = [[cx - r, by]]
+          .concat(ft)
+          .concat([[cx + r, by]])
+          .concat(arc(by, r, true).reverse());
+        canv += fill(tf, shell, "st");
+        canv += shade(shell);
+        canv += courses(
+          Math.max.apply(
+            null,
+            ft.map(function(v) {
+              return v[1];
+            }),
+          ),
+        );
+        canv += slits(
+          Math.max.apply(
+            null,
+            ft.map(function(v) {
+              return v[1];
+            }),
+          ),
+        );
+        canv += line(tf, ft, { wid: 1, col: ink(0.5), ext: 0 });
+        canv += line(
+          tf,
+          ft.map(function(v) {
+            return lift(v, 1.4);
+          }),
+          thin(0.3),
+        );
+        canv += line(
+          tf,
+          [
+            [cx - r, by],
+            [cx - r, Math.min(ft[0][1], bt[n][1])],
+          ],
+          { wid: 1.2, col: ink(0.5) },
+        );
+        canv += line(
+          tf,
+          [
+            [cx + r, by],
+            [cx + r, Math.min(ft[n][1], bt[0][1])],
+          ],
+          { wid: 1.2, col: ink(0.5) },
+        );
+        return canv;
+      }
+
+      var body = [
+        [cx - r, by],
+        [cx - r, top],
+      ]
+        .concat(arc(top, r, false).reverse())
+        .concat([
+          [cx + r, top],
+          [cx + r, by],
+        ])
+        .concat(arc(by, r, true).reverse());
+      canv += fill(tf, body, "st");
+      canv += shade(body);
+      canv += courses(top);
+      canv += slits(top);
+      canv += line(
+        tf,
+        [
+          [cx - r, by],
+          [cx - r, top],
+        ],
+        { wid: 1.2, col: ink(0.5) },
+      );
+      canv += line(
+        tf,
+        [
+          [cx + r, by],
+          [cx + r, top],
+        ],
+        { wid: 1.2, col: ink(0.5) },
+      );
+      if (roof) {
+        var ro = r + 1.8;
+        var hc = r * normRand(1.5, 2.1);
+        var ap = [cx, top - hc];
+        var base = arc(top + 1, ro, true);
+        var cone = [ap].concat(base.slice().reverse());
+        canv += fill(tf, cone, "rf");
+        for (var i = 1; i < n; i += 2) {
+          canv += line(
+            tf,
+            [base[i], lerp2(base[i], ap, normRand(0.6, 0.9))],
+            thin(0.18),
+          );
+        }
+        canv += hatch(tf, cone, {
+          ang: ha * 1.25,
+          gap: 1.4,
+          alp: [0.1, 0.22],
+          keep: function(p) {
+            return (p[0] - cx) * -ha > -ro * 0.1;
+          },
+        });
+        canv += line(tf, [base[0], ap, base[n]], { wid: 1.1, col: ink(0.5) });
+        canv += line(tf, base, { wid: 1.2, col: ink(0.5) });
+        canv += line(tf, [ap, lift(ap, 4)], {
+          wid: 0.8,
+          col: ink(0.55),
+          ext: 0,
+        });
+      } else {
+        // battlements around the rim
+        var rim = arc(top, r, true);
+        var bk = arc(top, r - 1.2, false);
+        var plat = bk.concat(rim);
+        canv += fill(tf, plat, "st");
+        canv += hatch(tf, plat, { ang: ha, gap: 1.3, alp: [0.08, 0.16] });
+        var bt = [];
+        for (var i = 0; i <= n; i++) {
+          var hh = Math.floor(i / 1.5) % 2 ? 2.6 : 0;
+          bt.push(lift(bk[i], 1.6 + hh));
+        }
+        canv += line(tf, bt, thin(0.35));
+        var crn = [];
+        for (var i = 0; i < n; i++) {
+          var hh = i % 2 ? 0 : 2.8;
+          crn.push(lift(rim[i], 2 + hh), lift(rim[i + 1], 2 + hh));
+        }
+        var band0 = [rim[0]]
+          .concat(crn)
+          .concat([rim[n]])
+          .concat(rim.slice().reverse());
+        canv += fill(tf, band0, "st");
+        canv += poly(crn.map(tf), { fil: "none", str: ink(0.5), wid: 0.9 });
+        canv += line(tf, rim, thin(0.35));
+      }
+      canv += line(tf, arc(by, r, true), { wid: 1.2, col: ink(0.4) });
+      return canv;
+    };
+
+    // the knoll a castle stands on: flat under the walls (hidden), rugged
+    // slopes either side and a rock face below the base
+    var crag = function(tf, w, h, seed) {
+      var n = 28;
+      var hw = w * 0.5;
+      var W = hw + h * 1.0;
+      var ft = 3;
+      var top = [];
+      for (var i = 0; i <= n; i++) {
+        var x = (i / n - 0.5) * 2 * W;
+        var u = Math.max(0, (Math.abs(x) - hw + 4) / (W - hw + 4));
+        var ns = Noise.noise(i * 0.4, seed, 5);
+        var y =
+          -(h + 2) * Math.pow(1 - u, 1.2) * (u > 0 ? 0.75 + 0.5 * ns : 1) +
+          Math.pow(u, 1.5) * ft;
+        top.push([x, Math.round(y / 1.5) * 1.5]);
+      }
+      top[0][1] = ft;
+      top[n][1] = ft;
+      // a lumpy underside, so on a narrow summit it reads as an outcrop
+      var bot = [];
+      for (var i = n - 1; i > 0; i--) {
+        var t = i / n;
+        bot.push([
+          (t - 0.5) * 2 * W,
+          ft +
+            h *
+              0.45 *
+              Math.sin(Math.PI * t) *
+              (0.6 + 0.8 * Noise.noise(t * 6, seed, 9)),
+        ]);
+      }
+      var canv = fill(tf, top.concat(bot), "rb");
+      canv += line(tf, top, { wid: 1.3, col: ink(0.42), amp: 0.6 });
+      for (var i = 0; i < bot.length - 2; i += 3) {
+        canv += line(tf, bot.slice(i, i + 3), {
+          wid: 0.9,
+          col: ink(normRand(0.12, 0.3)),
+          amp: 0.5,
+          ext: 0,
+          fun: function(x) {
+            return Math.sin(x * Math.PI);
+          },
+        });
+      }
+      for (var i = 0; i < 16; i++) {
+        var x = normRand(-W * 0.85, W * 0.85);
+        var j = Math.min(n - 1, Math.floor(((x + W) / (2 * W)) * n));
+        var y0 = Math.max(top[j][1], -h + 1);
+        var y1 = y0 + normRand(0.4, 0.9) * (ft * 0.5 - y0);
+        canv += line(
+          tf,
+          [
+            [x, y0],
+            [x + normRand(-2, 2), (y0 + y1) / 2],
+            [x + normRand(-3, 3), y1],
+          ],
+          {
+            wid: 0.9,
+            col: ink(normRand(0.15, 0.35)),
+            amp: 0.5,
+            ext: 0,
+            fun: function(x) {
+              return Math.sin(x * Math.PI);
+            },
+          },
+        );
+      }
+      for (var i = 0; i < 10; i++) {
+        var x = normRand(-W * 0.8, W * 0.8);
+        var y = -h * normRand(0.15, 0.8);
+        var l = normRand(5, 14);
+        if (inside([x, y], top) && inside([x + l, y], top)) {
+          canv += line(
+            tf,
+            [
+              [x, y],
+              [x + l, y + normRand(-1, 1)],
+            ],
+            thin(normRand(0.15, 0.3)),
+          );
+        }
+      }
+      canv += hatch(tf, top.concat(bot), {
+        ang: 1.15,
+        gap: 2.2,
+        alp: [0.05, 0.12],
+        den: 0.7,
+        cut: 0.3,
+      });
+      return canv;
+    };
+    var boulders = function(tf, x0, x1, y, n, sz) {
+      var canv = "";
+      for (var i = 0; i < n; i++) {
+        var cx = normRand(x0, x1);
+        var w = normRand(0.6, 1.2) * sz;
+        var h = w * normRand(0.45, 0.7);
+        var pts = [];
+        for (var j = 0; j <= 8; j++) {
+          var a = Math.PI * (1 - j / 8);
+          var rr = normRand(0.85, 1.1);
+          pts.push([cx + Math.cos(a) * w * rr, y - Math.sin(a) * h * rr]);
+        }
+        canv += fill(tf, pts, "rb");
+        canv += line(tf, pts, { wid: 1, col: ink(0.45), amp: 0.4, ext: 0 });
+        canv += hatch(tf, pts, {
+          ang: 1.1,
+          gap: 1.2,
+          alp: [0.1, 0.22],
+          keep: function(p) {
+            return p[0] > cx;
+          },
+        });
+      }
+      return canv;
+    };
+
+    this.castle = function(xoff, yoff, seed, args) {
+      var args = args != undefined ? args : {};
+      var wid = args.wid != undefined ? args.wid : normRand(85, 140);
+      var hei = args.hei != undefined ? args.hei : normRand(62, 85);
+      var ruin = args.ruin != undefined ? args.ruin : false;
+      var cnt = args.cnt != undefined ? args.cnt : randChoice([1, 2, 2, 3, 3]);
+      var cra = args.cra != undefined ? args.cra : true;
+      var fli = args.fli != undefined ? args.fli : Math.random() < 0.5;
+      var sca = args.sca != undefined ? args.sca : 1;
+
+      seed = seed != undefined ? seed : 0;
+      var dir = fli ? -1 : 1;
+      var tf = mover(xoff, yoff, dir, sca);
+      var ha = -dir;
+      var canv = "";
+      var crh = cra ? normRand(16, 26) : 0;
+      var by = -crh + 2;
+      var hw = hei * normRand(0.42, 0.55);
+      var dv = [3.4, -1.6];
+
+      if (cra) {
+        canv += crag(tf, wid, crh, seed);
+      }
+
+      var tws = [];
+      var mk = function(x, h, r, keep) {
+        return {
+          x: x,
+          h: h,
+          r: r,
+          keep: keep,
+          sq: Math.random() < (keep ? 0.7 : 0.4),
+        };
+      };
+      if (cnt == 1) {
+        var kr = normRand(13, 16);
+        tws.push(mk(-wid / 2 + kr * 1.2, hei, kr, false));
+        tws[0].sq = Math.random() < 0.65;
+      } else {
+        var r0 = normRand(9, 12);
+        var r1 = normRand(9, 12);
+        tws.push(mk(-wid / 2 + r0, hei * normRand(0.72, 0.9), r0, false));
+        tws.push(mk(wid / 2 - r1, hei * normRand(0.72, 0.9), r1, false));
+        if (cnt == 3) {
+          tws.push(
+            mk(normRand(-0.15, 0.15) * wid, hei, normRand(14, 17), true),
+          );
+        }
+      }
+
+      var drawTower = function(t) {
+        if (t.sq) {
+          var la = t.r * 1.7;
+          var lb = t.r * 0.75;
+          var o = [t.x + (la * -VA[0] - lb * VB[0]) / 2, by + 1];
+          return squareTower(tf, o, la, lb, t.h, {
+            bat: true,
+            pin: false,
+            ha: ha,
+            mas: 2,
+            cls: "st",
+            ruin: ruin,
+            seed: seed + t.x,
+            deco: function(fa, fb, ma, mb) {
+              var s = "";
+              for (var k = 0; k < 3; k++) {
+                var hy = 8 + k * 14;
+                if (hy + 8 > ma - 3) {
+                  break;
+                }
+                var sx = la * normRand(0.3, 0.7);
+                s +=
+                  k == 1 && !ruin
+                    ? lancet(tf, fa, sx, hy, 3, hy + 3.5, 0.5, 0.45)
+                    : dark(
+                        tf,
+                        fpl(fa, [
+                          [sx - 0.6, hy],
+                          [sx + 0.6, hy],
+                          [sx + 0.6, hy + 6],
+                          [sx - 0.6, hy + 6],
+                        ]),
+                        0.55,
+                      );
+              }
+              if (mb > 16) {
+                s += dark(
+                  tf,
+                  fpl(fb, [
+                    [lb / 2 - 0.5, mb * 0.5],
+                    [lb / 2 + 0.5, mb * 0.5],
+                    [lb / 2 + 0.5, mb * 0.5 + 5],
+                    [lb / 2 - 0.5, mb * 0.5 + 5],
+                  ]),
+                  0.5,
+                );
+              }
+              return s;
+            },
+          });
+        }
+        return roundTower(tf, t.x, by + 1, t.r, t.h, {
+          roof: !ruin && !t.keep && Math.random() < 0.45,
+          ruin: ruin,
+          ha: ha,
+          seed: seed + t.x,
+        });
+      };
+
+      for (var i = 0; i < tws.length; i++) {
+        if (tws[i].keep) {
+          canv += drawTower(tws[i]);
+        }
+      }
+
+      // curtain wall
+      var x0 = tws[0].x;
+      var x1 = cnt == 1 ? wid / 2 : tws[1].x;
+      if (cnt == 1) {
+        hw *= 0.75;
+      }
+      // gate sized to the wall
+      var gs = Math.max(8, Math.min(15, hw - 12));
+      var gw = gs < 12 ? 10 : 13;
+      var nw = Math.max(4, Math.round((x1 - x0) / 3));
+      var hs = [];
+      if (ruin) {
+        hs = ruinHeights(nw, hw, 0, seed + 11, 0.12);
+      } else {
+        for (var i = 0; i <= nw; i++) {
+          hs.push(hw);
+        }
+      }
+      var wtop = ruin
+        ? brokenTop([x0, by], [x1, by], hs)
+        : [
+            [x0, by - hw],
+            [x1, by - hw],
+          ];
+      var wall = [[x0, by]].concat(wtop).concat([[x1, by]]);
+      var walk = ruin
+        ? shiftPts(wall, dv[0], dv[1] + 1)
+        : shiftPts(
+            [
+              [x0, by],
+              [x0, by - hw + 2],
+              [x1, by - hw + 2],
+              [x1, by],
+            ],
+            dv[0],
+            dv[1],
+          );
+      canv += fill(tf, walk, "st");
+      canv += hatch(tf, walk, { ang: ha, gap: 1.4, alp: [0.1, 0.22] });
+      canv += line(tf, walk.slice(1, walk.length - 1), thin(0.35));
+      canv += fill(tf, wall, "st");
+      var wshape = wall.map(function(v) {
+        return [v[0], -v[1]];
+      });
+      var gx = (x0 + x1) / 2 + normRand(-0.1, 0.1) * (x1 - x0);
+      var gate = [];
+      if (!ruin) {
+        if (cnt == 1) {
+          gx = x0 + (x1 - x0) * normRand(0.55, 0.75);
+        }
+        gate = [[gx - gw / 2, -by]]
+          .concat(shiftPts(archPts(gw, -by + gs, 0.7, 6), gx, 0))
+          .concat([[gx + gw / 2, -by]]);
+      }
+      canv += masonry(tf, FLAT, wshape, {
+        sty: 2,
+        den: 0.35,
+        alp: 0.2,
+        ch: 4,
+        excl: gate.length ? [offset(gate, 3)] : [],
+      });
+      canv += hatch(tf, wall, {
+        ang: ha,
+        gap: 2.2,
+        alp: [0.04, 0.1],
+        den: 0.5,
+      });
+      if (ruin) {
+        canv += line(tf, wtop, { wid: 1, col: ink(0.5), ext: 0 });
+      } else {
+        var crn = [];
+        var nm = Math.round((x1 - x0) / 2.8);
+        for (var i = 0; i < nm; i++) {
+          var hh = i % 2 ? 0 : 2.8;
+          crn.push(
+            [x0 + ((x1 - x0) * i) / nm, by - hw - hh],
+            [x0 + ((x1 - x0) * (i + 1)) / nm, by - hw - hh],
+          );
+        }
+        canv += fill(
+          tf,
+          [[x0, by - hw + 1]].concat(crn).concat([[x1, by - hw + 1]]),
+          "st",
+        );
+        canv += poly(crn.map(tf), { fil: "none", str: ink(0.5), wid: 0.9 });
+        canv += line(
+          tf,
+          [
+            [x0, by - hw + 1.5],
+            [x1, by - hw + 1.5],
+          ],
+          thin(0.3),
+        );
+      }
+      for (var x = x0 + 8; x < x1 - 8; x += normRand(12, 20)) {
+        var k = Math.min(hw, hs[Math.round(((x - x0) / (x1 - x0)) * nw)]);
+        if (k > 16 && Math.abs(x - gx) > 12) {
+          var sy = by - k * normRand(0.4, 0.6);
+          canv += dark(
+            tf,
+            [
+              [x - 0.6, sy],
+              [x + 0.6, sy],
+              [x + 0.6, sy - 5.5],
+              [x - 0.6, sy - 5.5],
+            ],
+            0.5,
+          );
+        }
+      }
+      if (gate.length) {
+        var gp = gate.map(function(v) {
+          return [v[0], -v[1]];
+        });
+        canv += dark(tf, gp, 0.22);
+        // portcullis
+        for (var x = gx - gw / 2 + 1.5; x <= gx + gw / 2 - 1.4; x += 2.5) {
+          var dx = (x - gx) / (gw / 2);
+          var yt = by - gs - Math.sqrt(Math.max(0, 1 - dx * dx)) * gw * 0.45;
+          canv += line(
+            tf,
+            [
+              [x, by],
+              [x, yt],
+            ],
+            { wid: 0.6, col: ink(0.45), ext: 0, amp: 0.15 },
+          );
+        }
+        for (var y = by - 3; y > by - gs - 3; y -= 3) {
+          canv += line(
+            tf,
+            [
+              [gx - gw / 2 + 0.5, y],
+              [gx + gw / 2 - 0.5, y],
+            ],
+            { wid: 0.5, col: ink(0.4), ext: 0, amp: 0.15 },
+          );
+        }
+        var ring = offset(gate.slice(1, gate.length - 1), 3).map(function(v) {
+          return [v[0], -v[1]];
+        });
+        canv += line(tf, gp, { wid: 1, col: ink(0.55), ext: 0 });
+        canv += line(tf, ring, thin(0.35));
+      }
+      canv += line(
+        tf,
+        [
+          [x0, by],
+          [x1, by],
+        ],
+        { wid: 1, col: ink(0.4) },
+      );
+
+      for (var i = 0; i < tws.length; i++) {
+        if (!tws[i].keep) {
+          canv += drawTower(tws[i]);
+        }
+      }
+      if (ruin) {
+        canv += rubble(tf, x0 + 4, x1 - 4, by + 2, Math.round(wid / 6), 4, 4);
+        for (var i = 0; i < 3; i++) {
+          var ix = normRand(x0, x1);
+          canv += ivy(
+            tf,
+            [ix, by],
+            [ix + normRand(-6, 6), by - hw * normRand(0.3, 0.7)],
+            22,
+            4,
+          );
+        }
+      }
+      if (cra) {
+        canv += boulders(
+          tf,
+          -wid * 0.55,
+          wid * 0.55,
+          by + crh * 0.6,
+          randChoice([1, 2, 3]),
+          6,
+        );
+      }
+      canv += tufts(
+        tf,
+        [-wid / 2, by + 1],
+        [wid / 2, by + 1],
+        Math.round(wid / 10),
+      );
+      return canv;
+    };
+
+    // ---- windmills ----
+
+    var sails = function(tf, hub, R, ang, fs, sk, cloth) {
+      var canv = "";
+      var P = function(x, y) {
+        return [hub[0] + x * fs, hub[1] + y + x * sk];
+      };
+      for (var k = 0; k < 4; k++) {
+        var a = ang + (k * Math.PI) / 2;
+        var d = [Math.cos(a), Math.sin(a)];
+        var nn = [-Math.sin(a), Math.cos(a)];
+        var Q = function(r, w) {
+          return P(d[0] * r + nn[0] * w, d[1] * r + nn[1] * w);
+        };
+        var r0 = R * 0.2;
+        var sw = R * 0.22;
+        var w0 = -sw * 0.28;
+        var w1 = sw * 0.72;
+        if (cloth[k] > 0) {
+          var rc = r0 + (R - r0) * cloth[k];
+          var cq = [Q(r0, w0), Q(rc, w0), Q(rc, w1), Q(r0, w1)];
+          canv += fill(tf, cq, "sl");
+          canv += hatch(tf, cq, {
+            ang: a + Math.PI / 2,
+            gap: 1.6,
+            alp: [0.06, 0.14],
+          });
+          canv += line(tf, [Q(rc, w0), Q(rc, w1)], thin(0.45));
+        }
+        canv += line(tf, [Q(-R * 0.04, 0), Q(R * 1.03, 0)], {
+          wid: 1.1,
+          col: ink(0.55),
+          ext: 0,
+        });
+        canv += line(tf, [Q(r0, w1), Q(R, w1)], {
+          wid: 0.5,
+          col: ink(0.45),
+          ext: 0,
+          out: 0.6,
+        });
+        canv += line(tf, [Q(r0, w0), Q(R, w0)], {
+          wid: 0.4,
+          col: ink(0.35),
+          ext: 0,
+          out: 0.5,
+        });
+        var nb = Math.round((R - r0) / 4.2);
+        for (var j = 0; j <= nb; j++) {
+          var r = r0 + ((R - r0) * j) / nb;
+          canv += line(tf, [Q(r, w0), Q(r, w1)], {
+            wid: 0.3,
+            col: ink(0.32),
+            ext: 0,
+            amp: 0.12,
+            out: 0.4,
+          });
+        }
+      }
+      var hb = [];
+      for (var i = 0; i < 8; i++) {
+        hb.push(
+          P(
+            Math.cos((i * Math.PI) / 4) * 1.8,
+            Math.sin((i * Math.PI) / 4) * 1.8,
+          ),
+        );
+      }
+      canv += dark(tf, hb, 0.6);
+      return canv;
+    };
+
+    this.windmill = function(xoff, yoff, seed, args) {
+      var args = args != undefined ? args : {};
+      var hei = args.hei != undefined ? args.hei : normRand(48, 60);
+      var typ =
+        args.typ != undefined
+          ? args.typ
+          : randChoice(["tower", "tower", "post"]);
+      var ang =
+        args.ang != undefined ? args.ang : Math.random() * Math.PI * 0.5;
+      var fli = args.fli != undefined ? args.fli : Math.random() < 0.5;
+      var sca = args.sca != undefined ? args.sca : 1;
+
+      seed = seed != undefined ? seed : 0;
+      var dir = fli ? -1 : 1;
+      var tf = mover(xoff, yoff, dir, sca);
+      var ha = -dir;
+      var canv = "";
+      var cloth = [0, 1, 2, 3].map(function() {
+        return Math.random() < 0.35 ? normRand(0.5, 1) : 0;
+      });
+
+      if (typ == "post") {
+        var hp = hei * 0.36;
+        var bw = hei * 0.3;
+        var bd = hei * 0.36;
+        var bh = hei * 0.48;
+        var o = [(bw * -VA[0] - bd * VB[0]) / 2 - 1, -hp + 2];
+        var fa = { o: o, u: VA };
+        var fb = { o: o, u: VB };
+        // trestle and post
+        var pc = add2(add2(o, VA, bw / 2), VB, bd / 2);
+        var pb = [pc[0], 0];
+        canv += line(tf, [lift(pb, 2), pc], { wid: 1.8, col: ink(0.5) });
+        canv += line(tf, [[pb[0] - 6.5, -2], lift(pb, hp * 0.6)], {
+          wid: 1,
+          col: ink(0.45),
+        });
+        canv += line(tf, [[pb[0] + 6.5, -2.5], lift(pb, hp * 0.6)], {
+          wid: 1,
+          col: ink(0.45),
+        });
+        canv += line(tf, [[pb[0] - 2.5, -1], lift(pb, hp * 0.5)], {
+          wid: 0.8,
+          col: ink(0.35),
+        });
+        canv += line(
+          tf,
+          [
+            [pb[0] - 7.5, -2],
+            [pb[0] + 7.5, -2.6],
+          ],
+          { wid: 1.2, col: ink(0.45) },
+        );
+        for (var k = -1; k <= 1; k += 2) {
+          var bp = [
+            [pb[0] + k * 6.5 - 1.5, 0],
+            [pb[0] + k * 6.5 + 1.5, 0],
+            [pb[0] + k * 6.5 + 1.5, -2.2],
+            [pb[0] + k * 6.5 - 1.5, -2.2],
+          ];
+          canv += fill(tf, bp, "wl") + edges(tf, bp, true, thin(0.45));
+        }
+        // body
+        var top = function(s, w) {
+          return Math.sin((s / w) * Math.PI) * 2.2;
+        };
+        var wa = [fp(fa, 0, 0), fp(fa, bw, 0)];
+        for (var i = 0; i <= 8; i++) {
+          wa.push(fp(fa, bw * (1 - i / 8), bh + top(bw * (1 - i / 8), bw)));
+        }
+        var wb = [fp(fb, 0, 0), fp(fb, bd, 0), fp(fb, bd, bh), fp(fb, 0, bh)];
+        var rf = [];
+        for (var i = 0; i <= 8; i++) {
+          rf.push(fp(fa, (bw * i) / 8, bh + top((bw * i) / 8, bw)));
+        }
+        rf = rf.concat(
+          rf
+            .slice()
+            .reverse()
+            .map(function(v) {
+              return add2(v, VB, bd);
+            }),
+        );
+        // ladder and tailpole at the back
+        var lt = add2(fp(fb, bd, 0), VA, bw * 0.35);
+        var lf = [lt[0] + 12, -2];
+        var side = unit([lf[1] - lt[1], lt[0] - lf[0]]);
+        canv += line(
+          tf,
+          [add2(fp(fb, bd, 0), VA, bw * 0.7), [lt[0] + 17, -4]],
+          { wid: 1.2, col: ink(0.45) },
+        );
+        canv += line(tf, [lt, lf], { wid: 0.7, col: ink(0.5), ext: 0 });
+        canv += line(tf, [add2(lt, side, 2), add2(lf, side, 2)], {
+          wid: 0.7,
+          col: ink(0.5),
+          ext: 0,
+        });
+        for (var k = 1; k < 7; k++) {
+          var rp = lerp2(lt, lf, k / 7);
+          canv += line(tf, [rp, add2(rp, side, 2)], {
+            wid: 0.4,
+            col: ink(0.45),
+            ext: 0,
+            amp: 0.1,
+          });
+        }
+        canv += fill(tf, rf, "rf");
+        canv += hatch(tf, rf, { ang: ha * 1.2, gap: 2.4, alp: [0.05, 0.11] });
+        canv += line(tf, rf.slice(9), thin(0.4));
+        canv += fill(tf, wb, "wl");
+        canv += hatch(tf, wb, { ang: ha, gap: 1.6, alp: [0.08, 0.18] });
+        for (var s = 2.5; s < bh; s += 2.5) {
+          canv += line(
+            tf,
+            fpl(fb, [
+              [0, s],
+              [bd, s],
+            ]),
+            thin(0.15),
+          );
+        }
+        canv += fill(tf, wa, "wl");
+        for (var s = 2.5; s < bh; s += 2.5) {
+          canv += line(
+            tf,
+            fpl(fa, [
+              [0, s],
+              [bw, s],
+            ]),
+            thin(0.13),
+          );
+        }
+        canv += edges(
+          tf,
+          [wa[1], wa[0], fp(fb, bd, 0), fp(fb, bd, bh)],
+          false,
+          { wid: 1.1, col: ink(0.5) },
+        );
+        canv += line(tf, [wa[0], fp(fa, 0, bh)], { wid: 1.1, col: ink(0.5) });
+        canv += line(tf, [wa[1], wa[2]], { wid: 1, col: ink(0.45) });
+        canv += line(tf, wa.slice(2), { wid: 1.1, col: ink(0.5), ext: 0 });
+        canv += casement(tf, fa, bw * 0.5, bh * 0.35, 3, 3.5, ha);
+        canv += sails(
+          tf,
+          fp(fa, bw * 0.5, bh * 0.82),
+          hei * normRand(0.7, 0.8),
+          ang,
+          normRand(0.8, 0.95),
+          0.06,
+          cloth,
+        );
+        return canv;
+      }
+
+      var rb = hei * 0.23;
+      var rt = hei * 0.15;
+      var e = 0.18;
+      var n = 12;
+      var arc = function(y, r) {
+        var pts = [];
+        for (var i = 0; i <= n; i++) {
+          var a = Math.PI * (1 - i / n);
+          pts.push([r * Math.cos(a), y + e * r * Math.sin(a)]);
+        }
+        return pts;
+      };
+      var body = [
+        [-rb, 0],
+        [-rt, -hei],
+        [rt, -hei],
+        [rb, 0],
+      ].concat(arc(0, rb).reverse());
+      canv += fill(tf, body, "wl");
+      var side = function(y) {
+        return rt + (rb - rt) * (1 + y / hei);
+      };
+      canv += hatch(tf, body, {
+        ang: -Math.PI / 2 + 0.1 * ha,
+        gap: 1.5,
+        alp: [0.06, 0.15],
+        keep: function(p) {
+          return -p[0] * ha > side(p[1]) * 0.3;
+        },
+      });
+      canv += hatch(tf, body, {
+        ang: -Math.PI / 2 + 0.1 * ha,
+        gap: 1.2,
+        alp: [0.08, 0.2],
+        keep: function(p) {
+          return -p[0] * ha > side(p[1]) * 0.7;
+        },
+      });
+      for (var y = -4; y > -hei + 3; y -= normRand(3.5, 5)) {
+        if (Math.random() < 0.6) {
+          var r = side(y);
+          var t0 = normRand(0.05, 0.5);
+          var pts = [];
+          for (
+            var t = t0;
+            t < Math.min(0.95, t0 + normRand(0.2, 0.5));
+            t += 0.06
+          ) {
+            var a = Math.PI * (1 - t);
+            pts.push([r * Math.cos(a), y + e * r * Math.sin(a)]);
+          }
+          if (pts.length > 2) {
+            canv += line(tf, pts, thin(normRand(0.1, 0.22)));
+          }
+        }
+      }
+      canv += edges(
+        tf,
+        [
+          [-rb, 0],
+          [-rt, -hei],
+        ],
+        false,
+        { wid: 1.2, col: ink(0.5) },
+      );
+      canv += edges(
+        tf,
+        [
+          [rb, 0],
+          [rt, -hei],
+        ],
+        false,
+        { wid: 1.2, col: ink(0.5) },
+      );
+      canv += line(tf, arc(0, rb), { wid: 1.1, col: ink(0.45) });
+      // door and windows
+      var dpts = [
+        [-3.2, 0 + e * rb],
+        [-3.2, -9 + e * rb],
+      ]
+        .concat(
+          archPts(6.4, 9 - e * rb, 0.5, 4).map(function(v) {
+            return [v[0], -v[1]];
+          }),
+        )
+        .concat([
+          [3.2, -9 + e * rb],
+          [3.2, e * rb],
+        ]);
+      canv +=
+        dark(tf, dpts, 0.35) +
+        line(tf, dpts, { wid: 0.8, col: ink(0.55), ext: 0 });
+      for (var k = 0; k < 3; k++) {
+        var wy = -hei * (0.35 + k * 0.22);
+        var wx = side(wy) * normRand(-0.4, 0.2);
+        canv += casement(tf, FLAT, wx, -wy - 1, 2.6, 3.4, ha);
+      }
+      // stage
+      if (Math.random() < 0.5) {
+        var sy = -hei * 0.38;
+        var sr = side(sy) + 4;
+        var st = arc(sy, sr);
+        var sb = arc(sy + 1.2, sr);
+        canv += fill(tf, st.concat(sb.slice().reverse()), "wl");
+        canv += line(tf, st, thin(0.5)) + line(tf, sb, thin(0.4));
+        for (var i = 0; i <= n; i += 2) {
+          canv += line(tf, [st[i], lift(st[i], 4)], thin(0.35));
+        }
+        canv += line(
+          tf,
+          st.map(function(v) {
+            return lift(v, 4);
+          }),
+          thin(0.35),
+        );
+        canv += line(tf, [sb[2], [sb[2][0] * 0.7, sb[2][1] + 7]], thin(0.3));
+        canv += line(
+          tf,
+          [sb[n - 2], [sb[n - 2][0] * 0.7, sb[n - 2][1] + 7]],
+          thin(0.3),
+        );
+      }
+      // cap
+      var cw = rt + 2.2;
+      var chh = hei * normRand(0.16, 0.22);
+      var cap = [[-cw, -hei + 1]];
+      for (var i = 0; i <= 10; i++) {
+        var t = i / 10;
+        var a = Math.PI * (1 - t);
+        var y = -hei - Math.pow(Math.sin(a), 0.8) * chh;
+        cap.push([Math.cos(a) * cw * (1 - 0.15 * Math.sin(a)), y]);
+      }
+      cap.push([cw, -hei + 1]);
+      cap = cap.concat(arc(-hei + 1, cw).reverse());
+      canv += fill(tf, cap, "rf");
+      canv += hatch(tf, cap, {
+        ang: ha * 1.2,
+        gap: 1.4,
+        alp: [0.08, 0.2],
+        keep: function(p) {
+          return -p[0] * ha > -1;
+        },
+      });
+      for (var i = 2; i < 10; i += 2) {
+        canv += line(
+          tf,
+          [cap[i], [cap[i][0] * 0.4, -hei - chh * 0.9]],
+          thin(0.2),
+        );
+      }
+      canv += line(tf, cap.slice(0, 13), { wid: 1.1, col: ink(0.5), ext: 0 });
+      canv += line(tf, arc(-hei + 1, cw), thin(0.45));
+      canv += line(
+        tf,
+        [
+          [0, -hei - chh],
+          [0, -hei - chh - 3.5],
+        ],
+        { wid: 0.9, col: ink(0.55), ext: 0 },
+      );
+      // fantail on the far side
+      var fx = -cw - 3;
+      var fy = -hei - chh * 0.5;
+      canv += line(
+        tf,
+        [
+          [-cw + 1, -hei + 1],
+          [fx, fy],
+        ],
+        thin(0.4),
+      );
+      for (var i = 0; i < 6; i++) {
+        var a = (i * Math.PI) / 3;
+        canv += line(
+          tf,
+          [
+            [fx, fy],
+            [fx + Math.cos(a) * 0.9, fy + Math.sin(a) * 3.2],
+          ],
+          thin(0.4),
+        );
+      }
+      canv += sails(
+        tf,
+        [cw * 0.7, -hei - chh * 0.45],
+        hei * normRand(0.72, 0.85),
+        ang,
+        normRand(0.55, 0.85),
+        0,
+        cloth,
+      );
+      canv += groundLine(tf, [
+        [-rb - 8, 1],
+        [rb + 8, 1],
+      ]);
+      return canv;
+    };
+
+    // ---- bridges ----
+
+    var segArc = function(w, rise, n) {
+      var R = (w * w) / 4 / (2 * rise) + rise / 2;
+      var cy = rise - R;
+      var a1 = Math.atan2(Math.max(0, -cy), w / 2);
+      var a0 = Math.PI - a1;
+      var pts = [];
+      for (var i = 0; i <= n; i++) {
+        var a = a0 + ((a1 - a0) * i) / n;
+        pts.push([R * Math.cos(a), cy + R * Math.sin(a)]);
+      }
+      return { pts: pts, R: R, cy: cy, a0: a0, a1: a1 };
+    };
+
+    this.bridge = function(xoff, yoff, seed, args) {
+      var args = args != undefined ? args : {};
+      var len = args.len != undefined ? args.len : normRand(80, 160);
+      var arc =
+        args.arc != undefined
+          ? args.arc
+          : Math.max(1, Math.min(4, Math.round(len / normRand(45, 60))));
+      var dw = args.dw != undefined ? args.dw : normRand(10, 13);
+      var tra = args.tra != undefined ? args.tra : randChoice([0, 1, 1, 2]);
+      var rnd = args.rnd != undefined ? args.rnd : Math.random() < 0.6;
+      var fli = args.fli != undefined ? args.fli : Math.random() < 0.5;
+      var sca = args.sca != undefined ? args.sca : 1;
+
+      seed = seed != undefined ? seed : 0;
+      arc = Math.max(1, Math.min(arc, Math.floor(len / 26)));
+      var dir = fli ? -1 : 1;
+      var tf = mover(xoff, yoff, dir, sca);
+      var ha = -dir;
+      var canv = "";
+      var dv = [dw * 0.38, -dw * 0.48];
+      var ab = arc == 1 ? len * 0.15 : len * 0.08;
+      var pw = arc == 1 ? 0 : normRand(6, 9);
+      var avail = len - 2 * ab - (arc - 1) * pw;
+      var wts = [];
+      var sum = 0;
+      for (var i = 0; i < arc; i++) {
+        wts.push(
+          1 +
+            0.45 * Math.cos((Math.PI * (i - (arc - 1) / 2)) / Math.max(1, arc)),
+        );
+        sum += wts[i];
+      }
+      var spr = normRand(2, 5);
+      var ring = normRand(4, 5.5);
+      var hump =
+        arc == 1 ? len * normRand(0.1, 0.15) : len * normRand(0.03, 0.07);
+      var arches = [];
+      var x = -len / 2 + ab;
+      for (var i = 0; i < arc; i++) {
+        var s = (avail * wts[i]) / sum;
+        var rise = rnd ? s / 2 : s * normRand(0.3, 0.4);
+        arches.push({
+          cx: x + s / 2,
+          s: s,
+          rise: rise,
+          a: segArc(s, rise, 14),
+        });
+        x += s + pw;
+      }
+      var D0 = 0;
+      for (var i = 0; i < arc; i++) {
+        var ai = arches[i];
+        var need =
+          spr +
+          ai.rise +
+          ring +
+          3 -
+          hump * (1 - Math.pow((2 * ai.cx) / len, 2));
+        D0 = Math.max(D0, need);
+      }
+      var deck = function(x) {
+        var t = Math.max(-1, Math.min(1, (2 * x) / len));
+        return -(D0 + hump * (1 - t * t));
+      };
+      var pp = normRand(10, 12);
+      var wf = normRand(9, 14);
+
+      var top = [];
+      for (var i = 0; i <= 6; i++) {
+        var t = i / 6;
+        top.push([
+          -len / 2 - wf * (1 - t),
+          -1 +
+            (deck(-len / 2) - pp + 1) *
+              Math.pow(Math.sin((t * Math.PI) / 2), 1.5),
+        ]);
+      }
+      for (var x = -len / 2 + 4; x < len / 2; x += 4) {
+        top.push([x, deck(x) - pp]);
+      }
+      for (var i = 0; i <= 6; i++) {
+        var t = 1 - i / 6;
+        top.push([
+          len / 2 + wf * (1 - t),
+          -1 +
+            (deck(len / 2) - pp + 1) *
+              Math.pow(Math.sin((t * Math.PI) / 2), 1.5),
+        ]);
+      }
+      var opening = function(ai) {
+        return [
+          [ai.cx - ai.s / 2, 0.5],
+          [ai.cx - ai.s / 2, -spr],
+        ]
+          .concat(
+            ai.a.pts.map(function(v) {
+              return [ai.cx + v[0], -spr - v[1]];
+            }),
+          )
+          .concat([
+            [ai.cx + ai.s / 2, -spr],
+            [ai.cx + ai.s / 2, 0.5],
+          ]);
+      };
+      var face = top.slice();
+      for (var i = arc - 1; i >= 0; i--) {
+        face = face.concat(opening(arches[i]).reverse());
+      }
+      face.push([-len / 2 - wf, 0.5]);
+      var bface = shiftPts(face, dv[0], dv[1]);
+
+      // far side, seen through the arches
+      canv += fill(tf, bface, "st");
+      canv += line(tf, bface.slice(0, top.length), thin(0.35));
+      for (var i = 0; i < arc; i++) {
+        var op = opening(arches[i]);
+        canv += hatch(tf, op, {
+          ang: ha * 1.35,
+          gap: 1.2,
+          alp: [0.12, 0.26],
+          keep: function(p) {
+            return inside(p, bface);
+          },
+        });
+        canv += line(
+          tf,
+          shiftPts(op, dv[0], dv[1]).slice(1, op.length - 1),
+          thin(0.35),
+        );
+      }
+      // travellers on the deck
+      var tl = [];
+      for (var i = 0; i < tra; i++) {
+        tl.push(normRand(-len * 0.32, len * 0.32));
+      }
+      tl.sort(function(a, b) {
+        return a - b;
+      });
+      for (var i = 0; i < tl.length; i++) {
+        var gp = tf([tl[i] + dv[0] * 0.4, deck(tl[i]) + dv[1] * 0.4]);
+        canv += Man.man(gp[0], gp[1], {
+          sca: 0.42 * sca,
+          fli: randChoice([true, false]),
+          hat: Europe.hat,
+        });
+      }
+      // near face
+      canv += fill(tf, face, "st");
+      var fshape = face.map(function(v) {
+        return [v[0], -v[1]];
+      });
+      var rings = [];
+      for (var i = 0; i < arc; i++) {
+        var ai = arches[i];
+        var ex = [];
+        var R2 = ai.a.R + ring;
+        for (var j = 0; j <= 14; j++) {
+          var a = ai.a.a0 + ((ai.a.a1 - ai.a.a0) * j) / 14;
+          ex.push([ai.cx + R2 * Math.cos(a), spr + ai.a.cy + R2 * Math.sin(a)]);
+        }
+        rings.push(
+          [
+            [ai.cx - ai.s / 2 - ring, 0],
+            [ai.cx - ai.s / 2 - ring, spr],
+          ]
+            .concat(ex)
+            .concat([
+              [ai.cx + ai.s / 2 + ring, spr],
+              [ai.cx + ai.s / 2 + ring, 0],
+            ]),
+        );
+      }
+      canv += masonry(tf, FLAT, fshape, {
+        sty: 2,
+        ch: 3.6,
+        den: 0.4,
+        alp: 0.2,
+        excl: rings,
+      });
+      canv += hatch(tf, face, {
+        ang: ha,
+        gap: 2.4,
+        alp: [0.03, 0.08],
+        den: 0.5,
+      });
+      // parapet, string course, coping
+      canv += line(tf, top, { wid: 1.3, col: ink(0.5) });
+      canv += line(
+        tf,
+        top.slice(6, top.length - 6).map(function(v) {
+          return lift(v, -1.4);
+        }),
+        thin(0.35),
+      );
+      var sc = [];
+      for (var x = -len / 2; x <= len / 2 + 0.1; x += 4) {
+        sc.push([x, deck(x) + 0.5]);
+      }
+      canv += line(tf, sc, { wid: 0.8, col: ink(0.4) });
+      canv += line(tf, [top[0], [-len / 2 - wf, 0.5]], {
+        wid: 1,
+        col: ink(0.4),
+      });
+      canv += line(tf, [top[top.length - 1], [len / 2 + wf, 0.5]], {
+        wid: 1,
+        col: ink(0.4),
+      });
+      for (var i = 0; i < arc; i++) {
+        var ai = arches[i];
+        var op = opening(ai);
+        canv += line(tf, op.slice(0, op.length), {
+          wid: 1.3,
+          col: ink(0.55),
+          ext: 0,
+        });
+        var R2 = ai.a.R + ring;
+        var nv = Math.max(5, Math.round(((ai.a.a0 - ai.a.a1) * ai.a.R) / 3.2));
+        var ex = [];
+        for (var j = 0; j <= nv; j++) {
+          var a = ai.a.a0 + ((ai.a.a1 - ai.a.a0) * j) / nv;
+          var p0 = [
+            ai.cx + ai.a.R * Math.cos(a),
+            -spr - ai.a.cy - ai.a.R * Math.sin(a),
+          ];
+          var rr = j == Math.round(nv / 2) ? R2 + 1.2 : R2;
+          var p1 = [
+            ai.cx + rr * Math.cos(a),
+            -spr - ai.a.cy - rr * Math.sin(a),
+          ];
+          ex.push([
+            ai.cx + R2 * Math.cos(a),
+            -spr - ai.a.cy - R2 * Math.sin(a),
+          ]);
+          if (j > 0 && j < nv) {
+            canv += line(tf, [p0, p1], thin(0.33));
+          }
+        }
+        canv += line(tf, ex, thin(0.35));
+        // reflections
+        var rf = op.map(function(v) {
+          return [v[0], -v[1] + 1];
+        });
+        for (var j = 1; j < rf.length - 2; j++) {
+          if (Math.random() < 0.6) {
+            var p = rf[j];
+            canv += line(
+              tf,
+              [
+                [p[0] - normRand(1, 3), p[1]],
+                [p[0] + normRand(1, 3), p[1]],
+              ],
+              thin(normRand(0.12, 0.25)),
+            );
+          }
+        }
+        for (var y = 2; y < ai.rise * 0.8; y += normRand(2.5, 4.5)) {
+          var hw2 = ai.s * 0.5 * normRand(0.4, 0.9);
+          var xc = ai.cx + normRand(-0.2, 0.2) * ai.s;
+          canv += line(
+            tf,
+            [
+              [xc - hw2, y],
+              [xc + hw2, y],
+            ],
+            {
+              wid: 0.7,
+              col: ink(normRand(0.1, 0.22)),
+              amp: 0.4,
+              fun: function(x) {
+                return Math.sin(x * Math.PI);
+              },
+            },
+          );
+        }
+      }
+      // cutwaters
+      for (var i = 0; i < arc - 1; i++) {
+        var px = arches[i].cx + arches[i].s / 2 + pw / 2;
+        var ph = spr + Math.min(arches[i].rise, arches[i + 1].rise) * 0.55;
+        var cwp = [
+          [px - pw / 2 - 0.5, 0.5],
+          [px - pw / 2 - 0.5, -ph],
+          [px, -ph - pw * 0.7],
+          [px + pw / 2 + 0.5, -ph],
+          [px + pw / 2 + 0.5, 0.5],
+        ];
+        var cws = [
+          [px, 0.5],
+          [px, -ph - pw * 0.7],
+          [px + pw / 2 + 0.5, -ph],
+          [px + pw / 2 + 0.5, 0.5],
+        ];
+        canv += fill(tf, cwp, "st");
+        canv += hatch(tf, cws, { ang: ha * 1.3, gap: 1.1, alp: [0.12, 0.24] });
+        canv += line(tf, cwp.slice(0, 4), { wid: 1, col: ink(0.5), ext: 0 });
+        canv += line(tf, [cwp[3], cwp[4]], { wid: 1, col: ink(0.5), ext: 0 });
+        canv += line(
+          tf,
+          [
+            [px, 0.5],
+            [px, -ph],
+          ],
+          thin(0.3),
+        );
+        canv += line(
+          tf,
+          [
+            [px - pw / 2 - 0.5, -ph],
+            [px + pw / 2 + 0.5, -ph],
+          ],
+          thin(0.35),
+        );
+      }
+      canv += tufts(tf, [-len / 2 - wf - 6, 0], [-len / 2 - wf + 4, 0], 3);
+      canv += tufts(tf, [len / 2 + wf - 4, 0], [len / 2 + wf + 6, 0], 3);
+      return canv;
+    };
+
+    // ---- abbey ruin ----
+
+    this.ruin = function(xoff, yoff, seed, args) {
+      var args = args != undefined ? args : {};
+      var wid = args.wid != undefined ? args.wid : normRand(58, 84);
+      var hei = args.hei != undefined ? args.hei : normRand(85, 115);
+      var win = args.win != undefined ? args.win : randChoice([1, 1, 2]);
+      var fli = args.fli != undefined ? args.fli : Math.random() < 0.5;
+      var sca = args.sca != undefined ? args.sca : 1;
+
+      seed = seed != undefined ? seed : 0;
+      var dir = fli ? -1 : 1;
+      var tf = mover(xoff, yoff, dir, sca);
+      var ha = -dir;
+      var canv = "";
+      var dv = [4.2, -2];
+      var hs = hei * normRand(0.55, 0.65);
+
+      // windows (x, h-up coords)
+      var wins = [];
+      if (win == 1) {
+        var ww = wid * normRand(0.36, 0.44);
+        wins.push({
+          x: 0,
+          w: ww,
+          h0: hei * 0.24,
+          hs: hei * 0.52,
+          f: normRand(0.75, 0.95),
+        });
+      } else {
+        var ww = wid * normRand(0.19, 0.23);
+        for (var k = -1; k <= 1; k += 2) {
+          wins.push({
+            x: k * wid * 0.21,
+            w: ww,
+            h0: hei * 0.22,
+            hs: hei * 0.55,
+            f: 0.9,
+          });
+        }
+      }
+      var door = win == 1 && Math.random() < 0.6;
+      var winTop = function(x) {
+        var m = 0;
+        for (var k = 0; k < wins.length; k++) {
+          var wk = wins[k];
+          if (Math.abs(x - wk.x) < wk.w / 2 + 3) {
+            m = Math.max(m, archTop(wk.w, wk.hs, wk.f) + 4);
+          }
+        }
+        return m;
+      };
+
+      // broken gable top
+      var nt = Math.round(wid / 3);
+      var dmg = ruinHeights(nt, 1, 0, seed, 0.18);
+      var tops = [];
+      for (var i = 0; i <= nt; i++) {
+        var x = -wid / 2 + (wid * i) / nt;
+        var ideal = hs + (hei - hs) * (1 - Math.abs((2 * x) / wid));
+        var h = ideal - (1 - dmg[i]) * hei * 0.45;
+        tops.push(Math.max(h, winTop(x), hei * 0.18));
+      }
+      for (var i = 1; i < nt; i++) {
+        var nb2 = Math.max(tops[i - 1], tops[i + 1]);
+        if (tops[i] > nb2 + 3) {
+          tops[i] = Math.max(
+            nb2 + normRand(0, 2.5),
+            winTop(-wid / 2 + (wid * i) / nt),
+          );
+        }
+      }
+      var top = brokenTop([-wid / 2, 0], [wid / 2, 0], tops);
+      var outline = [[-wid / 2, 0]].concat(top).concat([[wid / 2, 0]]);
+      if (door) {
+        var dpts = [
+          [5, 0],
+          [5, -18],
+        ]
+          .concat(
+            archPts(10, 18, 0.8, 5)
+              .map(function(v) {
+                return [v[0], -v[1]];
+              })
+              .reverse(),
+          )
+          .concat([
+            [-5, -18],
+            [-5, 0],
+          ]);
+        outline = outline.concat(dpts);
+      }
+      var holes = wins.map(function(wk) {
+        return [[wk.x - wk.w / 2, -wk.h0]]
+          .concat(
+            archPts(wk.w, wk.hs, wk.f, 8).map(function(v) {
+              return [wk.x + v[0], -v[1]];
+            }),
+          )
+          .concat([[wk.x + wk.w / 2, -wk.h0]]);
+      });
+
+      // nave wall running back
+      var L2 = normRand(36, 60);
+      var f2 = { o: [wid / 2 - 3, 0], u: VB };
+      var n2 = Math.round(L2 / 3);
+      var h2 = ruinHeights(n2, hei * 0.5, hei * 0.16, seed + 5, 0.2);
+      for (var i = 0; i <= n2; i++) {
+        h2[i] *= 1 - 0.35 * (i / n2);
+      }
+      var t2 = brokenTop(f2.o, fp(f2, L2, 0), h2);
+      var s2 = [f2.o].concat(t2).concat([fp(f2, L2, 0)]);
+      var w2 = [];
+      for (var s = 12; s < L2 - 8; s += 14) {
+        var hk = h2[Math.round((s / L2) * n2)];
+        if (hk > 26) {
+          w2.push(
+            fpl(
+              f2,
+              [[s - 3, 8]]
+                .concat(shiftPts(archPts(6, 17, 0.6, 5), s, 0))
+                .concat([[s + 3, 8]]),
+            ),
+          );
+        }
+      }
+      canv += fill(tf, holed(s2, w2), "st");
+      canv += hatch(tf, s2, {
+        ang: ha,
+        gap: 1.8,
+        alp: [0.07, 0.16],
+        keep: function(p) {
+          for (var k = 0; k < w2.length; k++) {
+            if (inside(p, w2[k])) {
+              return false;
+            }
+          }
+          return true;
+        },
+      });
+      canv += masonry(tf, f2, toFace(f2, s2), {
+        sty: 1,
+        den: 0.35,
+        alp: 0.2,
+        excl: w2.map(function(w) {
+          return offset(toFace(f2, w), 2);
+        }),
+      });
+      canv += line(tf, t2, { wid: 1, col: ink(0.5), ext: 0 });
+      canv += line(tf, [f2.o, fp(f2, L2, 0)], { wid: 1, col: ink(0.4) });
+      canv += line(tf, [fp(f2, L2, 0), t2[t2.length - 1]], thin(0.45));
+      for (var k = 0; k < w2.length; k++) {
+        canv += line(tf, w2[k], { wid: 0.8, col: ink(0.5), ext: 0 });
+      }
+      canv += ivy(tf, fp(f2, L2 * 0.4, 0), fp(f2, L2 * 0.6, hei * 0.2), 16, 4);
+
+      // west front: far face first so the reveals show through
+      var bk = holed(
+        shiftPts(outline, dv[0], dv[1]),
+        holes.map(function(h) {
+          return shiftPts(h, dv[0], dv[1]);
+        }),
+      );
+      canv += fill(tf, bk, "st");
+      canv += hatch(tf, shiftPts(outline, dv[0], dv[1]), {
+        ang: ha,
+        gap: 1.2,
+        alp: [0.14, 0.28],
+        keep: function(p) {
+          for (var k = 0; k < holes.length; k++) {
+            if (inside([p[0] - dv[0], p[1] - dv[1]], holes[k])) {
+              return false;
+            }
+          }
+          return true;
+        },
+      });
+      canv += line(tf, shiftPts(top, dv[0], dv[1]), thin(0.4));
+      for (var k = 0; k < holes.length; k++) {
+        canv += line(tf, shiftPts(holes[k], dv[0], dv[1]), thin(0.35));
+      }
+      canv += fill(tf, holed(outline, holes), "st");
+      var oshape = outline.map(function(v) {
+        return [v[0], -v[1]];
+      });
+      canv += masonry(tf, FLAT, oshape, {
+        sty: 2,
+        ch: 4,
+        den: 0.35,
+        alp: 0.22,
+        excl: holes.map(function(h) {
+          return offset(h, -3).map(function(v) {
+            return [v[0], -v[1]];
+          });
+        }),
+      });
+      canv += hatch(tf, outline, {
+        ang: ha,
+        gap: 2.6,
+        alp: [0.03, 0.08],
+        den: 0.6,
+        keep: function(p) {
+          for (var k = 0; k < holes.length; k++) {
+            if (inside(p, holes[k])) {
+              return false;
+            }
+          }
+          return true;
+        },
+      });
+      canv += line(tf, top, { wid: 1.2, col: ink(0.5), ext: 0 });
+      canv += line(tf, [[-wid / 2, 0], top[0]], { wid: 1.2, col: ink(0.5) });
+      canv += line(tf, [[wid / 2, 0], top[top.length - 1]], {
+        wid: 1.2,
+        col: ink(0.5),
+      });
+      canv += line(
+        tf,
+        [
+          [-wid / 2 - 3, 0],
+          [wid / 2 + 3, 0],
+        ],
+        { wid: 1, col: ink(0.4) },
+      );
+      for (var k = 0; k < holes.length; k++) {
+        canv += line(tf, holes[k], { wid: 1.2, col: ink(0.55), ext: 0 });
+        var wk = wins[k];
+        var hood = archPts(wk.w + 5, wk.hs, wk.f, 8).map(function(v) {
+          return [wk.x + v[0], -v[1]];
+        });
+        canv += line(tf, hood, thin(0.4));
+        canv += line(
+          tf,
+          [
+            [wk.x - wk.w / 2 - 1.5, -wk.h0 + 0.8],
+            [wk.x + wk.w / 2 + 1.5, -wk.h0 + 0.8],
+          ],
+          { wid: 1.1, col: ink(0.45) },
+        );
+      }
+      if (door) {
+        var dp = outline.slice(outline.length - dpts.length);
+        canv += line(tf, dp, { wid: 1.2, col: ink(0.55), ext: 0 });
+        canv += line(
+          tf,
+          archPts(14, 18, 0.8, 5).map(function(v) {
+            return [v[0], -v[1]];
+          }),
+          thin(0.4),
+        );
+      }
+      // tracery, some of it fallen
+      for (var k = 0; k < wins.length; k++) {
+        var wk = wins[k];
+        var fw = FLAT;
+        var tb = Math.max(1.4, wk.w * 0.05);
+        if (win == 1) {
+          var sub = (wk.w - tb) / 2;
+          var mh =
+            Math.random() < 0.7
+              ? wk.hs
+              : wk.h0 + (wk.hs - wk.h0) * normRand(0.3, 0.8);
+          canv += band(
+            tf,
+            fw,
+            [
+              [wk.x, wk.h0],
+              [wk.x, mh],
+            ],
+            tb,
+            "st",
+          );
+          if (mh >= wk.hs) {
+            for (var j = -1; j <= 1; j += 2) {
+              if (Math.random() < 0.8) {
+                var la = archPts(sub, wk.hs, wk.f, 6).map(function(v) {
+                  return [wk.x + j * (sub / 2 + tb / 2) + v[0], v[1]];
+                });
+                canv += band(
+                  tf,
+                  fw,
+                  la.slice(j < 0 ? 0 : 3, j < 0 ? la.length - 3 : la.length),
+                  tb * 0.9,
+                  "st",
+                );
+              }
+            }
+            var oc = [wk.x, wk.hs + wk.w * 0.38];
+            var orr = wk.w * 0.16;
+            var ring = [];
+            var a0 = Math.random() < 0.6 ? 0 : normRand(0.5, 2);
+            for (var j = 0; j <= 16; j++) {
+              var a = a0 + ((Math.PI * 2 - a0 * 0.8) * j) / 16;
+              ring.push([oc[0] + Math.cos(a) * orr, oc[1] + Math.sin(a) * orr]);
+            }
+            canv += band(tf, fw, ring, tb * 0.9, "st");
+          }
+        } else {
+          if (Math.random() < 0.6) {
+            canv += band(
+              tf,
+              fw,
+              [
+                [wk.x, wk.h0],
+                [wk.x, wk.hs * normRand(0.7, 1)],
+              ],
+              tb,
+              "st",
+            );
+          }
+        }
+      }
+      // fallen stones, ivy and grass
+      canv += rubble(
+        tf,
+        -wid * 0.65,
+        wid * 0.7,
+        3,
+        Math.round(wid / 3.5),
+        6.5,
+        7,
+      );
+      canv += ivy(
+        tf,
+        [-wid / 2 + 2, 0],
+        [-wid / 2 + normRand(2, 10), -tops[0] * normRand(0.5, 0.9)],
+        30,
+        4,
+      );
+      if (Math.random() < 0.6) {
+        canv += ivy(
+          tf,
+          [wid / 2 - 4, 0],
+          [wid / 2 - normRand(3, 10), -hei * 0.3],
+          18,
+          3.5,
+        );
+      }
+      canv += tufts(tf, [-wid * 0.7, 3], [wid * 0.8, 3], Math.round(wid / 7));
+      return canv;
+    };
+
+    // ---- boats ----
+
+    this.sailboat = function(xoff, yoff, seed, args) {
+      var args = args != undefined ? args : {};
+      var sca = args.sca != undefined ? args.sca : 1;
+      var fli = args.fli != undefined ? args.fli : false;
+      var len = args.len != undefined ? args.len : normRand(90, 115);
+      var typ =
+        args.typ != undefined ? args.typ : randChoice(["gaff", "lug", "lug"]);
+      var jib = args.jib != undefined ? args.jib : Math.random() < 0.6;
+      var man = args.man != undefined ? args.man : randChoice([1, 1, 2]);
+
+      seed = seed != undefined ? seed : 0;
+      var dir = fli ? -1 : 1;
+      var tf = mover(xoff, yoff, dir, sca);
+      var S = tf;
+      var ha = -dir;
+      var canv = "";
+      var L = len;
+      var fb = len * 0.095;
+      var sheer = function(t) {
+        return -fb * (1 + (t > 0 ? 0.9 : 0.35) * Math.pow(2 * t, 2));
+      };
+      var far = function(t) {
+        return sheer(t) - 3.5 * (1 - Math.pow(2 * t, 2));
+      };
+      var near = [];
+      var inner = [];
+      for (var i = 0; i <= 20; i++) {
+        var t = -0.5 + i / 20;
+        near.push([t * L, sheer(t)]);
+        inner.push([t * L, far(t)]);
+      }
+      var bow = [L * 0.5, sheer(0.5)];
+      var stern = [-L * 0.5, sheer(-0.5)];
+      var stem = [
+        bow,
+        [L * 0.49, sheer(0.5) * 0.5],
+        [L * 0.45, -1],
+        [L * 0.41, 0],
+      ];
+      var hull = near
+        .concat(stem.slice(1))
+        .concat([[-L * 0.46, 0], [-L * 0.48, sheer(-0.5) * 0.5], stern]);
+      var deckp = near.concat(inner.slice().reverse());
+
+      var mx = typ == "gaff" ? L * 0.08 : L * 0.14;
+      var mh = L * normRand(0.9, 1.05);
+      var mtop = [mx - 2, -mh];
+      var mbot = [mx, -fb * 0.4];
+      var mpt = function(t) {
+        return lerp2(mbot, mtop, t);
+      };
+
+      canv += fill(tf, deckp, "hl");
+      canv += hatch(tf, deckp, { ang: ha * 0.3, gap: 1, alp: [0.12, 0.25] });
+      canv += line(tf, inner, { wid: 0.9, col: ink(0.45), ext: 0 });
+
+      // sails
+      var sail;
+      var spars = [];
+      if (typ == "gaff") {
+        var thr = mpt(0.78);
+        var gl = L * normRand(0.42, 0.5);
+        var ga = normRand(0.5, 0.75);
+        var peak = [thr[0] - Math.cos(ga) * gl, thr[1] - Math.sin(ga) * gl];
+        var tack = mpt(0.1);
+        var clew = [-L * normRand(0.46, 0.55), tack[1] + 1.5];
+        sail = [tack, thr, peak]
+          .concat(
+            bezmh(
+              [
+                peak,
+                lerp2(lerp2(peak, clew, 0.5), [peak[0] - 12, peak[1]], 0.3),
+                clew,
+              ],
+              1,
+            ).slice(1, -1),
+          )
+          .concat([clew]);
+        spars.push(
+          [thr, add2(peak, unit([peak[0] - thr[0], peak[1] - thr[1]]), 2)],
+          [lift(tack, 0.5), add2(clew, [-2, 0.3])],
+        );
+      } else {
+        var yf = [mx + L * 0.1, -mh * 0.68];
+        var ya = [mx - L * normRand(0.36, 0.44), -mh * normRand(0.92, 1.0)];
+        var tack = [mx + L * 0.08, -fb * 1.4];
+        var clew = [mx - L * normRand(0.42, 0.5), -fb * 1.6];
+        sail = [tack, yf, ya]
+          .concat(
+            bezmh(
+              [ya, lerp2(lerp2(ya, clew, 0.5), [ya[0] - 14, ya[1]], 0.3), clew],
+              1,
+            ).slice(1, -1),
+          )
+          .concat([clew]);
+        spars.push([add2(yf, [2, 0.8]), add2(ya, [-1.5, -0.5])]);
+      }
+      canv += line(tf, [mbot, mtop], { wid: 1.5, col: ink(0.6), ext: 0 });
+      if (jib) {
+        var head = mpt(typ == "gaff" ? 0.84 : 0.74);
+        var tk = [L * 0.66, sheer(0.5) - 1];
+        var jc = [mx + L * 0.1, -fb * 2.1];
+        var jp = [head, tk]
+          .concat(bezmh([tk, [jc[0] + 8, jc[1] + 3], jc], 1).slice(1, -1))
+          .concat([jc]);
+        canv += line(
+          tf,
+          [
+            [L * 0.42, sheer(0.5) + 0.5],
+            [L * 0.7, sheer(0.5) - 1.5],
+          ],
+          { wid: 1, col: ink(0.55), ext: 0 },
+        );
+        canv += fill(tf, jp, "sl");
+        canv += hatch(tf, jp, {
+          ang: -1.4 * dir,
+          gap: 1.5,
+          alp: [0.05, 0.12],
+          den: 0.6,
+        });
+        canv += line(tf, jp.concat([head]), {
+          wid: 0.9,
+          col: ink(0.5),
+          ext: 0,
+        });
+      } else {
+        canv += line(tf, [mtop, [L * 0.48, sheer(0.5)]], thin(0.35));
+      }
+      canv += fill(tf, sail, "sl");
+      canv += hatch(tf, sail, {
+        ang: -1.35 * dir,
+        gap: 1.5,
+        alp: [0.05, 0.13],
+        den: 0.7,
+      });
+      for (var k = 1; k < 4; k++) {
+        var a = lerp2(sail[1], sail[2], k / 4);
+        var b = lerp2(sail[0], sail[sail.length - 1], k / 4);
+        canv += line(
+          tf,
+          [a, lerp2(a, b, 0.5), b].map(function(v, i) {
+            return i == 1 ? [v[0] - 1.5, v[1]] : v;
+          }),
+          thin(0.15),
+        );
+      }
+      canv += line(tf, sail.concat([sail[0]]), {
+        wid: 1,
+        col: ink(0.55),
+        ext: 0,
+      });
+      for (var k = 0; k < spars.length; k++) {
+        canv += line(tf, spars[k], { wid: 1.3, col: ink(0.6), ext: 0 });
+      }
+      canv += line(tf, [mtop, [-L * 0.2, sheer(-0.2)]], thin(0.3));
+      // pennant
+      var pf = [];
+      for (var i = 0; i <= 6; i++) {
+        pf.push([
+          mtop[0] - i * 1.4,
+          mtop[1] + Math.sin(i * 1.3) * 0.6 + i * 0.12,
+        ]);
+      }
+      canv += stroke(pf.map(tf), {
+        wid: 0.9,
+        col: ink(0.55),
+        fun: function(x) {
+          return 1 - x;
+        },
+      });
+
+      // crew
+      var spots = [-0.36, 0.3];
+      for (var i = 0; i < man; i++) {
+        var t = spots[i];
+        var gp = S([t * L, sheer(t) + 5]);
+        canv += Man.man(gp[0], gp[1], {
+          sca: 0.5 * sca,
+          fli: i == 0 ? !fli : fli,
+          hat: Europe.hat,
+          len:
+            i == 0
+              ? [0, 30, 20, 30, 10, 30, 30, 30, 30]
+              : [0, 30, 20, 30, 30, 30, 30, 30, 30],
+        });
+      }
+      // hull
+      canv += fill(tf, hull, "hl");
+      canv += hatch(tf, hull, {
+        ang: ha * 1.4,
+        gap: 1.2,
+        alp: [0.12, 0.26],
+        cut: 0.05,
+      });
+      canv += line(
+        tf,
+        near.map(function(v) {
+          return [v[0], v[1] + 2.5];
+        }),
+        thin(0.35),
+      );
+      canv += line(tf, near, { wid: 1.3, col: ink(0.6), ext: 0 });
+      canv += line(tf, stem, { wid: 1.2, col: ink(0.55), ext: 0 });
+      canv += line(
+        tf,
+        [stern, [-L * 0.48, sheer(-0.5) * 0.5], [-L * 0.46, 0]],
+        { wid: 1.2, col: ink(0.55), ext: 0 },
+      );
+      canv += line(
+        tf,
+        [
+          [-L * 0.47, -1],
+          [-L * 0.54, -0.5],
+          [-L * 0.53, 3],
+          [-L * 0.47, 3],
+        ],
+        { wid: 1, col: ink(0.5), ext: 0 },
+      );
+      // water
+      for (var i = 0; i < 6; i++) {
+        var y = 1.5 + i * normRand(1.5, 2.6);
+        var hw = L * normRand(0.25, 0.55) * (1 - i * 0.1);
+        var xc = normRand(-0.1, 0.1) * L;
+        canv += line(
+          tf,
+          [
+            [xc - hw, y],
+            [xc + hw, y],
+          ],
+          {
+            wid: 0.8,
+            col: ink(normRand(0.15, 0.3)),
+            amp: 0.5,
+            ext: 0,
+            fun: function(x) {
+              return Math.sin(x * Math.PI);
+            },
+          },
+        );
+      }
+      return canv;
+    };
+
+    // ---- travellers ----
+
+    var tranpoly = function(p0, p1, ptlist) {
+      var plist = ptlist.map(function(v) {
+        return [-v[0], v[1]];
+      });
+      var ang = Math.atan2(p1[1] - p0[1], p1[0] - p0[0]) - Math.PI / 2;
+      var scl = distance(p0, p1);
+      return plist.map(function(v) {
+        var d = distance(v, [0, 0]);
+        var a = Math.atan2(v[1], v[0]);
+        return [
+          p0[0] + d * scl * Math.cos(ang + a),
+          p0[1] + d * scl * Math.sin(ang + a),
+        ];
+      });
+    };
+    var flipper = function(plist) {
+      return plist.map(function(v) {
+        return [-v[0], v[1]];
+      });
+    };
+
+    // brimmed hat or bonnet, same signature as Man.hat01
+    this.hat = function(p0, p1, args) {
+      var args = args != undefined ? args : {};
+      var fli = args.fli != undefined ? args.fli : false;
+      var typ = args.typ != undefined ? args.typ : randChoice([0, 0, 1, 2]);
+
+      var canv = "";
+      var f = fli
+        ? flipper
+        : function(x) {
+            return x;
+          };
+      if (typ == 2) {
+        canv += poly(
+          tranpoly(
+            p0,
+            p1,
+            f([
+              [-0.32, 0.35],
+              [-0.42, 0.72],
+              [-0.3, 1.05],
+              [0.02, 1.2],
+              [0.38, 1.08],
+              [0.58, 0.78],
+              [0.5, 0.6],
+              [0.3, 0.8],
+              [0.02, 0.92],
+              [-0.16, 0.7],
+              [-0.18, 0.38],
+            ]),
+          ),
+          { fil: "white", str: "rgba(100,100,100,0.6)", wid: 0.8 },
+        );
+        canv += poly(
+          tranpoly(
+            p0,
+            p1,
+            f([
+              [0.1, 0.3],
+              [0.25, 0.1],
+              [0.3, -0.1],
+            ]),
+          ),
+          { fil: "none", str: "rgba(100,100,100,0.5)", wid: 0.6 },
+        );
+      } else {
+        var ch = typ == 1 ? 1.55 : 1.22;
+        canv += poly(
+          tranpoly(
+            p0,
+            p1,
+            f([
+              [-0.28, 0.78],
+              [-0.3, ch - 0.05],
+              [-0.22, ch],
+              [0.24, ch],
+              [0.3, ch - 0.06],
+              [0.28, 0.78],
+            ]),
+          ),
+          { fil: "rgba(100,100,100,0.8)" },
+        );
+        canv += poly(
+          tranpoly(
+            p0,
+            p1,
+            f([
+              [-0.58, 0.82],
+              [-0.5, 0.74],
+              [0.55, 0.74],
+              [0.66, 0.84],
+              [0.1, 0.86],
+            ]),
+          ),
+          { fil: "rgba(100,100,100,0.85)" },
+        );
+      }
+      return canv;
+    };
+  }();
+
+</script>
 <script type="text/x-shanshui" id="Planner">
   // Everything above this script is the original generator, plus the
   // Japanese and European elements. This part plans the world column by
@@ -7249,16 +11155,19 @@ var Japan = new function() {
       tone: [92, 60, 36, 0.85],
       bottArch: function(x, y, seed) {
         var tt = randChoice([0, 0, 1, 1, 1, 2]);
-        if (tt == 1) return house(Europe.cottage)(x, y, seed);
-        if (tt == 2) return house(randChoice([Europe.church, Europe.windmill]))(x, y, seed);
+        // Scaled to sit on a mountainside like the Chinese pavilions do.
+        if (tt == 1) return house(Europe.cottage)(x, y, seed, { sca: normRand(0.62, 0.8) });
+        if (tt == 2) return house(randChoice([Europe.church, Europe.windmill]))(x, y, seed, { sca: normRand(0.55, 0.68) });
         return "";
       },
       topArch: function(x, y, seed) {
-        if (Math.random() < 0.25) return house(Europe.ruin)(x, y, seed);
-        return house(Europe.castle)(x, y, seed, { ruin: Math.random() < 0.35 });
+        if (Math.random() < 0.25) return house(Europe.ruin)(x, y, seed, { sca: normRand(0.55, 0.7) });
+        return house(Europe.castle)(x, y, seed, { ruin: Math.random() < 0.35, sca: normRand(0.5, 0.65) });
       },
       flatArch: function(x, y, seed, args) {
-        return house(randChoice([Europe.cottage, Europe.church, Europe.windmill, Europe.ruin]))(x, y, seed);
+        return house(randChoice([Europe.cottage, Europe.cottage, Europe.church, Europe.windmill, Europe.ruin]))(x, y, seed, {
+          sca: normRand(0.8, 0.95),
+        });
       },
       boat: function(x, y, args) {
         return Europe.sailboat(x, y, Math.random(), args);
@@ -8754,7 +12663,8 @@ var Sound = (function () {
         stops: [[0, "rgba(232,164,86,.5)"], [0.3, "rgba(244,198,128,.3)"], [0.55, "rgba(244,198,128,0)"], [1, "rgba(220,158,90,.16)"]],
       },
     },
-    sepia: { inkBlend: "multiply", annBlend: "multiply", css: "" },
+    // Monochrome: the filter browns the seasonal leaf colours too.
+    sepia: { inkBlend: "multiply", annBlend: "multiply", inkFilter: "grayscale(1) sepia(0.5)", css: "" },
   };
 
   // Each tradition has its own buildings, poems and sound, and its own set of
@@ -10167,7 +14077,11 @@ var Sound = (function () {
       if (st.sky.moon) out.push(moonSvg(st.sky.moon, x0, wu));
     }
     out.push(
-      '<g style="mix-blend-mode:' + st.inkBlend + '"' + (st.inkFilter ? ' filter="' + st.inkFilter + '"' : "") + ">",
+      '<g style="mix-blend-mode:' +
+        st.inkBlend +
+        (st.inkFilter ? ";filter:" + st.inkFilter : "") +
+        (st.inkOpacity ? ";opacity:" + st.inkOpacity : "") +
+        '">',
     );
     visibleItems("ink").forEach(function(it) {
       var d = cache.get(it.id);

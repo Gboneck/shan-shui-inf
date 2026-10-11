@@ -12,6 +12,10 @@ Some examples:
 
 This fork keeps the original generator and changes how the scroll is shown and travelled, then widens what it paints.
 
+![Ukiyo-e Red Fuji, Romantic watercolour, and shan shui in spring and in winter](/screenshots/traditions.jpg?raw=true "")
+
+*The same seed in three traditions and two seasons: ukiyo-e in the Red Fuji style, Romantic watercolour, and shan shui ink in spring and in winter.*
+
 ![Blue-green, light crimson, snow and moonlight styles](/screenshots/styles.jpg?raw=true "")
 
 - **A scroll that keeps moving.** The painting fills the window. Drag it, scroll it, hold the arrow keys, or press <kbd>Space</kbd> (or ▶) to let it drift by on its own at an adjustable speed.
