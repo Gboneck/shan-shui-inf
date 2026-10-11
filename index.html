@@ -4610,6 +4610,2162 @@
     return canv;
   }
 </script>
+<script type="text/x-shanshui" id="Japan">
+var Japan = new function() {
+  var ink = function(a) {
+    return "rgba(100,100,100," + a.toFixed(3) + ")";
+  };
+
+  var mv = function(plist, xof, yof) {
+    return plist.map(function(v) {
+      return [v[0] + xof, v[1] + yof];
+    });
+  };
+
+  var lerp = function(p0, p1, t) {
+    return [p0[0] * (1 - t) + p1[0] * t, p0[1] * (1 - t) + p1[1] * t];
+  };
+
+  // sample y = f(x) between x0 and x1
+  var sam = function(x0, x1, f, n) {
+    var n = n != undefined ? n : 12;
+    var plist = [];
+    for (var i = 0; i <= n; i++) {
+      var x = x0 + ((x1 - x0) * i) / n;
+      plist.push([x, f(x)]);
+    }
+    return plist;
+  };
+
+  // subdivide a polyline and shake it a little, for a hand-drawn edge
+  var wob = function(plist, amp, reso) {
+    var reso = reso != undefined ? reso : 3;
+    var n0 = Math.random() * 100;
+    return div(plist, reso).map(function(v, i) {
+      return [
+        v[0] + (Noise.noise(i * 0.35, n0) - 0.5) * amp,
+        v[1] + (Noise.noise(i * 0.35, n0 + 50) - 0.5) * amp,
+      ];
+    });
+  };
+
+  // an even ink line along a polyline
+  var ln = function(plist, args) {
+    var args = args != undefined ? args : {};
+    var xof = args.xof != undefined ? args.xof : 0;
+    var yof = args.yof != undefined ? args.yof : 0;
+    var wid = args.wid != undefined ? args.wid : 0.6;
+    var col = args.col != undefined ? args.col : ink(0.5);
+    var noi = args.noi != undefined ? args.noi : 0.5;
+    var out = args.out != undefined ? args.out : 0.6;
+    if (plist.length < 2) {
+      return "";
+    }
+    var pl = plist.length < 4 ? div(plist, 3) : plist;
+    return stroke(mv(pl, xof, yof), {
+      col: col,
+      wid: wid,
+      noi: noi,
+      out: out,
+      fun: function(x) {
+        return 1;
+      },
+    });
+  };
+
+  // a filled shape with an ink outline
+  var shape = function(plist, args) {
+    var args = args != undefined ? args : {};
+    var xof = args.xof != undefined ? args.xof : 0;
+    var yof = args.yof != undefined ? args.yof : 0;
+    var fil = args.fil != undefined ? args.fil : "white";
+    var col = args.col != undefined ? args.col : ink(0.5);
+    var wid = args.wid != undefined ? args.wid : 0.5;
+    var canv = poly(plist, {
+      xof: xof,
+      yof: yof,
+      fil: fil,
+      str: "none",
+      cls: args.cls,
+    });
+    if (col != "none") {
+      canv += ln(plist.concat([plist[0]]), {
+        xof: xof,
+        yof: yof,
+        col: col,
+        wid: wid,
+      });
+    }
+    return canv;
+  };
+
+  var area = function(plist) {
+    var a = 0;
+    for (var i = 0; i < plist.length; i++) {
+      var p = plist[i];
+      var q = plist[(i + 1) % plist.length];
+      a += p[0] * q[1] - q[0] * p[1];
+    }
+    return Math.abs(a / 2);
+  };
+
+  // two-bone reach: absolute angles of the upper arm and forearm that put
+  // the hand at t (relative to the shoulder); s picks the elbow side
+  var reach = function(t, l1, l2, s) {
+    var d = Math.sqrt(t[0] * t[0] + t[1] * t[1]);
+    d = Math.max(Math.min(d, l1 + l2 - 0.01), Math.abs(l1 - l2) + 0.01);
+    var a = Math.atan2(t[1], t[0]);
+    var c = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d);
+    var a1 = a + s * Math.acos(Math.max(-1, Math.min(1, c)));
+    var e = [l1 * Math.cos(a1), l1 * Math.sin(a1)];
+    return [a1, Math.atan2(t[1] - e[1], t[0] - e[0])];
+  };
+
+  // a standing figure (Man.man); hnd gives the targets of the two hands
+  // relative to the shoulder, in the figure's own units (torso = 30)
+  var figure = function(xoff, yoff, args) {
+    var args = args != undefined ? args : {};
+    var sca = args.sca != undefined ? args.sca : 0.42;
+    var fli = args.fli != undefined ? args.fli : false;
+    var hat = args.hat != undefined ? args.hat : Man.hat02;
+    var lea = args.lea != undefined ? args.lea : 0;
+    var hnd = args.hnd;
+    var len = [0, 30, 20, 28, 24, 26, 26, 26, 26];
+    var T = -Math.PI / 2 + lea;
+    var th = normRand(0.08, 0.3);
+    var ang = [
+      0,
+      T,
+      normRand(-0.1, 0.1) - lea * 0.5,
+      Math.PI / 2 - th,
+      th + normRand(0, 0.25),
+    ];
+    var a6;
+    var a8;
+    if (hnd != undefined) {
+      a6 = reach(hnd[1], len[5], len[6], hnd[2] != undefined ? hnd[2] : -1);
+      a8 = reach(hnd[0], len[7], len[8], hnd[3] != undefined ? hnd[3] : 1);
+    } else {
+      a6 = [normRand(1.15, 1.45), normRand(0.6, 1.2)];
+      a8 = [normRand(1.75, 2.05), normRand(1.5, 1.9)];
+    }
+    ang = ang.concat([a6[0] - T, a6[1] - a6[0], a8[0] - T, a8[1] - a8[0]]);
+    var o = { sca: sca, fli: fli, hat: hat, ang: ang, len: len };
+    if (args.ite != undefined) {
+      o.ite = args.ite;
+    }
+    return Man.man(xoff, yoff, o);
+  };
+
+  this.torii = function(xoff, yoff, seed, args) {
+    var args = args != undefined ? args : {};
+    var wid = args.wid != undefined ? args.wid : 36;
+    var hei = args.hei != undefined ? args.hei : 42;
+    var gak = args.gak != undefined ? args.gak : Math.random() < 0.5;
+    seed = seed != undefined ? seed : 0;
+
+    var canv = "";
+    var col = ink(0.6);
+    var hw = wid / 2;
+    var up = hei * normRand(0.05, 0.09);
+    var kth = hei * 0.07;
+    var sth = hei * 0.05;
+    var ksp = hw * normRand(1.0, 1.1);
+    var ssp = ksp * normRand(0.8, 0.86);
+    var cv = function(x, k) {
+      return -up * k * Math.pow(Math.min(Math.abs(x) / ksp, 1.3), 3.2);
+    };
+    var ysb = -hei + kth + sth;
+    var bx = hw * 0.62;
+    var tx = bx - hei * 0.04;
+    var pr0 = hei * 0.052;
+    var pr1 = hei * 0.042;
+    var pcx = function(y) {
+      return bx + ((tx - bx) * y) / ysb;
+    };
+
+    //PILLARS
+    var yt = ysb + cv(tx, 0.7) - 0.5;
+    for (var s = -1; s <= 1; s += 2) {
+      var pl = wob(
+        [[s * pcx(0) - pr0, 0], [s * pcx(yt) - pr1, yt]],
+        0.4,
+        6,
+      ).concat(
+        wob(
+          [[s * pcx(yt) + pr1, yt], [s * pcx(0) + pr0, 0]],
+          0.4,
+          6,
+        ),
+      );
+      canv += shape(pl, { xof: xoff, yof: yoff, cls: "vm", col: col });
+      canv += ln(
+        div(
+          [
+            [s * pcx(0) + pr0 * 0.35, -hei * 0.1],
+            [s * pcx(yt) + pr1 * 0.35, yt],
+          ],
+          6,
+        ),
+        {
+          xof: xoff,
+          yof: yoff,
+          col: ink(0.15),
+          wid: 0.4,
+        },
+      );
+      var kb = hei * 0.075;
+      canv += shape(
+        wob(
+          [
+            [s * bx - pr0 * 1.3, 0.3],
+            [s * bx - pr0 * 1.25, -kb],
+            [s * bx + pr0 * 1.25, -kb],
+            [s * bx + pr0 * 1.3, 0.3],
+          ],
+          0.2,
+          2,
+        ),
+        { xof: xoff, yof: yoff, fil: ink(0.3), col: col },
+      );
+    }
+
+    //NUKI
+    var yn = -hei * 0.7;
+    var nth = hei * 0.055;
+    var nx = pcx(yn) + pr1 + hei * normRand(0.1, 0.14);
+    canv += shape(
+      wob(
+        [[-nx, yn], [nx, yn], [nx, yn + nth], [-nx, yn + nth]],
+        0.3,
+        4,
+      ),
+      {
+        xof: xoff,
+        yof: yoff,
+        cls: "vm",
+        col: col,
+      },
+    );
+    for (var s = -1; s <= 1; s += 2) {
+      var wx = s * (pcx(yn) + pr1 + 0.2);
+      var ww = s * hei * 0.03;
+      canv += shape(
+        [
+          [wx, yn - nth * 0.2],
+          [wx + ww, yn - nth * 0.2],
+          [wx + ww, yn + nth * 1.2],
+          [wx, yn + nth * 1.2],
+        ],
+        { xof: xoff, yof: yoff, cls: "vm", col: col, wid: 0.3 },
+      );
+    }
+
+    //GAKUZUKA
+    var gw = hei * 0.03;
+    canv += shape(
+      wob(
+        [[-gw, yn], [-gw, ysb - 0.3], [gw, ysb - 0.3], [gw, yn]],
+        0.2,
+        2,
+      ),
+      {
+        xof: xoff,
+        yof: yoff,
+        cls: "vm",
+        col: col,
+      },
+    );
+    if (gak) {
+      var gy = (yn + ysb) / 2;
+      var gh = (yn - ysb) * 0.4;
+      var gx = hei * 0.075;
+      canv += shape(
+        wob(
+          [
+            [-gx, gy - gh],
+            [gx, gy - gh],
+            [gx * 0.92, gy + gh],
+            [-gx * 0.92, gy + gh],
+          ],
+          0.2,
+          2,
+        ),
+        { xof: xoff, yof: yoff, col: col },
+      );
+      canv += shape(
+        [
+          [-gx * 0.62, gy - gh * 0.7],
+          [gx * 0.62, gy - gh * 0.7],
+          [gx * 0.56, gy + gh * 0.7],
+          [-gx * 0.56, gy + gh * 0.7],
+        ],
+        { xof: xoff, yof: yoff, fil: ink(0.25), col: ink(0.3), wid: 0.2 },
+      );
+    }
+
+    //SHIMAKI
+    var stop = function(x) {
+      return -hei + kth + cv(x, 0.78) - 0.4;
+    };
+    var sbot = function(x) {
+      return -hei + kth + sth + cv(x, 0.7);
+    };
+    canv += shape(
+      wob(sam(-ssp, ssp, stop).concat(sam(ssp, -ssp, sbot)), 0.25, 1),
+      {
+        xof: xoff,
+        yof: yoff,
+        cls: "vm",
+        col: col,
+      },
+    );
+
+    //KASAGI
+    var ktop = function(x) {
+      return -hei + cv(x, 1);
+    };
+    var kbot = function(x) {
+      return -hei + kth + cv(x, 0.78);
+    };
+    var ex = kth * 0.55;
+    var kl = [[-ksp - ex, ktop(ksp) - kth * 0.15]]
+      .concat(sam(-ksp, ksp, ktop, 16))
+      .concat([[ksp + ex, ktop(ksp) - kth * 0.15]])
+      .concat(sam(ksp - ex * 0.4, -ksp + ex * 0.4, kbot, 16));
+    canv += shape(wob(kl, 0.25, 1), {
+      xof: xoff,
+      yof: yoff,
+      cls: "vm",
+      col: col,
+    });
+    canv += ln(
+      sam(-ksp - ex * 0.7, ksp + ex * 0.7, function(x) {
+        return (
+          ktop(Math.min(Math.abs(x), ksp)) +
+          kth * 0.22 -
+          (Math.abs(x) > ksp ? kth * 0.1 : 0)
+        );
+      }),
+      { xof: xoff, yof: yoff, col: ink(0.45), wid: kth * 0.22, noi: 0.3 },
+    );
+    return canv;
+  };
+
+  // a box house with a hip-and-gable (irimoya) or gable roof, seen corner-on.
+  // X runs along the front, Y up, Z back; the base centre sits at (xoff, yoff)
+  var bld = function(xoff, yoff, args) {
+    var args = args != undefined ? args : {};
+    var wid = args.wid != undefined ? args.wid : 110;
+    var dep = args.dep != undefined ? args.dep : 50;
+    var hei = args.hei != undefined ? args.hei : 24;
+    var rhe = args.rhe != undefined ? args.rhe : 46;
+    var ovh = args.ovh != undefined ? args.ovh : 8;
+    var gab = args.gab != undefined ? args.gab : 0.55;
+    var mat = args.mat != undefined ? args.mat : "th";
+    var wst = args.wst != undefined ? args.wst : "minka";
+    var dir = args.dir != undefined ? args.dir : 1;
+
+    var canv = "";
+    var vx = 0.42 * dir;
+    var vy = -0.2;
+    var uy = 0.035;
+    var cx = -dep * 0.5 * vx;
+    var cy = -dep * 0.5 * vy;
+    var P = function(p) {
+      return [p[0] * dir + p[2] * vx + cx, p[0] * uy + p[2] * vy - p[1] + cy];
+    };
+    var L3 = function(a, b, t) {
+      return [
+        a[0] + (b[0] - a[0]) * t,
+        a[1] + (b[1] - a[1]) * t,
+        a[2] + (b[2] - a[2]) * t,
+      ];
+    };
+    var D3 = function(a, b) {
+      return Math.sqrt(
+        Math.pow(a[0] - b[0], 2) +
+          Math.pow(a[1] - b[1], 2) +
+          Math.pow(a[2] - b[2], 2),
+      );
+    };
+    // a grid on a face: n lines running from top(u) down to bot(u)
+    var grid = function(top, bot, n, m) {
+      var g = [];
+      for (var i = 0; i < n; i++) {
+        var u = i / (n - 1);
+        var T = top(u);
+        var B = bot(u);
+        g.push([]);
+        for (var j = 0; j < m; j++) {
+          g[i].push(P(L3(T, B, j / (m - 1))));
+        }
+      }
+      return g;
+    };
+    var o = { xof: xoff, yof: yoff };
+    var opt = function(a) {
+      return Object.assign({}, o, a);
+    };
+    var line3 = function(a, b, al, w) {
+      return ln(
+        wob([P(a), P(b)], 0.25, 3),
+        opt({ col: ink(al), wid: w != undefined ? w : 0.4 }),
+      );
+    };
+
+    var w2 = wid / 2;
+    var W = w2 + ovh;
+    var H = hei;
+    var R = rhe;
+    var zr = dep / 2;
+    var run = dep / 2 + ovh;
+    var xg = W - run * gab;
+    var yg = H + R * gab;
+    var zf = -ovh + run * gab;
+    var zb = dep + ovh - run * gab;
+    var E0 = [-W, H, -ovh];
+    var E1 = [W, H, -ovh];
+    var E2 = [W, H, dep + ovh];
+    var G0 = [xg, yg, zf];
+    var G1 = [xg, yg, zb];
+    var Gl = [-xg, yg, zf];
+    var R0 = [-xg, H + R, zr];
+    var R1 = [xg, H + R, zr];
+    var th = mat == "th";
+    var rcl = th ? "th" : "rf";
+
+    //WALLS
+    var F = function(u, v) {
+      return [-w2 + u * wid, v * H, 0];
+    };
+    var S = function(u, v) {
+      return [w2, v * H, u * dep];
+    };
+    canv += shape(
+      wob([S(0, 0), S(1, 0), S(1, 1), S(0, 1)].map(P), 0.3, 3),
+      opt({ cls: "wl", col: ink(0.45) }),
+    );
+    canv += shape(
+      wob([F(0, 0), F(1, 0), F(1, 1), F(0, 1)].map(P), 0.3, 3),
+      opt({ cls: "wl", col: ink(0.45) }),
+    );
+
+    if (wst == "minka") {
+      var nb = Math.max(3, Math.round(wid / 17));
+      var dor = Math.floor(Math.random() * nb);
+      for (var k = 0; k < nb; k++) {
+        var u0 = k / nb;
+        var u1 = (k + 1) / nb;
+        if (k > 0) {
+          canv += line3(F(u0, 0), F(u0, 1), 0.45, 0.5);
+        }
+        var t = k == dor ? "dor" : randChoice(["sho", "sho", "wal", "ama"]);
+        if (t == "dor") {
+          var m = (u1 - u0) * 0.08;
+          canv += shape(
+            [
+              F(u0 + m, 0.05),
+              F(u1 - m, 0.05),
+              F(u1 - m, 0.78),
+              F(u0 + m, 0.78),
+            ].map(P),
+            opt({ fil: ink(0.3), col: ink(0.4), wid: 0.3 }),
+          );
+          // noren curtain
+          var nn = 3;
+          for (var q = 0; q < nn; q++) {
+            var a = u0 + m + ((u1 - u0 - 2 * m) * q) / nn;
+            var b = u0 + m + ((u1 - u0 - 2 * m) * (q + 1)) / nn - 0.003;
+            canv += shape(
+              [F(a, 0.78), F(b, 0.78), F(b, 0.52), F(a, 0.52)].map(P),
+              opt({ col: ink(0.35), wid: 0.25 }),
+            );
+          }
+        } else if (t == "sho") {
+          var nv = Math.max(2, Math.round(((u1 - u0) * wid) / 2.6));
+          for (var q = 1; q < nv; q++) {
+            var u = u0 + ((u1 - u0) * q) / nv;
+            canv += line3(F(u, 0.08), F(u, 0.78), 0.2, 0.2);
+          }
+          for (var q = 1; q < 5; q++) {
+            canv += line3(
+              F(u0, 0.08 + (0.7 * q) / 5),
+              F(u1, 0.08 + (0.7 * q) / 5),
+              0.2,
+              0.2,
+            );
+          }
+        } else if (t == "wal") {
+          canv += line3(F(u0, 0.32), F(u1, 0.32), 0.3, 0.3);
+          var nv = Math.max(2, Math.round(((u1 - u0) * wid) / 3));
+          for (var q = 1; q < nv; q++) {
+            var u = u0 + ((u1 - u0) * q) / nv;
+            canv += line3(F(u, 0.05), F(u, 0.32), 0.2, 0.2);
+          }
+        } else {
+          var nv = Math.max(2, Math.round(((u1 - u0) * wid) / 1.8));
+          for (var q = 1; q < nv; q++) {
+            var u = u0 + ((u1 - u0) * q) / nv;
+            canv += line3(F(u, 0.06), F(u, 0.78), 0.25, 0.25);
+          }
+        }
+      }
+      canv += line3(F(0, 0.78), F(1, 0.78), 0.45, 0.5);
+      canv += line3(F(0, 0.06), F(1, 0.06), 0.35, 0.4);
+      canv += line3(S(0.5, 0), S(0.5, 1), 0.35, 0.4);
+      canv += line3(S(0, 0.78), S(1, 0.78), 0.35, 0.4);
+      var wu = randChoice([0.2, 0.65]);
+      for (var q = 0; q < 5; q++) {
+        canv += line3(
+          S(wu + q * 0.035, 0.4),
+          S(wu + q * 0.035, 0.7),
+          0.35,
+          0.25,
+        );
+      }
+      canv += line3(S(wu - 0.01, 0.4), S(wu + 0.15, 0.4), 0.35, 0.3);
+      canv += line3(S(wu - 0.01, 0.7), S(wu + 0.15, 0.7), 0.35, 0.3);
+    } else if (wst == "kura") {
+      canv += line3(F(0, 0.3), F(1, 0.3), 0.4, 0.4);
+      canv += line3(S(0, 0.3), S(1, 0.3), 0.4, 0.4);
+      // namako walls: a diagonal grid under the plaster
+      var diag = function(face, wd, hb, sp) {
+        var canv = "";
+        for (var c = -hb; c < wd + hb; c += sp) {
+          var a0 = Math.max(0, -c);
+          var a1 = Math.min(hb, wd - c);
+          if (a1 > a0) {
+            canv += line3(face(c + a0, a0), face(c + a1, a1), 0.2, 0.2);
+          }
+          var b0 = Math.max(0, c - wd);
+          var b1 = Math.min(hb, c);
+          if (b1 > b0) {
+            canv += line3(face(c - b0, b0), face(c - b1, b1), 0.2, 0.2);
+          }
+        }
+        return canv;
+      };
+      canv += diag(
+        function(x, y) {
+          return [-w2 + x, y, 0];
+        },
+        wid,
+        H * 0.3,
+        H * 0.15,
+      );
+      canv += diag(
+        function(z, y) {
+          return [w2, y, z];
+        },
+        dep,
+        H * 0.3,
+        H * 0.15,
+      );
+      var wu = normRand(0.35, 0.55);
+      canv += shape(
+        [F(wu, 0.55), F(wu + 0.14, 0.55), F(wu + 0.14, 0.75), F(wu, 0.75)].map(
+          P,
+        ),
+        opt({ fil: ink(0.3), col: ink(0.45), wid: 0.35 }),
+      );
+    } else {
+      var nv = Math.max(3, Math.round(wid / 3));
+      for (var q = 1; q < nv; q++) {
+        canv += line3(F(q / nv, 0.02), F(q / nv, 0.98), 0.18, 0.2);
+      }
+      var u = normRand(0.2, 0.5);
+      canv += shape(
+        [F(u, 0.02), F(u + 0.3, 0.02), F(u + 0.3, 0.8), F(u, 0.8)].map(P),
+        opt({ fil: ink(0.28), col: ink(0.4), wid: 0.3 }),
+      );
+    }
+
+    //GABLE
+    var gpl = [G0, G1, R1].map(P);
+    canv += shape(wob(gpl, 0.3, 2), opt({ cls: "wl", col: ink(0.4) }));
+    var gz = Math.max(2, Math.round((zb - zf) / 2.5));
+    for (var q = 1; q < gz; q++) {
+      var z = zf + ((zb - zf) * q) / gz;
+      var yt = yg + (H + R - yg) * (1 - Math.abs(z - zr) / (zr - zf));
+      canv += line3([xg, yg, z], [xg, yt - 0.5, z], gab > 0 ? 0.3 : 0.18, 0.2);
+    }
+
+    // straight down-slope lines on the front slope and the hip, shortening
+    // along the hip ridges
+    var ftop = function(u) {
+      var x = -W + 2 * W * u;
+      var f =
+        Math.abs(x) > xg ? (W - Math.abs(x)) / Math.max(W - xg, 0.01) : -1;
+      return f < 0
+        ? [x, H + R, zr]
+        : [x, H + R * gab * f, -ovh + run * gab * f];
+    };
+    var fbot = function(u) {
+      return [-W + 2 * W * u, H, -ovh];
+    };
+    var hz = function(u) {
+      return -ovh + (dep + 2 * ovh) * u;
+    };
+    var htop = function(u) {
+      var z = hz(u);
+      var f =
+        z < zf
+          ? (z + ovh) / Math.max(zf + ovh, 0.01)
+          : z > zb
+            ? (dep + ovh - z) / Math.max(dep + ovh - zb, 0.01)
+            : 1;
+      return [W - (W - xg) * f, H + R * gab * f, z];
+    };
+    var hbot = function(u) {
+      return [W, H, hz(u)];
+    };
+
+    //HIP
+    var tdis = function() {
+      return 0.05 + Math.random() * 0.9;
+    };
+    var tcol = function(x) {
+      return ink(0.08 + Math.random() * 0.26);
+    };
+    if (gab > 0) {
+      var hpl = [E1, E2, G1, G0].map(P);
+      canv += shape(hpl, opt({ cls: rcl, col: ink(0.35) }));
+      if (th) {
+        canv += texture(
+          grid(htop, hbot, 14, 10),
+          opt({
+            tex: Math.round(area(hpl) / 10),
+            wid: 0.5,
+            len: 0.4,
+            col: function(x) {
+              return ink(0.12 + Math.random() * 0.3);
+            },
+            dis: tdis,
+            noi: function(x) {
+              return 1.2;
+            },
+          }),
+        );
+      }
+    }
+
+    //FRONT SLOPE
+    var tpath = [E0, Gl, R0, R1, G0, E1];
+    var fpl = tpath.map(P);
+    canv += shape(fpl, opt({ cls: rcl, col: ink(0.35) }));
+    if (th) {
+      canv += texture(
+        grid(ftop, fbot, 24, 12),
+        opt({
+          tex: Math.round(area(fpl) / 11),
+          wid: 0.5,
+          len: 0.4,
+          col: tcol,
+          dis: tdis,
+          noi: function(x) {
+            return 1.2;
+          },
+        }),
+      );
+    } else {
+      var nt = Math.round((2 * W) / 2.4);
+      for (var q = 1; q < nt; q++) {
+        var u = q / nt;
+        canv += line3(ftop(u), fbot(u), 0.2, 0.25);
+      }
+      if (gab > 0) {
+        var nt = Math.round(D3(E1, E2) / 2.4);
+        for (var q = 1; q < nt; q++) {
+          var u = q / nt;
+          canv += line3(htop(u), hbot(u), 0.2, 0.25);
+        }
+      }
+    }
+    canv += line3(G0, G1, th ? 0.5 : 0.4, th ? 1.2 : 0.5);
+
+    //EAVES
+    var tt = th ? H * 0.22 : 1.6;
+    var eave = function(a, b) {
+      var canv = "";
+      var pa = P(a);
+      var pb = P(b);
+      var n = Math.max(3, Math.round(distance(pa, pb) / 6));
+      var top = [];
+      var bot = [];
+      for (var i = 0; i <= n; i++) {
+        var p = lerp(pa, pb, i / n);
+        top.push(p);
+        bot.push([
+          p[0],
+          p[1] + tt * (1 + (Noise.noise(i * 0.5, p[0] * 0.1) - 0.5) * 0.25),
+        ]);
+      }
+      canv += shape(
+        top.concat(bot.reverse()),
+        opt({ cls: rcl, col: ink(0.45), wid: 0.5 }),
+      );
+      var nh = Math.round(distance(pa, pb) / (th ? 1.3 : 2.2));
+      for (var i = 1; i < nh; i++) {
+        var p = lerp(pa, pb, i / nh);
+        if (th) {
+          canv += ln(
+            [
+              [p[0], p[1] + tt * 0.1],
+              [p[0] + normRand(-0.4, 0.4), p[1] + tt * normRand(0.5, 0.95)],
+            ],
+            opt({
+              col: ink(normRand(0.08, 0.3)),
+              wid: 0.25,
+            }),
+          );
+        } else {
+          canv += ln(
+            [
+              [p[0] - 0.7, p[1] + tt],
+              [p[0], p[1] + tt * 0.3],
+              [p[0] + 0.7, p[1] + tt],
+            ],
+            opt({
+              col: ink(0.35),
+              wid: 0.2,
+            }),
+          );
+        }
+      }
+      if (th) {
+        canv += ln(
+          wob(
+            [[pa[0], pa[1] + tt * 0.45], [pb[0], pb[1] + tt * 0.45]],
+            0.4,
+            4,
+          ),
+          opt({ col: ink(0.15), wid: 0.3 }),
+        );
+      }
+      return canv;
+    };
+    canv += eave(E1, E2);
+    canv += eave(E0, E1);
+
+    //RIDGE
+    var rt = th ? H * 0.13 : 2;
+    var ra = P([-xg - (th ? 2.5 : 1), H + R, zr]);
+    var rb = P([xg + (th ? 2.5 : 1), H + R, zr]);
+    var rn = 12;
+    var rtop = [];
+    var rbot = [];
+    for (var i = 0; i <= rn; i++) {
+      var p = lerp(ra, rb, i / rn);
+      var e = th ? Math.pow(Math.abs(i / rn - 0.5) * 2, 6) * rt * 0.4 : 0;
+      rtop.push([p[0], p[1] - rt - e]);
+      rbot.push([p[0], p[1] + rt * 0.35]);
+    }
+    canv += shape(
+      wob(rtop.concat(rbot.reverse()), 0.3, 1),
+      opt({ cls: rcl, col: ink(0.5), wid: 0.5 }),
+    );
+    if (th) {
+      // bamboo poles along the ridge and crossed sticks astride it
+      canv += ln(
+        wob(
+          [[ra[0], ra[1] - rt * 0.3], [rb[0], rb[1] - rt * 0.3]],
+          0.3,
+          5,
+        ),
+        opt({ col: ink(0.3), wid: 0.3 }),
+      );
+      canv += ln(
+        wob(
+          [[ra[0], ra[1] + rt * 0.1], [rb[0], rb[1] + rt * 0.1]],
+          0.3,
+          5,
+        ),
+        opt({ col: ink(0.25), wid: 0.3 }),
+      );
+      var nr = Math.max(3, Math.round(distance(ra, rb) / 12));
+      for (var i = 0; i <= nr; i++) {
+        var p = lerp(ra, rb, (i + 0.5) / (nr + 1));
+        var k = rt * normRand(0.75, 0.95);
+        canv += ln(
+          [
+            [p[0] - k * 0.7, p[1] + rt * 0.3],
+            [p[0] + k * 0.5, p[1] - rt - k * 0.5],
+          ],
+          opt({ col: ink(0.5), wid: 0.35 }),
+        );
+        canv += ln(
+          [
+            [p[0] + k * 0.7, p[1] + rt * 0.3],
+            [p[0] - k * 0.5, p[1] - rt - k * 0.5],
+          ],
+          opt({ col: ink(0.5), wid: 0.35 }),
+        );
+      }
+    } else {
+      var ends = [ra, rb];
+      for (var i = 0; i < 2; i++) {
+        var p = ends[i];
+        canv += shape(
+          [
+            [p[0] - 1.2, p[1] + 0.6],
+            [p[0] + 1.2, p[1] + 0.6],
+            [p[0] + 1.4, p[1] - rt - 1.6],
+            [p[0] - 1.4, p[1] - rt - 1.6],
+          ],
+          opt({ cls: rcl, col: ink(0.5), wid: 0.4 }),
+        );
+      }
+    }
+    return canv;
+  };
+
+  this.minka = function(xoff, yoff, seed, args) {
+    var args = args != undefined ? args : {};
+    var wid = args.wid != undefined ? args.wid : normRand(95, 130);
+    var hei = args.hei != undefined ? args.hei : normRand(22, 27);
+    var dep = args.dep != undefined ? args.dep : wid * normRand(0.42, 0.5);
+    var fli = args.fli != undefined ? args.fli : Math.random() < 0.5;
+    var out = args.out != undefined ? args.out : Math.random() < 0.6;
+    seed = seed != undefined ? seed : 0;
+
+    var canv = "";
+    var dir = fli ? -1 : 1;
+    if (out) {
+      var kura = Math.random() < 0.5;
+      var ow = wid * normRand(0.32, 0.42);
+      var oh = kura ? hei * normRand(1.1, 1.3) : hei * normRand(0.75, 0.9);
+      canv += bld(
+        xoff + dir * (wid * 0.5 + ow * 0.55 + dep * 0.15),
+        yoff - dep * 0.3,
+        {
+          wid: ow,
+          dep: ow * normRand(0.7, 0.9),
+          hei: oh,
+          rhe: kura ? oh * 0.55 : oh * 1.4,
+          ovh: kura ? 2.5 : 5,
+          gab: kura ? 0 : randChoice([0, 0.5]),
+          mat: kura ? "rf" : "th",
+          wst: kura ? "kura" : "naya",
+          dir: dir,
+        },
+      );
+    }
+    canv += bld(xoff, yoff, {
+      wid: wid,
+      dep: dep,
+      hei: hei,
+      rhe: hei * normRand(1.7, 2.0),
+      ovh: hei * 0.35,
+      gab: normRand(0.5, 0.62),
+      mat: "th",
+      wst: "minka",
+      dir: dir,
+    });
+    return canv;
+  };
+
+  this.pagoda = function(xoff, yoff, seed, args) {
+    var args = args != undefined ? args : {};
+    var wid = args.wid != undefined ? args.wid : 64;
+    var hei = args.hei != undefined ? args.hei : 20;
+    var sto = args.sto != undefined ? args.sto : 5;
+    seed = seed != undefined ? seed : 0;
+
+    var canv = "";
+    var o = { xof: xoff, yof: yoff };
+    var opt = function(a) {
+      return Object.assign({}, o, a);
+    };
+    var col = ink(0.55);
+    var upt = hei * normRand(0.08, 0.13);
+    var span = function(i) {
+      return wid * 0.5 * (1 - (0.38 * i) / Math.max(sto - 1, 1));
+    };
+    var body = function(i) {
+      return span(i) * 0.5;
+    };
+
+    //PLATFORM
+    var pw = span(0) * 0.78;
+    var ph = hei * 0.22;
+    canv += shape(
+      wob(
+        [[-pw, 0.5], [-pw * 0.97, -ph], [pw * 0.97, -ph], [pw, 0.5]],
+        0.3,
+        4,
+      ),
+      opt({ col: ink(0.45) }),
+    );
+    canv += ln(
+      wob(
+        [[-pw * 0.98, -ph * 0.45], [pw * 0.98, -ph * 0.45]],
+        0.3,
+        6,
+      ),
+      opt({ col: ink(0.18), wid: 0.3 }),
+    );
+    for (var k = 0; k < 3; k++) {
+      var sw = pw * (0.28 - k * 0.04);
+      canv += ln(
+        [[-sw, -ph * (k / 3)], [sw, -ph * (k / 3)]],
+        opt({ col: ink(0.3), wid: 0.3 }),
+      );
+    }
+
+    var y0 = -ph;
+    for (var i = 0; i < sto; i++) {
+      var R = span(i);
+      var B = body(i);
+      var Bn = i < sto - 1 ? body(i + 1) : B * 0.36;
+      var bh = i == 0 ? hei * 0.62 : hei * 0.36;
+      var bk = hei * 0.15;
+      var et = hei * 0.08;
+      var rr = hei * (i == sto - 1 ? 0.32 : 0.22);
+      var ye = y0 - bh - bk;
+      var cv = function(x) {
+        return -upt * Math.pow(Math.min(Math.abs(x) / R, 1), 3);
+      };
+
+      //BODY
+      canv += shape(
+        wob(
+          [[-B, y0 + 0.5], [B, y0 + 0.5], [B, y0 - bh], [-B, y0 - bh]],
+          0.25,
+          3,
+        ),
+        opt({ cls: "wl", col: col }),
+      );
+      for (var s = -1; s <= 1; s += 2) {
+        canv += ln(
+          wob(
+            [[s * B * 0.34, y0], [s * B * 0.34, y0 - bh]],
+            0.2,
+            3,
+          ),
+          opt({ col: ink(0.4), wid: 0.4 }),
+        );
+        var nv = 4;
+        for (var q = 1; q < nv; q++) {
+          var x = s * (B * 0.34 + ((B * 0.66 * q) / nv) * 0.9);
+          canv += ln(
+            [[x, y0 - bh * 0.25], [x, y0 - bh * 0.75]],
+            opt({ col: ink(0.25), wid: 0.25 }),
+          );
+        }
+      }
+      canv += ln(
+        [
+          [-B * 0.3, y0 - bh * 0.85],
+          [-B * 0.3, y0 - 0.5],
+          [B * 0.3, y0 - 0.5],
+          [B * 0.3, y0 - bh * 0.85],
+        ],
+        opt({
+          col: ink(0.3),
+          wid: 0.3,
+        }),
+      );
+      canv += ln(
+        [[0, y0 - bh * 0.85], [0, y0]],
+        opt({ col: ink(0.3), wid: 0.3 }),
+      );
+      canv += ln(
+        wob(
+          [[-B, y0 - bh * 0.85], [B, y0 - bh * 0.85]],
+          0.2,
+          4,
+        ),
+        opt({ col: ink(0.4), wid: 0.4 }),
+      );
+
+      //BALCONY
+      if (i > 0) {
+        var bb = B * 1.22;
+        var bt = hei * 0.1;
+        canv += shape(
+          wob(
+            [[-bb, y0 + 0.6], [bb, y0 + 0.6], [bb, y0 - bt], [-bb, y0 - bt]],
+            0.2,
+            3,
+          ),
+          opt({ cls: "vm", col: col, wid: 0.4 }),
+        );
+        var np = Math.round(bb / 2.5);
+        for (var q = 0; q <= np; q++) {
+          var x = -bb + (2 * bb * q) / np;
+          canv += ln(
+            [[x, y0 + 0.4], [x, y0 - bt]],
+            opt({ col: ink(0.35), wid: 0.2 }),
+          );
+        }
+        canv += ln(
+          [[-bb, y0 - bt * 0.55], [bb, y0 - bt * 0.55]],
+          opt({ col: ink(0.3), wid: 0.2 }),
+        );
+      }
+
+      //BRACKETS
+      var sp = [[-B, y0 - bh], [B, y0 - bh]].concat(
+        sam(
+          R * 0.9,
+          -R * 0.9,
+          function(x) {
+            return ye + cv(x) + 0.5;
+          },
+          8,
+        ),
+      );
+      canv += shape(sp, opt({ cls: "wl", col: ink(0.35), wid: 0.3 }));
+      var nr = Math.round(R / 1.6);
+      for (var q = 0; q <= nr; q++) {
+        var t = q / nr;
+        var xa = -B + 2 * B * t;
+        var xb = -R * 0.88 + 2 * R * 0.88 * t;
+        canv += ln(
+          [[xa, y0 - bh], [xb, ye + cv(xb) + 0.3]],
+          opt({ col: ink(0.22), wid: 0.2 }),
+        );
+      }
+      canv += ln(
+        sam(
+          -B,
+          B,
+          function(x) {
+            return y0 - bh - bk * 0.35;
+          },
+          6,
+        ),
+        opt({ col: ink(0.3), wid: 0.5 }),
+      );
+      canv += ln(
+        sam(
+          -R * 0.9,
+          R * 0.9,
+          function(x) {
+            return ye + cv(x) + 0.3;
+          },
+          16,
+        ),
+        opt({ col: ink(0.35), wid: 0.6 }),
+      );
+
+      //ROOF
+      var yt = ye - et - rr;
+      var Bt = Bn * 1.12;
+      var tip = [R, ye - et + cv(R)];
+      var hip = bezmh(
+        [tip, [Bt + (R - Bt) * 0.35, ye - et - rr * 0.22], [Bt, yt]],
+        1,
+      );
+      var rp = sam(
+        -R,
+        R,
+        function(x) {
+          return ye + cv(x);
+        },
+        20,
+      )
+        .concat(hip)
+        .concat(
+          hip
+            .slice()
+            .reverse()
+            .map(function(v) {
+              return [-v[0], v[1]];
+            }),
+        );
+      canv += shape(
+        wob(rp, 0.2, 1),
+        opt({ cls: "rf", col: ink(0.5), wid: 0.45 }),
+      );
+      var hipy = function(x) {
+        var ax = Math.abs(x);
+        if (ax <= Bt) {
+          return yt;
+        }
+        for (var q = 1; q < hip.length; q++) {
+          if (hip[q][0] <= ax) {
+            var f =
+              (hip[q - 1][0] - ax) / Math.max(hip[q - 1][0] - hip[q][0], 0.001);
+            return hip[q - 1][1] * (1 - f) + hip[q][1] * f;
+          }
+        }
+        return yt;
+      };
+      var nt = Math.round(R / 1.5);
+      for (var q = 1; q < nt; q++) {
+        var x = -R * 0.97 + (2 * R * 0.97 * q) / nt;
+        var yb = ye - et + cv(x);
+        var ytp = hipy(x) + 0.4;
+        if (yb - ytp > 0.8) {
+          canv += ln(
+            [[x, yb], [x * 0.995, ytp]],
+            opt({ col: ink(0.16), wid: 0.25 }),
+          );
+        }
+      }
+      canv += ln(
+        sam(
+          -R,
+          R,
+          function(x) {
+            return ye - et + cv(x);
+          },
+          20,
+        ),
+        opt({ col: ink(0.45), wid: 0.45 }),
+      );
+      for (var s = -1; s <= 1; s += 2) {
+        canv += ln(
+          hip.map(function(v) {
+            return [s * v[0], v[1]];
+          }),
+          opt({ col: ink(0.55), wid: 0.7 }),
+        );
+        canv += ln(
+          [[s * R * 0.97, tip[1] + 0.3], [s * (R + 1.2), tip[1] - 1.6]],
+          opt({ col: ink(0.55), wid: 0.5 }),
+        );
+      }
+      y0 = yt;
+    }
+
+    //SORIN
+    var sx = hei * 0.12;
+    canv += shape(
+      wob(
+        [
+          [-sx, y0 + 0.5],
+          [sx, y0 + 0.5],
+          [sx, y0 - hei * 0.12],
+          [-sx, y0 - hei * 0.12],
+        ],
+        0.15,
+        2,
+      ),
+      opt({ col: col, wid: 0.4 }),
+    );
+    y0 -= hei * 0.12;
+    var dome = [];
+    for (var k = 0; k <= 10; k++) {
+      var a = (Math.PI * k) / 10;
+      dome.push([-Math.cos(a) * sx * 0.85, y0 - Math.sin(a) * hei * 0.1]);
+    }
+    canv += shape(dome, opt({ col: col, wid: 0.4 }));
+    y0 -= hei * 0.09;
+    canv += shape(
+      [
+        [-sx * 0.3, y0 + 0.3],
+        [sx * 0.3, y0 + 0.3],
+        [sx * 0.75, y0 - hei * 0.07],
+        [-sx * 0.75, y0 - hei * 0.07],
+      ],
+      opt({ col: col, wid: 0.4 }),
+    );
+    y0 -= hei * 0.07;
+    var sh = hei * 1.3;
+    var fh = hei * 0.34;
+    canv += ln(
+      div(
+        [[0, y0], [0, y0 - sh - fh - hei * 0.3]],
+        8,
+      ),
+      opt({ col: col, wid: hei * 0.022 }),
+    );
+    for (var r = 0; r < 9; r++) {
+      var yr = y0 - (sh * (r + 0.5)) / 9;
+      var rw = sx * (0.72 - r * 0.025);
+      canv += ln(
+        [[-rw, yr], [0, yr + 0.5], [rw, yr]],
+        opt({ col: col, wid: 0.45 }),
+      );
+    }
+    y0 -= sh;
+    var fw = sx * 0.85;
+    canv += shape(
+      wob(
+        [
+          [0, y0],
+          [fw * 0.7, y0 - fh * 0.25],
+          [fw, y0 - fh * 0.6],
+          [fw * 0.3, y0 - fh * 0.75],
+          [0, y0 - fh],
+          [-fw * 0.3, y0 - fh * 0.75],
+          [-fw, y0 - fh * 0.6],
+          [-fw * 0.7, y0 - fh * 0.25],
+        ],
+        0.25,
+        1,
+      ),
+      opt({ col: col, wid: 0.4 }),
+    );
+    y0 -= fh;
+    canv += ln(
+      [
+        [-sx * 0.45, y0 - hei * 0.05],
+        [0, y0 - hei * 0.03],
+        [sx * 0.45, y0 - hei * 0.05],
+      ],
+      opt({ col: col, wid: 0.45 }),
+    );
+    y0 -= hei * 0.1;
+    var jw = sx * 0.32;
+    var jh = hei * 0.16;
+    canv += shape(
+      [
+        [0, y0 + 0.3],
+        [jw, y0 - jh * 0.3],
+        [jw * 0.8, y0 - jh * 0.65],
+        [0, y0 - jh],
+        [-jw * 0.8, y0 - jh * 0.65],
+        [-jw, y0 - jh * 0.3],
+      ],
+      opt({ col: col, wid: 0.4 }),
+    );
+    return canv;
+  };
+
+  this.lantern = function(xoff, yoff, seed, args) {
+    var args = args != undefined ? args : {};
+    var hei = args.hei != undefined ? args.hei : normRand(10, 14);
+    seed = seed != undefined ? seed : 0;
+
+    var canv = "";
+    var h = hei;
+    var col = ink(0.6);
+    var part = function(pl, fil) {
+      canv += shape(
+        wob(
+          pl.map(function(v) {
+            return [v[0] * h, v[1] * h];
+          }),
+          h * 0.012,
+          2,
+        ),
+        {
+          xof: xoff,
+          yof: yoff,
+          col: col,
+          wid: 0.22,
+          fil: fil != undefined ? fil : "white",
+        },
+      );
+    };
+    var line = function(pl, a) {
+      canv += ln(
+        pl.map(function(v) {
+          return [v[0] * h, v[1] * h];
+        }),
+        { xof: xoff, yof: yoff, col: ink(a), wid: 0.2, out: 0.35 },
+      );
+    };
+    // base and lotus cushion
+    part([[-0.25, 0.02], [-0.23, -0.075], [0.23, -0.075], [0.25, 0.02]]);
+    line(
+      [[-0.24, -0.03], [0.24, -0.03]],
+      0.25,
+    );
+    part([
+      [-0.2, -0.07],
+      [-0.15, -0.105],
+      [-0.07, -0.12],
+      [0.07, -0.12],
+      [0.15, -0.105],
+      [0.2, -0.07],
+    ]);
+    // shaft
+    part([[-0.072, -0.11], [-0.06, -0.47], [0.06, -0.47], [0.072, -0.11]]);
+    line(
+      [[-0.068, -0.3], [0.068, -0.3]],
+      0.45,
+    );
+    line(
+      [[-0.067, -0.318], [0.067, -0.318]],
+      0.3,
+    );
+    // middle platform
+    part([
+      [-0.075, -0.46],
+      [-0.19, -0.515],
+      [-0.2, -0.55],
+      [0.2, -0.55],
+      [0.19, -0.515],
+      [0.075, -0.46],
+    ]);
+    line(
+      [[-0.19, -0.522], [0.19, -0.522]],
+      0.25,
+    );
+    // fire box with its window
+    part([[-0.13, -0.545], [-0.125, -0.715], [0.125, -0.715], [0.13, -0.545]]);
+    part(
+      [[-0.06, -0.58], [-0.06, -0.69], [0.06, -0.69], [0.06, -0.58]],
+      ink(0.45),
+    );
+    // umbrella roof with curled corners
+    var tw = normRand(0.4, 0.46);
+    part([
+      [-tw, -0.765],
+      [-tw + 0.07, -0.72],
+      [tw - 0.07, -0.72],
+      [tw, -0.765],
+      [tw - 0.05, -0.775],
+      [0.24, -0.81],
+      [0.09, -0.87],
+      [-0.09, -0.87],
+      [-0.24, -0.81],
+      [-tw + 0.05, -0.775],
+    ]);
+    line(
+      [[-tw + 0.03, -0.765], [-tw - 0.01, -0.8], [-tw + 0.04, -0.81]],
+      0.55,
+    );
+    line(
+      [[tw - 0.03, -0.765], [tw + 0.01, -0.8], [tw - 0.04, -0.81]],
+      0.55,
+    );
+    // jewel on a small lotus
+    part([[-0.05, -0.865], [-0.09, -0.895], [0.09, -0.895], [0.05, -0.865]]);
+    part([
+      [-0.06, -0.895],
+      [-0.075, -0.925],
+      [-0.045, -0.965],
+      [0, -1],
+      [0.045, -0.965],
+      [0.075, -0.925],
+      [0.06, -0.895],
+    ]);
+    return canv;
+  };
+
+  this.bridge = function(xoff, yoff, seed, args) {
+    var args = args != undefined ? args : {};
+    var len = args.len != undefined ? args.len : normRand(70, 110);
+    var hei = args.hei != undefined ? args.hei : len * normRand(0.2, 0.26);
+    var rai = args.rai != undefined ? args.rai : 10;
+    var cnt = args.cnt != undefined ? args.cnt : randChoice([0, 1, 1, 2]);
+    var wat = args.wat != undefined ? args.wat : 6;
+    var sca = args.sca != undefined ? args.sca : 0.3;
+    seed = seed != undefined ? seed : 0;
+
+    var canv = "";
+    var o = { xof: xoff, yof: yoff };
+    var opt = function(a) {
+      return Object.assign({}, o, a);
+    };
+    var col = ink(0.55);
+    var hl = len / 2;
+    var rc = (hl * hl + hei * hei) / (2 * hei);
+    var dk = function(x) {
+      var xx = Math.min(Math.abs(x), hl);
+      return -(Math.sqrt(rc * rc - xx * xx) - (rc - hei));
+    };
+    var dth = 2.6;
+    var fr = 3.4;
+    var curve = function(x0, x1, off) {
+      var n = Math.ceil(Math.abs(x1 - x0) / 3) + 2;
+      return sam(
+        x0,
+        x1,
+        function(x) {
+          return dk(x) + off;
+        },
+        n,
+      );
+    };
+    var giboshi = function(x, y, a) {
+      var gw = 1.9;
+      var gh = 4.2;
+      var pf = [
+        [0.55, 0],
+        [0.62, -0.15],
+        [1.0, -0.38],
+        [0.85, -0.62],
+        [0.35, -0.82],
+        [0, -1],
+      ];
+      var pl = pf
+        .map(function(v) {
+          return [x - v[0] * gw, y + v[1] * gh];
+        })
+        .concat(
+          pf
+            .slice(0, -1)
+            .reverse()
+            .map(function(v) {
+              return [x + v[0] * gw, y + v[1] * gh];
+            }),
+        );
+      return (
+        shape(pl, opt({ col: ink(a), wid: 0.35 })) +
+        ln(
+          [[x - gw * 0.6, y - gh * 0.15], [x + gw * 0.6, y - gh * 0.15]],
+          opt({ col: ink(a * 0.8), wid: 0.25 }),
+        )
+      );
+    };
+    var railing = function(dy, a, far) {
+      var canv = "";
+      var c = ink(a);
+      var xe = hl * 0.9;
+      var rails = far
+        ? [[rai, 1.5]]
+        : [
+            [rai, 1.5],
+            [rai * 0.55, 1.0],
+            [1.6, 1.0],
+          ];
+      for (var k = 0; k < rails.length; k++) {
+        var r = rails[k];
+        var rl = curve(-xe, xe, dy - r[0] - r[1] / 2).concat(
+          curve(xe, -xe, dy - r[0] + r[1] / 2),
+        );
+        canv += shape(wob(rl, 0.15, 1), opt({ cls: "vm", col: c, wid: 0.35 }));
+      }
+      var np = Math.max(3, Math.round(len / 13));
+      for (var k = 0; k <= np; k++) {
+        var x = -xe + (2 * xe * k) / np;
+        var end = k == 0 || k == np;
+        var pw = end ? 1.3 : 0.75;
+        var ph = rai + (end ? 2.5 : 1.3);
+        var yb = dk(x) + dy + 0.5;
+        canv += shape(
+          wob(
+            [[x - pw, yb], [x - pw, yb - ph], [x + pw, yb - ph], [x + pw, yb]],
+            0.12,
+            2,
+          ),
+          opt({
+            cls: "vm",
+            col: c,
+            wid: 0.35,
+          }),
+        );
+        if (end) {
+          canv += giboshi(x, yb - ph, a);
+        }
+      }
+      return canv;
+    };
+
+    //FAR RAILING
+    canv += railing(-fr, 0.28, true);
+
+    //DECK
+    canv += shape(
+      curve(-hl, hl, 0).concat(curve(hl, -hl, -fr)),
+      opt({ col: ink(0.25), wid: 0.3 }),
+    );
+    for (var x = -hl + 2; x < hl - 1; x += 2.8) {
+      canv += ln(
+        [[x, dk(x) - 0.3], [x - 0.3, dk(x) - fr + 0.3]],
+        opt({ col: ink(0.1), wid: 0.15, out: 0.4 }),
+      );
+    }
+
+    //PILES
+    var npi = Math.max(2, Math.round(len / 22));
+    var pxs = [];
+    for (var k = 0; k < npi; k++) {
+      var x = -hl * 0.68 + (1.36 * hl * k) / Math.max(npi - 1, 1);
+      var top = dk(x) + dth;
+      if (wat - top > 2) {
+        pxs.push(x);
+        canv += shape(
+          wob(
+            [
+              [x - 0.8, top - 0.5],
+              [x + 0.8, top - 0.5],
+              [x + 0.9, wat],
+              [x - 0.9, wat],
+            ],
+            0.15,
+            2,
+          ),
+          opt({
+            col: ink(0.45),
+            wid: 0.35,
+          }),
+        );
+      }
+    }
+    for (var k = 0; k < pxs.length - 1; k++) {
+      var ya = Math.max(dk(pxs[k]), dk(pxs[k + 1])) + dth;
+      var yy = ya + (wat - ya) * 0.4;
+      canv += shape(
+        [
+          [pxs[k], yy - 0.6],
+          [pxs[k + 1], yy - 0.6],
+          [pxs[k + 1], yy + 0.6],
+          [pxs[k], yy + 0.6],
+        ],
+        opt({ col: ink(0.4), wid: 0.3 }),
+      );
+    }
+    // stone revetments under the ends
+    for (var s = -1; s <= 1; s += 2) {
+      var ab = [
+        [s * (hl - 4), 0.3],
+        [s * (hl + 9), 0.3],
+        [s * (hl + 10), wat],
+        [s * (hl - 6), wat],
+      ];
+      canv += shape(wob(ab, 0.3, 3), opt({ col: ink(0.35), wid: 0.3 }));
+      for (var r = 0; r < 2; r++) {
+        var yr = (wat * (r + 1)) / 3;
+        canv += ln(
+          wob(
+            [[s * (hl - 4.5 - r * 0.6), yr], [s * (hl + 9.3 + r * 0.3), yr]],
+            0.2,
+            3,
+          ),
+          opt({ col: ink(0.2), wid: 0.2 }),
+        );
+        for (var q = 0; q < 4; q++) {
+          var xq = s * (hl - 3 + q * 3.4 + (r % 2) * 1.7);
+          canv += ln(
+            [[xq, yr - wat / 3 + 0.4], [xq + 0.2, yr - 0.2]],
+            opt({ col: ink(0.2), wid: 0.2 }),
+          );
+        }
+      }
+    }
+    for (var k = 0; k < pxs.length; k++) {
+      canv += ln(
+        [
+          [pxs[k] - normRand(3, 6), wat + 1],
+          [pxs[k] + normRand(3, 6), wat + 1],
+        ],
+        opt({ col: ink(normRand(0.15, 0.3)), wid: 0.3 }),
+      );
+    }
+
+    //GIRDER
+    canv += shape(
+      curve(-hl, hl, 0).concat(curve(hl, -hl, dth)),
+      opt({ cls: "vm", col: col, wid: 0.45 }),
+    );
+
+    //TRAVELLERS
+    var xs = [];
+    for (var k = 0; k < cnt; k++) {
+      var x =
+        cnt == 1
+          ? normRand(-hl * 0.4, hl * 0.4)
+          : (k == 0 ? -1 : 1) * normRand(hl * 0.12, hl * 0.42);
+      xs.push(x);
+    }
+    for (var k = 0; k < xs.length; k++) {
+      var x = xs[k];
+      var fl = Math.random() < 0.5;
+      var stk = Math.random() < 0.45;
+      var ps = {
+        sca: sca,
+        fli: fl,
+        hat: randChoice([Man.hat01, Man.hat02, Man.hat02]),
+      };
+      if (stk) {
+        // a walking staff held out in front, its foot on the deck
+        var ps2 = normRand(0.3, 0.45);
+        var h8 = [normRand(15, 19), normRand(10, 16)];
+        var lp = (80 - h8[1]) / Math.cos(ps2);
+        ps.hnd = [
+          h8,
+          [
+            h8[0] + (Math.sin(ps2) * lp) / 3.3,
+            h8[1] + (Math.cos(ps2) * lp) / 3.3,
+          ],
+          -1,
+          1,
+        ];
+        ps.ite = Man.stick01;
+      }
+      canv += figure(xoff + x, yoff + dk(x) - fr * 0.45, ps);
+    }
+
+    //NEAR RAILING
+    canv += railing(0, 0.55);
+    return canv;
+  };
+
+  this.fuji = function(xoff, yoff, seed, args) {
+    var args = args != undefined ? args : {};
+    var wid = args.wid != undefined ? args.wid : 900;
+    var hei = args.hei != undefined ? args.hei : 300;
+    var sno = args.sno != undefined ? args.sno : normRand(0.28, 0.36);
+    seed = seed != undefined ? seed : 0;
+
+    var canv = "";
+    var hw = wid / 2;
+    var st = normRand(0.055, 0.075);
+    var pl = normRand(1.3, 1.55);
+    var pr = normRand(1.3, 1.55);
+    var prof = function(x) {
+      var u = Math.abs(x) / hw;
+      if (u >= 1) {
+        return 0;
+      }
+      if (u < st) {
+        var b = Math.sin((Math.PI * u) / st);
+        return -hei - hei * 0.018 * (0.4 + Noise.noise(x * 0.08, seed, 3)) * b;
+      }
+      var v = (u - st) / (1 - st);
+      var y = -hei * Math.pow(1 - v, x < 0 ? pl : pr);
+      return (
+        y +
+        (Noise.noise(x * 0.01, seed, 5) - 0.5) *
+          hei *
+          0.04 *
+          Math.sin(Math.PI * v)
+      );
+    };
+    var dx = wid / 180;
+
+    //BODY
+    var body = [];
+    for (var x = -hw; x <= hw + 0.01; x += dx) {
+      body.push([x, prof(x)]);
+    }
+    var c = Math.round(216 + Noise.noise(seed, 0.5) * 12);
+    canv += poly(
+      body.concat([[hw, 2], [-hw, 2]]),
+      {
+        xof: xoff,
+        yof: yoff,
+        fil: "rgb(" + c + "," + c + "," + c + ")",
+        str: "none",
+        cls: "fj",
+      },
+    );
+
+    //SNOW
+    var ys = -hei * (1 - sno);
+    var ws = 0;
+    for (var x = 0; x < hw; x += dx) {
+      if (prof(x) < ys || prof(-x) < ys) {
+        ws = x;
+      }
+    }
+    // tongues of snow running down the ravines, and ribs of rock between
+    var fin = [];
+    var nf = Math.round(normRand(12, 18));
+    for (var k = 0; k < nf; k++) {
+      fin.push([
+        normRand(-1.15, 1.15) * ws,
+        hei * normRand(0.03, 0.2),
+        ws * normRand(0.025, 0.07),
+      ]);
+    }
+    var nr = Math.round(normRand(6, 10));
+    for (var k = 0; k < nr; k++) {
+      fin.push([
+        normRand(-1, 1) * ws,
+        -hei * normRand(0.02, 0.06),
+        ws * normRand(0.03, 0.06),
+      ]);
+    }
+    var sy = function(x) {
+      var y = ys + (Noise.noise(x * 0.012, seed, 7) - 0.5) * hei * 0.1;
+      y += (Noise.noise(x * 0.15, seed, 9) - 0.5) * hei * 0.025;
+      for (var k = 0; k < fin.length; k++) {
+        var f = Math.max(0, 1 - Math.abs(x - fin[k][0]) / fin[k][2]);
+        y += fin[k][1] * Math.pow(f, 2);
+      }
+      y = Math.max(y, ys - hei * sno * 0.35);
+      return Math.max(y, prof(x));
+    };
+    var xs0 = -ws * 1.5;
+    var xs1 = ws * 1.5;
+    var top = [];
+    var bot = [];
+    for (var x = xs0; x <= xs1; x += dx * 0.4) {
+      top.push([x, prof(x)]);
+      bot.push([x, sy(x)]);
+    }
+    canv += poly(top.concat(bot.slice().reverse()), {
+      xof: xoff,
+      yof: yoff,
+      fil: "white",
+      str: "none",
+      cls: "fjs",
+    });
+    //STREAKS
+    var nst = Math.round(normRand(10, 16));
+    for (var k = 0; k < nst; k++) {
+      var x0 = normRand(-1.35, 1.35) * ws;
+      var y0 = sy(x0) + normRand(1, 8) * (hei / 300);
+      var d = [(x0 / hw) * 1.3, 1];
+      var dl = Math.sqrt(d[0] * d[0] + d[1] * d[1]);
+      d = [d[0] / dl, d[1] / dl];
+      var sl = hei * normRand(0.05, 0.2);
+      var sw = normRand(0.8, 2.2) * (wid / 900);
+      var lt = [];
+      var rt = [];
+      for (var i = 0; i <= 6; i++) {
+        var t = i / 6;
+        var w = sw * Math.pow(1 - t, 0.8) * Math.min(1, 0.4 + t * 3);
+        var p = [x0 + d[0] * sl * t, y0 + d[1] * sl * t];
+        p[0] += (Noise.noise(k, t * 2, seed) - 0.5) * sw * 2;
+        p[1] = Math.max(p[1], prof(p[0]) + 1);
+        lt.push([p[0] - d[1] * w, p[1] + d[0] * w]);
+        rt.push([p[0] + d[1] * w, p[1] - d[0] * w]);
+      }
+      canv += poly(lt.concat(rt.reverse()), {
+        xof: xoff,
+        yof: yoff,
+        fil: "white",
+        str: "none",
+        cls: "fjs",
+      });
+    }
+
+    //OUTLINE
+    var ol = body.filter(function(v) {
+      return v[1] < -hei * 0.1;
+    });
+    canv += stroke(mv(ol, xoff, yoff), { col: ink(0.18), noi: 1, wid: 1.6 });
+    canv += stroke(
+      mv(
+        bot.filter(function(v, i) {
+          return i % 2 == 0;
+        }),
+        xoff,
+        yoff,
+      ),
+      { col: ink(0.06), noi: 1, wid: 0.8 },
+    );
+    return canv;
+  };
+
+  this.kasumi = function(xoff, yoff, seed, args) {
+    var args = args != undefined ? args : {};
+    var len = args.len != undefined ? args.len : normRand(300, 900);
+    var thi = args.thi != undefined ? args.thi : normRand(12, 28);
+    var cnt = args.cnt != undefined ? args.cnt : randChoice([1, 2, 2, 3]);
+    var fil = args.fil != undefined ? args.fil : "white";
+    var alp = args.alp != undefined ? args.alp : 0.08;
+    seed = seed != undefined ? seed : 0;
+
+    var canv = "";
+    var bands = [];
+    var yb = 0;
+    for (var k = 0; k < cnt; k++) {
+      var l = k == 0 ? len : len * normRand(0.45, 0.85);
+      var t = k == 0 ? thi : thi * normRand(0.7, 1.1);
+      var cx = k == 0 ? 0 : normRand(-0.35, 0.35) * len;
+      bands.push([cx, yb, l, t]);
+      yb -= t * normRand(0.45, 0.75);
+    }
+    for (var k = bands.length - 1; k >= 0; k--) {
+      var cx = bands[k][0];
+      var by = bands[k][1];
+      var l = bands[k][2];
+      var t = bands[k][3];
+      var r = t / 2;
+      var my = by - r;
+      var n0 = Math.random() * 100;
+      var xa0 = cx - l / 2 + r + normRand(-0.6, 0.6) * t;
+      var xb0 = cx - l / 2 + r + normRand(-0.6, 0.6) * t;
+      var xa1 = cx + l / 2 - r + normRand(-0.6, 0.6) * t;
+      var xb1 = cx + l / 2 - r + normRand(-0.6, 0.6) * t;
+      var e0 = normRand(0.6, 1.2);
+      var e1 = normRand(0.6, 1.2);
+      // ends between round and blunt
+      var q0 = normRand(0.35, 1);
+      var q1 = normRand(0.35, 1);
+      var und = function(x, z) {
+        return (
+          (Noise.noise(x * 0.006, n0 + z) - 0.5) * t * 0.22 +
+          (Noise.noise(x * 0.05, n0 + z + 5) - 0.5) * t * 0.06
+        );
+      };
+      // a rounded end from the top edge (xa) to the bottom edge (xb)
+      var cap = function(xa, xb, e, q, a0) {
+        var pl = [];
+        for (var i = 1; i < 14; i++) {
+          var a = a0 + (Math.PI * i) / 14;
+          var f = (Math.sin(a) + 1) / 2;
+          var c = Math.cos(a);
+          var sn = Math.sin(a);
+          pl.push([
+            xa * (1 - f) +
+              xb * f +
+              Math.sign(c) * Math.pow(Math.abs(c), q) * r * e,
+            my + Math.sign(sn) * Math.pow(Math.abs(sn), q) * r,
+          ]);
+        }
+        return pl;
+      };
+      var pl = [];
+      var n = Math.max(6, Math.round((xa1 - xa0) / 12));
+      for (var i = 0; i <= n; i++) {
+        var x = xa0 + ((xa1 - xa0) * i) / n;
+        pl.push([x, my - r + und(x, 0)]);
+      }
+      pl = pl.concat(cap(xa1, xb1, e1, q1, -Math.PI / 2));
+      var n = Math.max(6, Math.round((xb1 - xb0) / 12));
+      for (var i = 0; i <= n; i++) {
+        var x = xb1 - ((xb1 - xb0) * i) / n;
+        pl.push([x, my + r + und(x, 30) * 0.6]);
+      }
+      pl = pl.concat(cap(xa0, xb0, e0, q0, Math.PI / 2));
+      canv += poly(pl, {
+        xof: xoff,
+        yof: yoff,
+        fil: fil,
+        str: "none",
+        cls: "ksm",
+      });
+      canv += stroke(mv(pl.concat([pl[0]]), xoff, yoff), {
+        col: ink(alp),
+        noi: 0.5,
+        wid: 0.8,
+        fun: function(x) {
+          return 1;
+        },
+      });
+    }
+    return canv;
+  };
+
+  this.boat = function(xoff, yoff, seed, args) {
+    var args = args != undefined ? args : {};
+    var sca = args.sca != undefined ? args.sca : 1;
+    var fli = args.fli != undefined ? args.fli : false;
+    var len = args.len != undefined ? args.len : normRand(100, 130);
+    var sai = args.sai != undefined ? args.sai : Math.random() < 0.5;
+    var typ =
+      args.typ != undefined
+        ? args.typ
+        : sai
+          ? "cargo"
+          : randChoice(["ferry", "ferry", "cargo"]);
+    var tom = args.tom != undefined ? args.tom : !sai && Math.random() < 0.45;
+    seed = seed != undefined ? seed : 0;
+
+    var canv = "";
+    var o = { xof: xoff, yof: yoff };
+    var opt = function(a) {
+      return Object.assign({}, o, a);
+    };
+    var dir = fli ? -1 : 1;
+    var L = len * sca;
+    var hs = 6 * sca;
+    var br = normRand(10, 15) * sca;
+    var X = function(t) {
+      return (t - 0.5) * L * dir;
+    };
+    var gun = function(t) {
+      var b = Math.max(0, (t - 0.55) / 0.45);
+      var a = Math.max(0, (0.12 - t) / 0.12);
+      return -hs - br * Math.pow(b, 2) - hs * 0.3 * a * a;
+    };
+    var bot = function(t) {
+      var b = Math.max(0, (t - 0.5) / 0.5);
+      var a = Math.max(0, (0.08 - t) / 0.08);
+      return (
+        2 * sca - (2 * sca - gun(1) * 0.7) * Math.pow(b, 1.7) - 1.5 * sca * a
+      );
+    };
+    var fgh = function(t) {
+      return (
+        2.6 *
+        sca *
+        Math.pow(Math.sin(Math.PI * Math.min(Math.max(t, 0), 1)), 0.5)
+      );
+    };
+    var floor = function(t) {
+      return gun(t) + 4 * sca;
+    };
+    var t0 = 0.36;
+    var t1 = normRand(0.62, 0.7);
+
+    //SAIL
+    if (sai) {
+      var tm = normRand(0.42, 0.5);
+      var mx = X(tm);
+      var hm = L * normRand(0.65, 0.85);
+      var sw = L * normRand(0.15, 0.2);
+      var s0 = -hm + 3 * sca;
+      var s1 = gun(tm) - 5 * sca;
+      var bw = normRand(0.04, 0.08) * sw;
+      var sl = [];
+      var sr = [];
+      for (var i = 0; i <= 10; i++) {
+        var t = i / 10;
+        var y = s0 + (s1 - s0) * t;
+        var b = Math.sin(Math.PI * t) * bw;
+        sl.push([mx - sw - b, y]);
+        sr.push([mx + sw + b, y + Math.sin(Math.PI * t) * 0.6 * sca]);
+      }
+      var sg = function(f) {
+        return sl.map(function(v, j) {
+          var p = lerp(v, sr[j], f);
+          return [p[0], p[1] + Math.sin(Math.PI * f) * (j / 10) * 1.5 * sca];
+        });
+      };
+      canv += ln(
+        div(
+          [[mx, floor(tm)], [mx, -hm]],
+          6,
+        ),
+        opt({ col: ink(0.55), wid: 0.5 * sca + 0.2 }),
+      );
+      var stay = function(p) {
+        return bezmh(
+          [[mx, -hm + 1], [(mx + p[0]) / 2, (-hm + p[1]) / 2 + 3 * sca], p],
+          1,
+        ).filter(function(v, i) {
+          return i % 3 == 0;
+        });
+      };
+      canv += ln(
+        stay([X(1.03), gun(1) - 1.5 * sca]),
+        opt({ col: ink(0.3), wid: 0.15 }),
+      );
+      canv += ln(stay([X(0.01), gun(0.01)]), opt({ col: ink(0.3), wid: 0.15 }));
+      var sp = sl.concat(sg(1).reverse());
+      canv += shape(wob(sp, 0.35 * sca, 1), opt({ col: ink(0.5), wid: 0.4 }));
+      var nv = randChoice([6, 7, 8, 9]);
+      for (var i = 1; i < nv; i++) {
+        canv += ln(
+          sg((i + normRand(-0.25, 0.25)) / nv),
+          opt({ col: ink(normRand(0.22, 0.4)), wid: 0.2 }),
+        );
+      }
+      var nh = randChoice([3, 4]);
+      for (var i = 1; i <= nh; i++) {
+        var j = Math.round((10 * i) / (nh + 1));
+        var y = sl[j][1];
+        canv += ln(
+          sam(
+            sl[j][0],
+            sr[j][0],
+            function(x) {
+              return (
+                y +
+                Math.sin((Math.PI * (x - sl[j][0])) / (sr[j][0] - sl[j][0])) *
+                  (j / 10) *
+                  1.5 *
+                  sca
+              );
+            },
+            8,
+          ),
+          opt({ col: ink(0.15), wid: 0.2 }),
+        );
+      }
+      canv += ln(
+        div(
+          [[mx - sw * 1.12, s0 - 0.6], [mx + sw * 1.12, s0 - 0.6]],
+          4,
+        ),
+        opt({ col: ink(0.55), wid: 0.45 * sca + 0.2 }),
+      );
+      canv += ln(
+        div(
+          [[sl[10][0] - 0.5, s1 + 0.4], [sr[10][0] + 0.5, s1 + 0.4]],
+          4,
+        ),
+        opt({ col: ink(0.45), wid: 0.35 * sca + 0.15 }),
+      );
+    }
+
+    //INSIDE
+    var ins = [];
+    var inb = [];
+    for (var i = 0; i <= 20; i++) {
+      var t = 0.02 + (i / 20) * 0.94;
+      ins.push([X(t), gun(t) - fgh((t - 0.02) / 0.94)]);
+      inb.push([X(t), gun(t)]);
+    }
+    canv += shape(ins.concat(inb.reverse()), opt({ col: ink(0.3), wid: 0.3 }));
+
+    //SHELTER
+    if (tom) {
+      var th = normRand(9, 12) * sca;
+      var tt = [];
+      var tb = [];
+      for (var i = 0; i <= 12; i++) {
+        var t = t0 + ((t1 - t0) * i) / 12;
+        var f = Math.pow(Math.sin((Math.PI * i) / 12), 0.3);
+        tt.push([X(t), gun(t) - fgh(t) * 0.5 - th * f]);
+        tb.push([X(t), gun(t) + 1]);
+      }
+      canv += shape(
+        wob(tt.concat(tb.slice().reverse()), 0.3 * sca, 1),
+        opt({ col: ink(0.45), wid: 0.35 }),
+      );
+      var nm = Math.round(Math.abs(X(t1) - X(t0)) / (2.4 * sca));
+      for (var i = 1; i < nm; i++) {
+        var f = i / nm;
+        var k = Math.min(11, Math.floor(f * 12));
+        var p = lerp(tt[k], tt[k + 1], f * 12 - k);
+        canv += ln(
+          [[p[0], p[1] + 0.4], [p[0], gun(t0 + (t1 - t0) * f)]],
+          opt({ col: ink(0.18), wid: 0.15 }),
+        );
+      }
+      for (var r = 1; r <= 2; r++) {
+        canv += ln(
+          tt.map(function(v, i) {
+            return [
+              v[0],
+              v[1] + ((gun(t0 + ((t1 - t0) * i) / 12) - v[1]) * r) / 3,
+            ];
+          }),
+          opt({ col: ink(0.15), wid: 0.2 }),
+        );
+      }
+    }
+
+    //CARGO
+    if (typ == "cargo") {
+      var bw = 8.5 * sca;
+      var bh = 5.5 * sca;
+      var n = Math.round(normRand(3, 5));
+      var tc = tom ? t1 + 0.02 : 0.3;
+      if (tom) {
+        n = Math.min(n, 3);
+      }
+      for (var r = 0; r < Math.min(n, 3); r++) {
+        for (var i = 0; i < n - r; i++) {
+          var t = tc + (i + r * 0.5 + 0.5) * (bw / L) * 1.02;
+          var cxb = X(t);
+          var cyb = gun(t) + 2.5 * sca - bh * 0.5 - r * bh * 0.85;
+          var bp = [];
+          for (var a = 0; a < 16; a++) {
+            var an = (a / 16) * Math.PI * 2;
+            bp.push([
+              cxb +
+                Math.sign(Math.cos(an)) *
+                  Math.pow(Math.abs(Math.cos(an)), 0.6) *
+                  bw *
+                  0.5,
+              cyb +
+                Math.sign(Math.sin(an)) *
+                  Math.pow(Math.abs(Math.sin(an)), 0.8) *
+                  bh *
+                  0.5,
+            ]);
+          }
+          canv += shape(
+            wob(bp, 0.25 * sca, 1),
+            opt({ col: ink(0.45), wid: 0.3 }),
+          );
+          for (var q = -1; q <= 1; q += 2) {
+            var qx = cxb + q * bw * 0.24;
+            canv += ln(
+              [
+                [qx - 0.3, cyb - bh * 0.46],
+                [qx + 0.4 * q, cyb],
+                [qx - 0.3, cyb + bh * 0.46],
+              ],
+              opt({
+                col: ink(0.3),
+                wid: 0.2,
+              }),
+            );
+          }
+        }
+      }
+    } else {
+      var n = randChoice([1, 2, 2, 3]);
+      if (tom) {
+        n = Math.min(n, 2);
+      }
+      for (var i = 0; i < n; i++) {
+        var t = tom
+          ? i % 2
+            ? t1 + 0.05 + i * 0.04
+            : t0 - 0.07 - i * 0.03
+          : 0.3 + i * 0.17 + normRand(-0.02, 0.02);
+        canv += Man.man(xoff + X(t), yoff + floor(t), {
+          sca: 0.4 * sca,
+          hat: randChoice([Man.hat02, Man.hat02, Man.hat01]),
+          fli: randChoice([true, false]),
+          len: [0, 30, 20, 30, 10, 30, 30, 30, 30],
+        });
+      }
+    }
+
+    //BOATMAN
+    var tb = 0.09;
+    var ps = normRand(0.3, 0.5);
+    var h8 = [normRand(9, 13), normRand(2, 8)];
+    var lp = (105 - h8[1]) / Math.cos(ps);
+    canv += figure(xoff + X(tb), yoff + gun(tb) + 1.5 * sca, {
+      sca: 0.34 * sca,
+      fli: dir < 0,
+      hat: randChoice([Man.hat02, Man.hat02, Man.hat01]),
+      lea: 0.12,
+      ite: Man.stick01,
+      hnd: [
+        h8,
+        [h8[0] + (Math.sin(ps) * lp) / 3.3, h8[1] + (Math.cos(ps) * lp) / 3.3],
+        1,
+        1,
+      ],
+    });
+
+    //HULL
+    var hl = [];
+    var hb = [];
+    for (var i = 0; i <= 24; i++) {
+      var t = i / 24;
+      hl.push([X(t), gun(t)]);
+      hb.push([X(t), bot(t)]);
+    }
+    var hull = hl
+      .concat([[X(1.04), gun(1) - 1.5 * sca]])
+      .concat(hb.slice(0, -1).reverse());
+    canv += shape(wob(hull, 0.3 * sca, 1), opt({ col: ink(0.55), wid: 0.5 }));
+    canv += ln(
+      hl.slice(1, -3).map(function(v) {
+        return [v[0], v[1] + hs * 0.35];
+      }),
+      opt({ col: ink(0.35), wid: 0.35 }),
+    );
+    canv += ln(
+      hl.slice(2, -5).map(function(v, i) {
+        return [v[0], (v[1] + hs * 0.35 + hb[i + 2][1]) / 2 + 0.3 * sca];
+      }),
+      opt({ col: ink(0.15), wid: 0.25 }),
+    );
+    canv += ln(
+      [
+        [X(0.965), gun(0.965)],
+        [X(1.02), gun(1) - 0.8 * sca],
+        [X(0.94), bot(0.94)],
+      ],
+      opt({ col: ink(0.4), wid: 0.3 }),
+    );
+    //RIPPLES
+    for (var i = 0; i < 5; i++) {
+      var t = normRand(-0.1, 1.05);
+      var w = normRand(4, 12) * sca;
+      var y = normRand(2.5, 5) * sca;
+      canv += stroke(
+        mv(
+          div(
+            [[X(t) - w, y], [X(t) + w, y]],
+            4,
+          ),
+          xoff,
+          yoff,
+        ),
+        {
+          col: ink(normRand(0.15, 0.35)),
+          wid: 0.6,
+        },
+      );
+    }
+    return canv;
+  };
+}();
+
+</script>
 <script type="text/x-shanshui" id="Planner">
   // Everything above this script is the original generator, plus the
   // Japanese and European elements. This part plans the world column by
@@ -4811,7 +6967,7 @@
     flatExtra: function(xoff, yoff, grbd) {
       if (!FEATURES.bridges) return "";
       return aside(["bridge", Math.round(xoff), Math.round(yoff)], function() {
-        if (Math.random() > 0.45 || grbd.xmax - grbd.xmin < 140) return "";
+        if (Math.random() > 0.22 || grbd.xmax - grbd.xmin < 140) return "";
         META.bridge = 1;
         var x = xoff + normRand(grbd.xmin * 0.55, grbd.xmax * 0.55);
         var y = yoff + (grbd.ymin + grbd.ymax) / 2 + 22;
@@ -5042,16 +7198,20 @@
       tone: [22, 40, 78, 1],
       bottArch: function(x, y, seed) {
         var tt = randChoice([0, 0, 1, 1, 1, 2, 3]);
-        if (tt == 1) return house(Japan.minka)(x, y, seed);
-        if (tt == 2) return house(Japan.torii)(x, y, seed);
-        if (tt == 3) return Japan.lantern(x, y, seed, {});
+        // Sized to sit on a mountainside like the Chinese pavilions do.
+        if (tt == 1) {
+          return house(Japan.minka)(x, y, seed, { wid: normRand(48, 72), hei: normRand(9, 12), out: Math.random() < 0.2 });
+        }
+        if (tt == 2) return house(Japan.torii)(x, y, seed, { wid: normRand(22, 30), hei: normRand(26, 36) });
+        if (tt == 3) return Japan.lantern(x, y, seed, { hei: normRand(8, 11) });
         return "";
       },
       topArch: function(x, y, seed) {
-        return house(Japan.pagoda)(x, y, seed, { sto: randChoice([3, 5, 5]) });
+        return house(Japan.pagoda)(x, y, seed, { sto: randChoice([3, 5, 5]), wid: normRand(40, 50), hei: normRand(11, 14) });
       },
       flatArch: function(x, y, seed, args) {
-        return house(randChoice([Japan.minka, Japan.minka, Japan.torii]))(x, y, seed);
+        if (Math.random() < 0.3) return house(Japan.torii)(x, y, seed, { wid: normRand(26, 34), hei: normRand(32, 42) });
+        return house(Japan.minka)(x, y, seed, { wid: normRand(70, 100), hei: normRand(12, 15) });
       },
       boat: function(x, y, args) {
         return Japan.boat(x, y, Math.random(), args);
@@ -5064,7 +7224,7 @@
       },
       fuji: function(x, y) {
         return (
-          Japan.fuji(x, y, Math.random(), { wid: normRand(850, 1150), hei: normRand(260, 330) }) +
+          Japan.fuji(x, y, Math.random(), { wid: normRand(800, 1050), hei: normRand(200, 245) }) +
           Japan.kasumi(x + normRand(-100, 100), y + 4, Math.random(), { len: normRand(700, 1000) })
         );
       },
@@ -5072,7 +7232,7 @@
       extra: function(k, reg) {
         seedStr("fuji", k);
         if (((k % 9) + 9) % 9 == 4 && Math.random() < 0.8) {
-          reg.push({ tag: "fuji", x: k * CW + CW / 2 + normRand(-120, 120), y: 288 });
+          reg.push({ tag: "fuji", x: k * CW + CW / 2 + normRand(-120, 120), y: 300 });
         }
       },
       ins: function(x, y) {
@@ -5802,9 +7962,11 @@
  *   ambience (water, wind, warmth, Aeolian harp) -> amb bus -----+--> reverb ----+
  *   mix -> tone LP -> season gain -> volume -> fade -> HP 28 Hz -> compressor -> trim -> out
  *
- * Time: events go into a small priority queue. A slow, swung pulse (0.5-1.2 s) takes at
- * most one event per beat; a token bucket caps the long-run note rate; events older than
- * MAX_AGE are forgotten and the least salient are dropped when the queue is full.
+ * Time: events go into a small priority queue (6 slots). A slow, swung pulse (0.5-1.2 s)
+ * takes at most one event per beat; a token bucket caps the long-run note rate; events older
+ * than MAX_AGE (+ their salience, so rare features wait longer) are forgotten, and the least
+ * salient are dropped when the queue is full. Everything else (ambience, gusts, chirps) is
+ * updated from the same tick(), which also drives offline renders in Sound._render().
  */
 var Sound = (function () {
   'use strict';
@@ -5820,10 +7982,10 @@ var Sound = (function () {
       pulse: 0.78, rate: 0.6, amb: { water: 0.12, wind: 0.75, aeol: 1 } }  // D major pent. / D Dorian colour
   };
   const SEASONS = {
-    spring: { rate: 1, pulse: 1, rest: 0.12, level: 1, amb: 1, gust: 1, warm: 0.15, verb: 1, tone: 9000 },
-    summer: { rate: 1.1, pulse: 0.95, rest: 0.1, level: 1, amb: 1.25, gust: 0.8, warm: 1, verb: 0.9, tone: 7000 },
-    autumn: { rate: 0.9, pulse: 1.05, rest: 0.15, level: 0.95, amb: 1.05, gust: 2.5, warm: 0.3, verb: 1.1, tone: 8000 },
-    winter: { rate: 0.55, pulse: 1.12, rest: 0.3, level: 0.72, amb: 0.6, gust: 0.7, warm: 0, verb: 1.6, tone: 3800 }
+    spring: { rate: 1, pulse: 1, rest: 0.12, level: 1, amb: 1, wind: 1, gust: 1, warm: 0.15, verb: 1, tone: 9000 },
+    summer: { rate: 1.1, pulse: 0.95, rest: 0.1, level: 1, amb: 1.25, wind: 0.8, gust: 0.8, warm: 1, verb: 0.9, tone: 7000 },
+    autumn: { rate: 0.9, pulse: 1.05, rest: 0.15, level: 0.95, amb: 1, wind: 1.3, gust: 2.5, warm: 0.3, verb: 1.1, tone: 8000 },
+    winter: { rate: 0.55, pulse: 1.12, rest: 0.3, level: 0.72, amb: 0.6, wind: 1, gust: 0.7, warm: 0, verb: 1.6, tone: 3800 }
   };
   // Karplus-Strong strings. damp: loop low-pass coefficient (higher = darker, highs die sooner);
   // t60lo/t60hi: decay (s) at 65 Hz / 1 kHz; pick: pluck position (fraction of string);
@@ -5841,8 +8003,8 @@ var Sound = (function () {
   // Level calibration (linear, before the compressor).
   // trim = 1 / 1.607 undoes the compressor's automatic make-up gain (measured), so quiet
   // material passes at unity and only peaks above about -12 dBFS are squeezed.
-  const LV = { pluck: 0.6, fanyin: 0.12, bell: 0.1, flute: 0.08, chirp: 0.016, trim: 0.622,
-    flow: 0.5, babble: 1.6, wind: 2, whistle: 0.9, warm: 0.5, aeol: 0.18, aeolNoise: 6, amb: 0.16 };
+  const LV = { pluck: 0.6, fanyin: 0.12, bell: 0.1, flute: 0.04, chirp: 0.016, trim: 0.622,
+    flow: 0.5, babble: 1.6, wind: 2, whistle: 0.9, warm: 0.5, aeol: 0.5, aeolNoise: 6, amb: 0.16 };
   const QMAX = 6, MAX_AGE = 2.5, LOOKAHEAD = 0.3, MAXV = 12, AEOL_F0 = 73.416; // D2
 
   // ------------------------------------------------------------------ helpers
@@ -5859,9 +8021,9 @@ var Sound = (function () {
     };
   }
 
-  function makeNoise(ctx, R, secs) {
-    const len = Math.floor(ctx.sampleRate * secs), buf = ctx.createBuffer(2, len, ctx.sampleRate);
-    for (let c = 0; c < 2; c++) { const d = buf.getChannelData(c); for (let i = 0; i < len; i++) d[i] = R() * 2 - 1; }
+  function makeNoise(ctx, R, secs, chans) {
+    const len = Math.floor(ctx.sampleRate * secs), buf = ctx.createBuffer(chans, len, ctx.sampleRate);
+    for (let c = 0; c < chans; c++) { const d = buf.getChannelData(c); for (let i = 0; i < len; i++) d[i] = R() * 2 - 1; }
     return buf;
   }
   // Smooth random control signal in [-1, 1] (cosine-interpolated knots at `hz`), loopable.
@@ -5966,7 +8128,7 @@ var Sound = (function () {
     const R = rng(seed), sr = ctx.sampleRate;
     const S = { tradition: init.tradition, season: init.season, motion: init.motion, volume: init.volume };
     const stats = { events: 0, dropped: 0, beats: 0, figures: 0, notes: 0, made: 0, freed: 0, stolen: 0, peakVoices: 0, plays: [], types: {} };
-    const noise = makeNoise(ctx, R, 6), ctrl = makeCtrl(ctx, R, 24, 6);
+    const noise = makeNoise(ctx, R, 6, 2), mono = makeNoise(ctx, R, 5, 1), ctrl = makeCtrl(ctx, R, 24, 6);
     const now = () => ctx.currentTime;
 
     function gain(v, dest) { const g = ctx.createGain(); g.gain.value = v; if (dest) g.connect(dest); return g; }
@@ -5981,7 +8143,15 @@ var Sound = (function () {
       if (dest) n.connect(dest);
       return n;
     }
-    function set(param, v, t, tc) { if (isFinite(v)) param.setTargetAtTime(v, t, tc); }
+    // Smoothly move a param, skipping targets within 1% of the last one: automation keeps
+    // params on the costlier per-sample path, so the twice-a-second ambience update stays sparse.
+    const last = new WeakMap();
+    function set(param, v, t, tc) {
+      const p = last.get(param);
+      if (!isFinite(v) || (p !== undefined && Math.abs(v - p) <= 0.01 * Math.abs(p) + 1e-6)) return;
+      last.set(param, v);
+      param.setTargetAtTime(v, t, tc);
+    }
     function loop(buf, rate, offset) {
       const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.playbackRate.value = rate;
       s.start(now(), offset % buf.duration);
@@ -5995,6 +8165,7 @@ var Sound = (function () {
     comp.attack.value = 0.004; comp.release.value = 0.3;
     comp.connect(gain(LV.trim, ctx.destination));
     const fade = gain(0, filt('highpass', 28, 0.7, comp));
+    let fadeRamp = { from: 0, to: 0, t0: 0, t1: 0 };
     const vol = gain(volCurve(S.volume), fade);
     const seasonG = gain(SEASONS[S.season].level, vol);
     const tone = filt('lowpass', SEASONS[S.season].tone, 0.5, seasonG);
@@ -6024,13 +8195,14 @@ var Sound = (function () {
     const amb = gain(LV.amb, mix); amb.connect(gain(0.2, verbIn));
     const srcA = loop(noise, 1, 0), srcB = loop(noise, 0.97, 3.1);
     // Water: a soft broadband flow plus two "babbling" band-passes whose centres and levels are
-    // pushed around at audio rate by smooth random control signals.
-    const water = gain(0, amb), wHP = filt('highpass', 140, 0.5);
+    // pushed around at audio rate by smooth random control signals. The babble bands are mono
+    // (panned apart) because audio-rate filter modulation recomputes coefficients every sample.
+    const water = gain(0, amb), wHP = filt('highpass', 140, 0.5), srcM = loop(mono, 1, 0.7);
     srcA.connect(wHP);
     wHP.connect(filt('lowpass', 650, 0.4, gain(LV.flow, water)));
     [[700, 260, 4, 1.0], [1650, 600, 5, 1.6]].forEach((b, i) => {
-      const bp = filt('bandpass', b[0], b[2]), amp = gain(0.5, gain(LV.babble, water));
-      wHP.connect(bp); bp.connect(amp);
+      const bp = filt('bandpass', b[0], b[2]), amp = gain(0.5, panner(i ? 0.4 : -0.4, gain(LV.babble, water)));
+      srcM.connect(bp); bp.connect(amp);
       loop(ctrl, 1 + i * 0.37, i * 5.3).connect(gain(b[1], bp.frequency));
       loop(ctrl, b[3], 11 + i * 3).connect(gain(0.45, amp.gain));
     });
@@ -6057,7 +8229,7 @@ var Sound = (function () {
       const bp = filt('bandpass', AEOL_F0 * 5, 22), ng = gain(0, out); // breath of wind on the string
       srcB.connect(bp); bp.connect(ng);
       return {
-        out, parts, bp, ng, w: 0.3, off: 0,
+        out, parts, bp, ng, w: 0.3, drift: R(), off: 0,
         kill(t) {
           parts[0].o.onended = () => { srcB.disconnect(bp); [out, L, Rt, bp, ng].concat(parts.map(p => p.g), parts.map(p => p.o)).forEach(n => n.disconnect()); };
           parts.forEach(p => p.o.stop(t + 0.05));
@@ -6078,7 +8250,7 @@ var Sound = (function () {
       swell *= Math.exp(-dt / 3);
       panW = clamp(panW + (R() - 0.5) * 0.3 * dt, -0.5, 0.5);
       set(water.gain, T.amb.water * base * flow * (1 + swell), t, tc);
-      set(wind.gain, LV.wind * T.amb.wind * base, t, tc);
+      set(wind.gain, LV.wind * T.amb.wind * Z.wind * base, t, tc);
       set(windAmp.gain, 0.25 + 0.75 * wState, t, 1.2);
       set(windBP.frequency, 320 + 650 * wState + 250 * m, t, 1.5);
       set(whistle.gain, LV.whistle * Math.pow(Math.max(0, wState - 0.45), 2) * 4, t, 1);
@@ -6098,12 +8270,15 @@ var Sound = (function () {
         return;
       }
       aeol.off = 0;
-      aeol.w = clamp(aeol.w + (wState - aeol.w) * Math.min(1, dt / 4) + (R() - 0.5) * 0.12 * dt, 0, 1);
-      const c = 3 + 9 * aeol.w, strength = 0.15 + 0.85 * aeol.w * aeol.w;
+      // The wind on the string wanders slowly on its own and is pushed up by gusts; it picks the
+      // sounding harmonic. Gusts also make the whole drone swell.
+      aeol.drift = clamp(aeol.drift + (R() - 0.5) * 0.25 * dt, 0, 1);
+      aeol.w += (clamp(0.6 * aeol.drift + 0.7 * (wState - 0.22), 0, 1) - aeol.w) * Math.min(1, dt / 3);
+      const c = 3 + 9 * aeol.w, strength = 0.3 + 0.7 * clamp((wState - 0.15) / 0.6, 0, 1);
       set(aeol.out.gain, T.amb.aeol * base, t, tc);
       aeol.parts.forEach(p => {
-        set(p.g.gain, LV.aeol * strength * Math.exp(-Math.pow((p.k - c) / 1.2, 2)) / Math.sqrt(p.k / 3), t, 1.8 + R());
-        set(p.o.detune, (R() - 0.5) * 8, t, 4);
+        const tint = p.k === 7 || p.k === 11 ? 0.55 : 1; // soften the out-of-scale 7th and 11th
+        set(p.g.gain, LV.aeol * tint * strength * Math.exp(-Math.pow((p.k - c) / 1.2, 2)) / Math.sqrt(p.k / 3), t, 1.8 + R());
       });
       set(aeol.bp.frequency, AEOL_F0 * Math.round(c), t, 1);
       set(aeol.ng.gain, LV.aeolNoise * LV.aeol * strength, t, 1.5);
@@ -6115,9 +8290,12 @@ var Sound = (function () {
     function voice(type, srcs, nodes, end, g) {
       stats.types[type] = (stats.types[type] || 0) + 1;
       prune(now());
-      while (voices.length >= MAXV) {
-        const v = voices.shift(), t = now();
-        v.g.gain.cancelScheduledValues(t); v.g.gain.setTargetAtTime(0, t, 0.03);
+      while (voices.length >= MAXV) { // steal the voice closest to its end (the most decayed)
+        let k = 0;
+        for (let i = 1; i < voices.length; i++) if (voices[i].end < voices[k].end) k = i;
+        const v = voices.splice(k, 1)[0], t = now(), p = v.g.gain;
+        if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(t); else p.cancelScheduledValues(t);
+        p.setTargetAtTime(0, t, 0.03);
         v.srcs.forEach(s => { try { s.stop(t + 0.25); } catch (e) { /* already stopped */ } });
         stats.stolen++;
       }
@@ -6234,9 +8412,12 @@ var Sound = (function () {
       if (stats.plays.length < 400) stats.plays.push({ t: +t.toFixed(3), kind: ev.kind });
       switch (ev.kind) {
         case 'fall': // a small descending cascade, and the water swells
-          i = clamp(chooseIdx(ev) + 2, 3, n - 1);
-          for (let k = 0; k < 3; k++) note(i - k - (k && R() < 0.3 ? 1 : 0), t + k * gap, v * (0.65 - 0.12 * k), pan + (k - 1) * 0.15);
-          lastIdx = i - 2;
+          i = clamp(chooseIdx(ev) + 2, 4, n - 1);
+          for (let k = 0; k < 3; k++) {
+            note(i, t + k * gap, v * (0.65 - 0.12 * k), pan + (k - 1) * 0.15);
+            if (k < 2) i -= R() < 0.3 ? 2 : 1;
+          }
+          lastIdx = i;
           swell = Math.max(swell, 0.4 + 0.5 * ev.depth);
           return;
         case 'house': // a soft, low, rolled open fifth - or, in Japan, sometimes a far temple bell
@@ -6252,7 +8433,7 @@ var Sound = (function () {
           lastIdx = i + 1;
           return;
         case 'birds': // high grace notes, or a shakuhachi phrase in Japan
-          if (tr === 'ukiyoe' && R() < 0.6 && ready('flute', t, 16)) {
+          if (tr === 'ukiyoe' && R() < 0.75 && ready('flute', t, 16)) {
             i = 5 + Math.floor(R() * 5);
             flute(midiAt(i, t), t, v, pan);
             return;
@@ -6305,7 +8486,10 @@ var Sound = (function () {
       tokens = Math.min(2.2, tokens + T.rate * Z.rate * (t - lastBeat));
       lastBeat = t;
       if (T.alt && t > dorian + 40 && R() < 0.012) dorian = t + 18 + R() * 25; // a passing Dorian cloud
-      for (let i = queue.length - 1; i >= 0; i--) if (t - queue[i].time > MAX_AGE) { queue.splice(i, 1); stats.dropped++; }
+      // forget what has scrolled past; rarer, more salient features may wait a little longer
+      for (let i = queue.length - 1; i >= 0; i--) {
+        if (t - queue[i].time > MAX_AGE + SALIENCE[queue[i].kind]) { queue.splice(i, 1); stats.dropped++; }
+      }
       if (!queue.length || tokens < 1 || R() < Z.rest) return;
       let bi = 0;
       for (let i = 1; i < queue.length; i++) if (queue[i].score - 0.4 * (t - queue[i].time) > queue[bi].score - 0.4 * (t - queue[bi].time)) bi = i;
@@ -6356,11 +8540,17 @@ var Sound = (function () {
       setSeason(s) { S.season = s; lastAmb = -1; },
       setMotion(m) { S.motion = m; },
       setVolume(v) { S.volume = v; set(vol.gain, volCurve(v), now(), 0.08); },
-      fadeTo(target, secs) {
-        const g = fade.gain, t = now();
-        g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(target, t + secs);
+      fadeTo(target, secs) { // the current level is computed from our own ramp, not AudioParam.value
+        const g = fade.gain, t = now(), f = fadeRamp;
+        const cur = t >= f.t1 ? f.to : f.from + (f.to - f.from) * (t - f.t0) / (f.t1 - f.t0);
+        g.cancelScheduledValues(t); g.setValueAtTime(cur, t); g.linearRampToValueAtTime(target, t + secs);
+        fadeRamp = { from: cur, to: target, t0: t, t1: t + secs };
       },
       clear() { queue.length = 0; },
+      hush() { // stop every voice now (used once the fade-out has finished)
+        const t = now();
+        voices.splice(0).forEach(v => v.srcs.forEach(x => { try { x.stop(t); } catch (e) { /* not started */ } }));
+      },
       info() { return { queue: queue.length, voices: voices.length, tokens: +tokens.toFixed(2), aeolian: !!aeol }; }
     };
   }
@@ -6410,7 +8600,7 @@ var Sound = (function () {
       on = false;
       const g = ++gen;
       stopTimer(); eng.clear(); eng.fadeTo(0, 1.5);
-      setTimeout(safe(() => { if (!on && g === gen && ctx.state === 'running') ctx.suspend(); }), 1600);
+      setTimeout(safe(() => { if (!on && g === gen) { eng.hush(); if (ctx.state === 'running') ctx.suspend(); } }), 1600);
     }),
     isOn: () => on,
     setTradition: safe(t => { if (!TRADITIONS[t]) return; st.tradition = t; if (eng) eng.setTradition(t); }),
@@ -7564,11 +9754,17 @@ var Sound = (function () {
       Sound.setTradition(state.trad);
       lastSeason = -1;
       soundX = null;
+      // start() resolves false when the browser has no audio.
       var pr = Sound.start(state.trad);
-      if (pr && pr.catch) {
-        pr.catch(function() {
-          setSound(false);
-        });
+      if (pr && pr.then) {
+        pr.then(
+          function(ok) {
+            if (ok === false) setSound(false);
+          },
+          function() {
+            setSound(false);
+          },
+        );
       }
       kick();
     } else Sound.stop();
