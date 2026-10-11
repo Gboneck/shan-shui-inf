@@ -1,14 +1,725 @@
-<script id="PRNG">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>{Shan, Shui}*</title>
+<meta name="description" content="A procedurally generated, infinitely scrolling Chinese landscape painting, drawn in SVG in your browser." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" />
+<style>
+  /* Layout: the painting is one endless handscroll band filling the window;
+     thin ink-line controls float in the top-left corner, as in the original. */
+  :root {
+    --paper: #fff2d9; /* tint multiplied with the greyscale paper texture */
+    --paper-flat: #f2e5cb; /* the same paper as one flat colour */
+    --ink: rgba(0, 0, 0, 0.58); /* control text */
+    --line: rgba(0, 0, 0, 0.36); /* control borders */
+    --wash: rgba(0, 0, 0, 0.08); /* hover and pressed fill */
+    --panel: rgba(244, 234, 211, 0.94);
+    --seal: #b3382c; /* vermilion seal paste, the one accent */
+    --ins: rgba(36, 30, 26, 0.86); /* inscription ink */
+    --seal-cut: #ffffff; /* paper showing through a carved seal */
+    --font-ui: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    --font-zh: "LXGW WenKai TC", "Kaiti TC", "STKaiti", "KaiTi", "BiauKai", "DFKai-SB", serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #262d3d;
+      --paper-flat: #1e2432;
+      --ink: rgba(236, 230, 214, 0.72);
+      --line: rgba(236, 230, 214, 0.38);
+      --wash: rgba(236, 230, 214, 0.1);
+      --panel: rgba(28, 33, 46, 0.94);
+      --seal: #c0493b;
+      --ins: rgba(234, 228, 210, 0.84);
+      --seal-cut: #1e2432;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #262d3d;
+    --paper-flat: #1e2432;
+    --ink: rgba(236, 230, 214, 0.72);
+    --line: rgba(236, 230, 214, 0.38);
+    --wash: rgba(236, 230, 214, 0.1);
+    --panel: rgba(28, 33, 46, 0.94);
+    --seal: #c0493b;
+    --ins: rgba(234, 228, 210, 0.84);
+    --seal-cut: #1e2432;
+    color-scheme: dark;
+  }
+  /* A chosen painting style decides the palette. */
+  :root[data-style="ink"] {
+    --paper: #fff2d9;
+    --paper-flat: #f2e5cb;
+    --ink: rgba(0, 0, 0, 0.58);
+    --line: rgba(0, 0, 0, 0.36);
+    --wash: rgba(0, 0, 0, 0.08);
+    --panel: rgba(244, 234, 211, 0.94);
+    --seal: #b3382c;
+    --ins: rgba(36, 30, 26, 0.86);
+    --seal-cut: #ffffff;
+    color-scheme: light;
+  }
+  :root[data-style="qinglu"] {
+    --paper: #fdebc6;
+    --paper-flat: #efdcb6;
+    --ink: rgba(20, 16, 8, 0.6);
+    --line: rgba(20, 16, 8, 0.36);
+    --wash: rgba(20, 16, 8, 0.08);
+    --panel: rgba(240, 227, 196, 0.94);
+    --seal: #b3382c;
+    --ins: rgba(36, 30, 22, 0.86);
+    --seal-cut: #ffffff;
+    color-scheme: light;
+  }
+  :root[data-style="qianjiang"] {
+    --paper: #ffefd4;
+    --paper-flat: #f3e1c4;
+    --ink: rgba(24, 12, 6, 0.6);
+    --line: rgba(24, 12, 6, 0.36);
+    --wash: rgba(24, 12, 6, 0.08);
+    --panel: rgba(245, 230, 206, 0.94);
+    --seal: #b3382c;
+    --ins: rgba(40, 28, 22, 0.86);
+    --seal-cut: #ffffff;
+    color-scheme: light;
+  }
+  :root[data-style="snow"] {
+    --paper: #cfcec7;
+    --paper-flat: #c2c1ba;
+    --ink: rgba(10, 12, 18, 0.66);
+    --line: rgba(10, 12, 18, 0.4);
+    --wash: rgba(10, 12, 18, 0.08);
+    --panel: rgba(214, 213, 207, 0.95);
+    --seal: #b3382c;
+    --ins: rgba(22, 24, 30, 0.86);
+    --seal-cut: #ffffff;
+    color-scheme: light;
+  }
+  :root[data-style="night"] {
+    --paper: #262d3d;
+    --paper-flat: #1e2432;
+    --ink: rgba(236, 230, 214, 0.72);
+    --line: rgba(236, 230, 214, 0.38);
+    --wash: rgba(236, 230, 214, 0.1);
+    --panel: rgba(28, 33, 46, 0.94);
+    --seal: #c0493b;
+    --ins: rgba(234, 228, 210, 0.84);
+    --seal-cut: #1e2432;
+    color-scheme: dark;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+  .artifact-only {
+    display: none;
+  }
+  .artifact .artifact-only {
+    display: inline;
+  }
+  html,
+  body {
+    height: 100%;
+  }
+  html {
+    background: var(--paper-flat);
+  }
+  body {
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+    background: var(--paper-flat);
+    color: var(--ink);
+    font: 12px/1.45 var(--font-ui);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Painting layers. Paper, sky and ink all live inside #cam, a wide strip
+     of the world, so the ink can multiply onto the paper. #stage scrolls
+     across the strip: browsers move a scroll offset without repainting or
+     re-layering, which a transform on this much SVG does not get. */
+  #cam {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+  }
+  #paperTex {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: var(--paper);
+    background-repeat: repeat;
+    background-size: 512px 512px;
+    background-blend-mode: multiply;
+  }
+  #sky {
+    position: absolute;
+    left: 0;
+    pointer-events: none;
+  }
+  #moonTrack {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    pointer-events: none;
+  }
+  #moon {
+    position: sticky; /* stays put in the sky while the strip scrolls */
+    display: block;
+    border-radius: 50%;
+    background: radial-gradient(circle at 42% 40%, #f6f0dc 0 55%, #e9e1c8 100%);
+    box-shadow: 0 0 60px 30px rgba(243, 236, 214, 0.1), 0 0 18px 4px rgba(243, 236, 214, 0.18);
+  }
+  #stage {
+    position: absolute;
+    inset: 0;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    overscroll-behavior: none;
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #stage::-webkit-scrollbar {
+    display: none;
+  }
+  #stage.dragging {
+    cursor: grabbing;
+  }
+  #ink,
+  #ann {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: visible;
+    mix-blend-mode: multiply;
+  }
+  #ann .ins {
+    fill: var(--ins);
+    font-family: var(--font-zh);
+  }
+  #ann .seal {
+    fill: var(--seal);
+    opacity: 0.9;
+  }
+  #ann .seal-line {
+    fill: none;
+    stroke: var(--seal);
+    opacity: 0.9;
+  }
+  #ann .seal-cut {
+    fill: var(--seal-cut);
+    font-family: var(--font-zh);
+  }
+  #ann .seal-zhu {
+    fill: var(--seal);
+    font-family: var(--font-zh);
+  }
+  #ann .speck {
+    fill: var(--seal-cut);
+  }
+  #band {
+    position: absolute;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+  }
+  .banded #band {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    opacity: 0.35;
+  }
+  #fx {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* Controls */
+  button,
+  input,
+  a.btn {
+    font: inherit;
+    color: inherit;
+  }
+  .sq,
+  .btn {
+    box-sizing: border-box;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 0;
+  }
+  .sq:hover,
+  .btn:hover,
+  .sq[aria-pressed="true"],
+  .sq[aria-expanded="true"] {
+    background: var(--wash);
+  }
+  :focus-visible {
+    outline: 2px solid var(--seal);
+    outline-offset: 2px;
+  }
+  #bar {
+    position: absolute;
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    left: 16px;
+    display: flex;
+    gap: 5px;
+    z-index: 10;
+  }
+  .sq {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    font-size: 15px;
+    line-height: 1;
+  }
+  .sq .glyph-sm {
+    font-size: 12px;
+  }
+  .edge {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: min(46%, 340px);
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font-size: 22px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.25s;
+    z-index: 5;
+    padding: 0;
+  }
+  .edge:hover,
+  .edge:focus-visible {
+    opacity: 1;
+    background: var(--wash);
+  }
+  #edgeL {
+    left: 12px;
+  }
+  #edgeR {
+    right: 12px;
+  }
+  .touch-only {
+    display: none;
+  }
+  @media (hover: none) and (pointer: coarse) {
+    .edge,
+    .keys-section,
+    .key-only {
+      display: none;
+    }
+    .touch-only {
+      display: inline;
+    }
+  }
+
+  #menu {
+    position: absolute;
+    top: calc(env(safe-area-inset-top, 0px) + 54px);
+    left: 16px;
+    width: min(330px, calc(100% - 32px));
+    max-height: calc(100% - 70px - env(safe-area-inset-top, 0px));
+    overflow: auto;
+    box-sizing: border-box;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 14px 14px 12px;
+    z-index: 10;
+    display: grid;
+    gap: 14px;
+    overscroll-behavior: contain;
+  }
+  #menu section {
+    display: grid;
+    gap: 7px;
+  }
+  #menu h2 {
+    margin: 0;
+    font: 500 10.5px/1 var(--font-ui);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .btn {
+    padding: 5px 9px;
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: progress;
+  }
+  #seedIn,
+  #linkOut {
+    flex: 1 1 120px;
+    min-width: 0;
+    box-sizing: border-box;
+    min-height: 30px;
+    padding: 4px 7px;
+    background: transparent;
+    border: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  #styles {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+  }
+  #styles button {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 7px 2px 6px;
+    background: transparent;
+    border: 1px solid var(--line);
+    cursor: pointer;
+    min-width: 0;
+  }
+  #styles button:hover {
+    background: var(--wash);
+  }
+  #styles .zh {
+    font: 400 17px/1.1 var(--font-zh);
+    writing-mode: horizontal-tb;
+  }
+  #styles .en {
+    font-size: 9px;
+    line-height: 1.15;
+    text-align: center;
+    opacity: 0.8;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  #styles button[aria-checked="true"] {
+    border-color: var(--seal);
+    box-shadow: inset 0 0 0 1px var(--seal);
+  }
+  #styles button[aria-checked="true"]::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 5px;
+    height: 5px;
+    background: var(--seal);
+  }
+  label.chk {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    cursor: pointer;
+  }
+  input[type="checkbox"],
+  input[type="range"] {
+    accent-color: var(--seal);
+  }
+  #speedIn {
+    flex: 1 1 110px;
+    min-width: 0;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+    min-width: 3ch;
+    text-align: right;
+  }
+  .keys {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3px 10px;
+    opacity: 0.9;
+  }
+  .keys dt {
+    white-space: nowrap;
+  }
+  .keys dd {
+    margin: 0;
+  }
+  kbd {
+    font: inherit;
+    border: 1px solid var(--line);
+    padding: 0 4px;
+  }
+  .about {
+    margin: 0;
+    font-size: 11px;
+    opacity: 0.85;
+  }
+  .about a {
+    color: inherit;
+  }
+
+  #status {
+    position: absolute;
+    right: 16px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+    z-index: 4;
+  }
+  #status.on {
+    opacity: 0.75;
+  }
+  #status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--seal);
+    animation: breathe 1.4s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    50% {
+      opacity: 0.25;
+    }
+  }
+  #hint {
+    position: absolute;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+    transform: translateX(-50%);
+    padding: 6px 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    white-space: nowrap;
+    max-width: calc(100% - 32px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 4;
+    pointer-events: none;
+    transition: opacity 0.8s;
+  }
+  #hint.gone {
+    opacity: 0;
+  }
+
+  #shot {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    background: rgba(10, 10, 12, 0.55);
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  #shot[hidden] {
+    display: none;
+  }
+  #shot figure {
+    margin: 0;
+    max-width: 100%;
+    display: grid;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 12px;
+    box-sizing: border-box;
+  }
+  #shotImg {
+    display: block;
+    max-width: 100%;
+    max-height: min(68vh, 680px);
+    margin: 0 auto;
+    border: 1px solid var(--line);
+  }
+  #shot figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #status::before {
+      animation: none;
+    }
+    #hint,
+    #status,
+    .edge {
+      transition: none;
+    }
+  }
+</style>
+<style id="svgTheme"></style>
+</head>
+<body>
+<div id="stage" role="img" aria-label="A Chinese landscape painting that scrolls without end: mountains, trees, pavilions, boats and water, drawn in ink.">
+  <div id="cam">
+  <div id="paperTex"></div>
+  <div id="sky" hidden></div>
+  <div id="moonTrack"><div id="moon" hidden></div></div>
+  <svg id="ink" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Blue-green (qinglü): azurite and malachite washes over the peaks -->
+      <linearGradient id="qg0" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#4a7f93" /><stop offset="0.3" stop-color="#5f977c" />
+        <stop offset="0.66" stop-color="#d9c89c" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="qg1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3f6f8a" /><stop offset="0.45" stop-color="#7aa58a" />
+        <stop offset="0.8" stop-color="#e6d6ad" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="qg2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#4f7f6c" /><stop offset="0.38" stop-color="#7ea482" />
+        <stop offset="0.74" stop-color="#ddcba2" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <!-- Light crimson (qianjiang): pale indigo tops over umber and ochre -->
+      <linearGradient id="jg0" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#a3bab5" /><stop offset="0.35" stop-color="#cdc5a6" />
+        <stop offset="0.72" stop-color="#e3c3a1" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="jg1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#aabdb2" /><stop offset="0.4" stop-color="#d6caa9" />
+        <stop offset="0.76" stop-color="#e7c7a7" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="jg2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#b5c5bd" /><stop offset="0.45" stop-color="#ded2b3" />
+        <stop offset="0.8" stop-color="#eaccb2" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <filter id="f-dist-qinglu" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="0.55 0 0 0 0.25  0 0.7 0 0 0.22  0 0 0.85 0 0.17  0 0 0 1 0" />
+      </filter>
+      <!-- Moonlight: white paper becomes night, grey ink becomes pale light -->
+      <filter id="f-night" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="-0.214 -0.720 -0.073 0 1.164  -0.214 -0.720 -0.073 0 1.191  -0.208 -0.701 -0.071 0 1.223  0 0 0 1 0" />
+      </filter>
+    </defs>
+    <g id="inkWorld"></g>
+  </svg>
+  <svg id="ann" xmlns="http://www.w3.org/2000/svg"><g id="annWorld"></g></svg>
+  </div>
+</div>
+<div id="band"></div>
+<canvas id="fx" hidden aria-hidden="true"></canvas>
+
+<button class="edge" id="edgeL" type="button" title="Travel left" aria-label="Travel left">&#x3008;</button>
+<button class="edge" id="edgeR" type="button" title="Travel right" aria-label="Travel right">&#x3009;</button>
+
+<div id="bar">
+  <button class="sq" id="menuBtn" type="button" title="Settings" aria-label="Settings" aria-expanded="false" aria-controls="menu"><span>&#x2630;</span></button>
+  <button class="sq" id="driftBtn" type="button" title="Drift (Space)" aria-label="Drift" aria-pressed="false"><span class="glyph-sm">&#x25b6;</span></button>
+  <a class="sq" id="srcBtn" href="https://github.com/LingDong-/shan-shui-inf" target="_blank" rel="noopener" title="Source on GitHub" aria-label="Source on GitHub"><span class="glyph-sm">&lt;/&gt;</span></a>
+</div>
+
+<div id="menu" hidden>
+  <section aria-labelledby="h-seed">
+    <h2 id="h-seed">Seed</h2>
+    <form class="row" id="seedForm">
+      <input id="seedIn" name="seed" title="Random seed" aria-label="Random seed" autocomplete="off" spellcheck="false" />
+      <button class="btn" type="submit">Generate</button>
+      <button class="btn" type="button" id="randBtn" title="New random seed">Random</button>
+    </form>
+  </section>
+  <section aria-labelledby="h-style">
+    <h2 id="h-style">Style</h2>
+    <div id="styles" role="radiogroup" aria-labelledby="h-style"></div>
+  </section>
+  <section aria-labelledby="h-motion">
+    <h2 id="h-motion">Travel</h2>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="driftChk" /> Drift</label>
+      <input type="range" id="speedIn" min="8" max="240" step="4" aria-label="Drift speed" />
+      <span class="num" id="speedOut"></span>
+    </div>
+    <div class="row">
+      <span>At <span class="num" id="posOut">0</span></span>
+      <button class="btn" type="button" id="startBtn">Back to start</button>
+      <button class="btn" type="button" id="fsBtn">Full screen</button>
+    </div>
+    <label class="chk"><input type="checkbox" id="insChk" /> Show inscriptions and seals</label>
+  </section>
+  <section aria-labelledby="h-save">
+    <h2 id="h-save">Save</h2>
+    <div class="row">
+      <button class="btn" type="button" id="shotBtn">Snapshot PNG</button>
+      <button class="btn" type="button" id="svgBtn" data-download>Download SVG</button>
+      <button class="btn" type="button" id="linkBtn" data-share>Copy link</button>
+    </div>
+    <input id="linkOut" hidden readonly aria-label="Link to this view" />
+  </section>
+  <section class="keys-section" aria-labelledby="h-keys">
+    <h2 id="h-keys">Keys</h2>
+    <dl class="keys">
+      <dt>Drag, scroll</dt><dd>travel along the scroll</dd>
+      <dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>travel while held</dd>
+      <dt><kbd>Space</kbd></dt><dd>drift on or off</dd>
+      <dt><kbd>F</kbd></dt><dd>full screen</dd>
+    </dl>
+  </section>
+  <p class="about">Generative landscape by <a href="https://github.com/LingDong-/shan-shui-inf" target="_blank" rel="noopener">Lingdong Huang</a>, MIT licence. Poems quoted from Tang and Song poets.</p>
+</div>
+
+<div id="status" aria-hidden="true">painting</div>
+<div id="hint">Drag or scroll to travel<span class="key-only"> &middot; Space to drift</span><span class="touch-only"> &middot; &#x25b6; to drift</span></div>
+
+<div id="shot" hidden role="dialog" aria-modal="true" aria-label="Snapshot">
+  <figure>
+    <img id="shotImg" alt="Snapshot of the current view of the landscape" />
+    <figcaption>
+      <span data-download><a class="btn" id="shotPng" href="#">Download PNG</a></span>
+      <span class="artifact-only">Right-click or long-press the image to save it.</span>
+      <button class="btn" type="button" id="shotClose">Close</button>
+    </figcaption>
+  </figure>
+</div>
+
+<!-- The generator below is Lingdong Huang's original code. It is not run
+     here directly: the page bundles these scripts into a Web Worker. -->
+<script type="text/x-shanshui" id="PRNG">
   var Prng = new function() {
     this.s = 1234;
     this.p = 999979; //9887//983
     this.q = 999983; //9967//991
     this.m = this.p * this.q;
     this.hash = function(x) {
-      var y = window.btoa(JSON.stringify(x));
+      var y = btoa(unescape(encodeURIComponent(JSON.stringify(x))));
       var z = 0;
       for (var i = 0; i < y.length; i++) {
         z += y.charCodeAt(i) * Math.pow(128, i);
+      }
+      if (!isFinite(z)) {
+        // very long seeds overflow; fall back to a plain rolling hash
+        z = 0;
+        for (var i = 0; i < y.length; i++) {
+          z = (z * 31 + y.charCodeAt(i)) % 999999999989;
+        }
       }
       return z;
     };
@@ -26,7 +737,6 @@
         redo();
       }
       Prng.s = y;
-      console.log(["int seed", Prng.s]);
       for (var i = 0; i < 10; i++) {
         Prng.next();
       }
@@ -58,34 +768,7 @@
     return Prng.seed(x);
   };
 </script>
-
-<script>
-  function parseArgs(key2f) {
-    var par = window.location.href.split("?")[1];
-    if (par == undefined) {
-      return;
-    }
-    par = par.split("&");
-    for (var i = 0; i < par.length; i++) {
-      var e = par[i].split("=");
-      try {
-        key2f[e[0]](e[1]);
-      } catch (e) {
-        console.log(e);
-      }
-    }
-  }
-  SEED = "" + new Date().getTime();
-  parseArgs({
-    seed: function(x) {
-      SEED = x == "" ? SEED : x;
-    },
-  });
-  Math.seed(SEED);
-  console.log(Prng.seed);
-</script>
-
-<script id="PerlinNoise">
+<script type="text/x-shanshui" id="PerlinNoise">
   //https://raw.githubusercontent.com/processing/p5.js/master/src/math/noise.js
   var Noise = new function() {
     var PERLIN_YWRAPB = 4;
@@ -166,6 +849,9 @@
       }
       return r;
     };
+    this.reset = function() {
+      perlin = null;
+    };
     this.noiseDetail = function(lod, falloff) {
       if (lod > 0) {
         perlin_octaves = lod;
@@ -202,8 +888,7 @@
     };
   }();
 </script>
-
-<script id="PolyTools">
+<script type="text/x-shanshui" id="PolyTools">
   var PolyTools = new function() {
     this.midPt = function() {
       var plist =
@@ -381,8 +1066,7 @@
     };
   }();
 </script>
-
-<script id="Util">
+<script type="text/x-shanshui" id="Util">
   function unNan(plist) {
     if (typeof plist != "object" || plist == null) {
       return plist || 0;
@@ -489,8 +1173,9 @@
     var fil = args.fil != undefined ? args.fil : "rgba(0,0,0,0)";
     var str = args.str != undefined ? args.str : fil;
     var wid = args.wid != undefined ? args.wid : 0;
+    var cls = args.cls != undefined ? " class='" + args.cls + "'" : "";
 
-    var canv = "<polyline points='";
+    var canv = "<polyline" + cls + " points='";
     for (var i = 0; i < plist.length; i++) {
       canv +=
         " " +
@@ -509,10 +1194,7 @@
     return canv;
   }
 </script>
-
-<script>
-  console.log("************************************************");
-
+<script type="text/x-shanshui" id="Generators">
   function stroke(ptlist, args) {
     var args = args != undefined ? args : {};
     var xof = args.xof != undefined ? args.xof : 0;
@@ -1782,6 +2464,7 @@
           yof: yof,
           fil: "white",
           str: "none",
+          cls: "ft",
         });
       }
       for (var j = 0; j < ftlist.length; j++) {
@@ -1878,6 +2561,7 @@
         yof: yoff,
         fil: "white",
         str: "none",
+        cls: "mb v" + (Math.abs(Math.round(xoff + yoff)) % 3),
       });
       //OUTLINE
       canv += stroke(
@@ -2130,6 +2814,7 @@
         yof: yoff,
         fil: "white",
         str: "none",
+        cls: "mb v" + (Math.abs(Math.round(xoff + yoff)) % 3),
       });
       //OUTLINE
       canv += stroke(
@@ -2487,6 +3172,7 @@
         yof: yoff,
         fil: "white",
         str: "none",
+        cls: "rb",
       });
       //OUTLINE
       canv += stroke(
@@ -3702,660 +4388,1918 @@
 
     return canv;
   }
+</script>
+<script type="text/x-shanshui" id="Planner">
+  // Everything above this script is the original generator. This part plans
+  // the world column by column and renders one item at a time, so the page can
+  // ask for exactly the pieces it needs. It runs in a Web Worker when it can,
+  // or inline on the page as a fallback.
 
-  function mountplanner(xmin, xmax) {
-    function locmax(x, y, f, r) {
-      var z0 = f(x, y);
-      if (z0 <= 0.3) {
-        return false;
-      }
-      for (var i = x - r; i < x + r; i++) {
-        for (var j = y - r; j < y + r; j++) {
-          if (f(i, j) > z0) {
-            return false;
-          }
-        }
-      }
-      return true;
+  var IS_WORKER = typeof window === "undefined";
+  var CW = 512; // column width, same as the original chunk width
+  var INS_CHANCE = 0.8;
+  var INS_CLEAR = 420; // no mountain closer than this to an inscription
+  var SEED = "";
+  var EPOCH = -1;
+  var plans = {};
+  var mounts = {};
+  var byId = {};
+  var queue = [];
+  var timer = null;
+
+  // A well-mixed 53-bit string hash (cyrb53), so every character of the key
+  // affects the stream. Prng.hash only keeps the tail of long strings.
+  function cyrb53(str) {
+    var h1 = 0xdeadbeef,
+      h2 = 0x41c6ce57;
+    for (var i = 0, ch; i < str.length; i++) {
+      ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
     }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+    h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+    h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  }
 
-    function chadd(r, mind) {
-      mind = mind == undefined ? 10 : mind;
-      for (var k = 0; k < reg.length; k++) {
-        if (Math.abs(reg[k].x - r.x) < mind) {
-          return false;
-        }
-      }
-      console.log("+");
-      reg.push(r);
-      return true;
+  // Reseed Math.random for one column or one item. Each piece of the world
+  // gets its own stream, which makes the landscape a pure function of the
+  // seed and x: the same place always looks the same, whichever way you
+  // scrolled to get there.
+  function seedStr() {
+    var key = SEED;
+    for (var a = 0; a < arguments.length; a++) key += "\u0001" + arguments[a];
+    var y = cyrb53(key) % Prng.m;
+    while (y % Prng.p == 0 || y % Prng.q == 0 || y == 0 || y == 1) {
+      y = (y + 1) % Prng.m;
     }
+    Prng.s = y;
+    for (var i = 0; i < 10; i++) Prng.next();
+  }
 
+  // ---- planning (adapted from the original mountplanner) ----
+
+  function ns(x) {
+    return Math.max(Noise.noise(x * 0.03) - 0.55, 0) * 2;
+  }
+  function yr(x) {
+    return Noise.noise(x * 0.01, Math.PI);
+  }
+  function locmax(x, r) {
+    var z0 = ns(x);
+    if (z0 <= 0.3) return false;
+    for (var i = x - r; i < x + r; i++) {
+      if (ns(i) > z0) return false;
+    }
+    return true;
+  }
+  function chadd(reg, r, mind) {
+    for (var k = 0; k < reg.length; k++) {
+      if (Math.abs(reg[k].x - r.x) < mind) return false;
+    }
+    reg.push(r);
+    return true;
+  }
+
+  function placeMounts(k) {
+    if (mounts[k]) return mounts[k];
+    seedStr("m", k);
     var reg = [];
-    var samp = 0.03;
-    var ns = function(x, y) {
-      return Math.max(Noise.noise(x * samp) - 0.55, 0) * 2;
-    };
-    var nns = function(x) {
-      return 1 - Noise.noise(x * samp);
-    };
-    var nnns = function(x, y) {
-      return Math.max(Noise.noise(x * samp * 2, 2) - 0.55, 0) * 2;
-    };
-    var yr = function(x) {
-      return Noise.noise(x * 0.01, Math.PI);
-    };
-
     var xstep = 5;
-    var mwid = 200;
-    for (var i = xmin; i < xmax; i += xstep) {
-      var i1 = Math.floor(i / xstep);
-      MEM.planmtx[i1] = MEM.planmtx[i1] || 0;
-    }
-
-    for (var i = xmin; i < xmax; i += xstep) {
-      for (var j = 0; j < yr(i) * 480; j += 30) {
-        if (locmax(i, j, ns, 2)) {
+    for (var i = k * CW; i < (k + 1) * CW; i += xstep) {
+      if (locmax(i, 2)) {
+        var jmax = yr(i) * 480;
+        for (var j = 0; j < jmax; j += 30) {
           var xof = i + 2 * (Math.random() - 0.5) * 500;
-          var yof = j + 300;
-          var r = { tag: "mount", x: xof, y: yof, h: ns(i, j) };
-          var res = chadd(r);
-          if (res) {
-            for (
-              var k = Math.floor((xof - mwid) / xstep);
-              k < (xof + mwid) / xstep;
-              k++
-            ) {
-              MEM.planmtx[k] += 1;
-            }
-          }
+          chadd(reg, { tag: "mount", x: xof, y: j + 300 }, 10);
         }
       }
       if (Math.abs(i) % 1000 < Math.max(1, xstep - 1)) {
-        var r = {
-          tag: "distmount",
-          x: i,
-          y: 280 - Math.random() * 50,
-          h: ns(i, j),
-        };
-        chadd(r);
+        chadd(reg, { tag: "distmount", x: i, y: 280 - Math.random() * 50 }, 10);
       }
     }
-    console.log([xmin, xmax]);
-    for (var i = xmin; i < xmax; i += xstep) {
-      if (MEM.planmtx[Math.floor(i / xstep)] == 0) {
-        //var r = {tag:"redcirc",x:i,y:700}
-        //console.log(i)
-        if (Math.random() < 0.01) {
-          for (var j = 0; j < 4 * Math.random(); j++) {
-            var r = {
-              tag: "flatmount",
-              x: i + 2 * (Math.random() - 0.5) * 700,
-              y: 700 - j * 50,
-              h: ns(i, j),
-            };
-            chadd(r);
-          }
-        }
-      } else {
-        // var r = {tag:"greencirc",x:i,y:700}
-        // chadd(r)
-      }
-    }
-
-    for (var i = xmin; i < xmax; i += xstep) {
-      if (Math.random() < 0.2) {
-        var r = { tag: "boat", x: i, y: 300 + Math.random() * 390 };
-        chadd(r, 400);
-      }
-    }
-
-    return reg;
+    return (mounts[k] = reg);
   }
 
-  MEM = {
-    canv: "",
-    chunks: [],
-    xmin: 0,
-    xmax: 0,
-    cwid: 512,
-    cursx: 0,
-    lasttick: 0,
-    windx: 3000,
-    windy: 800,
-    planmtx: [],
+  // True when a mountain stands within 200 units of x. Unlike the original
+  // planmtx, this looks at neighbours on both sides, so it does not depend
+  // on the order columns were generated in.
+  function occupied(x) {
+    var k = Math.floor(x / CW);
+    for (var kk = k - 2; kk <= k + 2; kk++) {
+      var ms = placeMounts(kk);
+      for (var n = 0; n < ms.length; n++) {
+        if (ms[n].tag == "mount" && x >= ms[n].x - 200 && x < ms[n].x + 200) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // Horizontal extent of each kind of item, generous enough to cover the
+  // trees, rocks and houses that grow on it.
+  var EXTENT = {
+    mount: [-700, 700],
+    water: [-480, 480],
+    flatmount: [-1080, 1080],
+    distmount: [-10, 1510],
+    boat: [-130, 130],
+    birds: [-170, 170],
+    inscription: [-90, 90],
   };
 
-  function dummyloader(xmin, xmax) {
-    for (var i = xmin; i < xmax; i += 200) {
-      //MEM.chunks.push({tag:"?",x:i,y:100,canv:Tree.tree08(i,500,i)})
-      //MEM.chunks.push({tag:"?",x:i,y:100,canv:Man.man(i,500)})
-      //MEM.chunks.push({tag:"?",x:i,y:100,canv:Arch.arch01(i,500)})
-      //MEM.chunks.push({tag:"?",x:i,y:100,canv:Arch.boat01(i,500)})
-      //MEM.chunks.push({tag:"?",x:i,y:100,canv:Arch.transmissionTower01(i,500)})
-      MEM.chunks.push({
-        tag: "?",
-        x: i,
-        y: 100,
-        canv: Arch.arch02(i, 500, 0, { sto: 1, rot: Math.random() }),
-      });
-    }
-  }
+  function planColumn(k) {
+    if (plans[k]) return plans[k];
+    var x0 = k * CW,
+      x1 = x0 + CW,
+      xstep = 5;
+    var reg = placeMounts(k).slice();
 
-  function chunkloader(xmin, xmax) {
-    var add = function(nch) {
-      if (nch.canv.includes("NaN")) {
-        console.log("gotcha:");
-        console.log(nch.tag);
-        nch.canv = nch.canv.replace(/NaN/g, -1000);
-      }
-      if (MEM.chunks.length == 0) {
-        MEM.chunks.push(nch);
-        return;
-      } else {
-        if (nch.y <= MEM.chunks[0].y) {
-          MEM.chunks.unshift(nch);
-          return;
-        } else if (nch.y >= MEM.chunks[MEM.chunks.length - 1].y) {
-          MEM.chunks.push(nch);
-          return;
-        } else {
-          for (var j = 0; j < MEM.chunks.length - 1; j++) {
-            if (MEM.chunks[j].y <= nch.y && nch.y <= MEM.chunks[j + 1].y) {
-              MEM.chunks.splice(j + 1, 0, nch);
-              return;
-            }
-          }
-        }
-      }
-      console.log("EH?WTF!");
-      console.log(MEM.chunks);
-      console.log(nch);
-    };
-
-    while (xmax > MEM.xmax - MEM.cwid || xmin < MEM.xmin + MEM.cwid) {
-      console.log("generating new chunk...");
-
-      var plan;
-      if (xmax > MEM.xmax - MEM.cwid) {
-        plan = mountplanner(MEM.xmax, MEM.xmax + MEM.cwid);
-        MEM.xmax = MEM.xmax + MEM.cwid;
-      } else {
-        plan = mountplanner(MEM.xmin - MEM.cwid, MEM.xmin);
-        MEM.xmin = MEM.xmin - MEM.cwid;
-      }
-
-      for (var i = 0; i < plan.length; i++) {
-        if (plan[i].tag == "mount") {
-          add({
-            tag: plan[i].tag,
-            x: plan[i].x,
-            y: plan[i].y,
-            canv: Mount.mountain(plan[i].x, plan[i].y, i * 2 * Math.random()),
-            //{col:function(x){return "rgba(100,100,100,"+(0.5*Math.random()*plan[i].y/MEM.windy)+")"}}),
-          });
-          add({
-            tag: plan[i].tag,
-            x: plan[i].x,
-            y: plan[i].y - 10000,
-            canv: water(plan[i].x, plan[i].y, i * 2),
-          });
-        } else if (plan[i].tag == "flatmount") {
-          add({
-            tag: plan[i].tag,
-            x: plan[i].x,
-            y: plan[i].y,
-            canv: Mount.flatMount(
-              plan[i].x,
-              plan[i].y,
-              2 * Math.random() * Math.PI,
-              {
-                wid: 600 + Math.random() * 400,
-                hei: 100,
-                cho: 0.5 + Math.random() * 0.2,
-              },
-            ),
-          });
-        } else if (plan[i].tag == "distmount") {
-          add({
-            tag: plan[i].tag,
-            x: plan[i].x,
-            y: plan[i].y,
-            canv: Mount.distMount(plan[i].x, plan[i].y, Math.random() * 100, {
-              hei: 150,
-              len: randChoice([500, 1000, 1500]),
-            }),
-          });
-        } else if (plan[i].tag == "boat") {
-          add({
-            tag: plan[i].tag,
-            x: plan[i].x,
-            y: plan[i].y,
-            canv: Arch.boat01(plan[i].x, plan[i].y, Math.random(), {
-              sca: plan[i].y / 800,
-              fli: randChoice([true, false]),
-            }),
-          });
-        } else if (plan[i].tag == "redcirc") {
-          add({
-            tag: plan[i].tag,
-            x: plan[i].x,
-            y: plan[i].y,
-            canv:
-              "<circle cx='" +
-              plan[i].x +
-              "' cy='" +
-              plan[i].y +
-              "' r='20' stroke='black' fill='red' />",
-          });
-        } else if (plan[i].tag == "greencirc") {
-          add({
-            tag: plan[i].tag,
-            x: plan[i].x,
-            y: plan[i].y,
-            canv:
-              "<circle cx='" +
-              plan[i].x +
-              "' cy='" +
-              plan[i].y +
-              "' r='20' stroke='black' fill='green' />",
-          });
-        }
-        // add ({
-        //   x: plan[i].x,
-        //   y: plan[i].y,
-        //   canv:"<circle cx='"+plan[i].x+"' cy='"+plan[i].y+"' r='20' stroke='black' fill='red' />"
-        // })
-      }
-    }
-  }
-
-  function chunkrender(xmin, xmax) {
-    MEM.canv = "";
-
-    for (var i = 0; i < MEM.chunks.length; i++) {
-      if (
-        xmin - MEM.cwid < MEM.chunks[i].x &&
-        MEM.chunks[i].x < xmax + MEM.cwid
-      ) {
-        MEM.canv += MEM.chunks[i].canv;
-      }
-    }
-  }
-
-  document.addEventListener("mousemove", onMouseUpdate, false);
-  document.addEventListener("mouseenter", onMouseUpdate, false);
-  mouseX = 0;
-  mouseY = 0;
-  function onMouseUpdate(e) {
-    mouseX = e.pageX;
-    mouseY = e.pageY;
-  }
-
-  function calcViewBox() {
-    var zoom = 1.142;
-    return "" + MEM.cursx + " 0 " + MEM.windx / zoom + " " + MEM.windy / zoom;
-  }
-
-  function viewupdate() {
-    try {
-      document.getElementById("SVG").setAttribute("viewBox", calcViewBox());
-    } catch (e) {
-      console.log("not possible");
-    }
-    //setTimeout(viewupdate,100)
-  }
-
-  function needupdate() {
-    return true;
-    if (MEM.xmin < MEM.cursx && MEM.cursx < MEM.xmax - MEM.windx) {
-      return false;
-    }
-    return true;
-  }
-
-  function update() {
-    //console.log("update!")
-
-    self.chunkloader(MEM.cursx, MEM.cursx + MEM.windx);
-    self.chunkrender(MEM.cursx, MEM.cursx + MEM.windx);
-
-    document.getElementById("BG").innerHTML =
-      "<svg id='SVG' xmlns='http://www.w3.org/2000/svg' width='" +
-      MEM.windx +
-      "' height='" +
-      MEM.windy +
-      "' style='mix-blend-mode:multiply;'" +
-      "viewBox = '" +
-      calcViewBox() +
-      "'" +
-      "><g id='G' transform='translate(" +
-      0 +
-      ",0)'>" +
-      MEM.canv +
-      //+ "<circle cx='0' cy='0' r='50' stroke='black' fill='red' />"
-      "</g></svg>";
-
-    //setTimeout(update,1000);
-  }
-</script>
-
-<script id="downloader">
-  function download(filename, text) {
-    var element = document.createElement("a");
-    element.setAttribute(
-      "href",
-      "data:text/plain;charset=utf-8," + encodeURIComponent(text),
-    );
-    element.setAttribute("download", filename);
-    element.style.display = "none";
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  }
-</script>
-
-<script id="UI">
-  function xcroll(v) {
-    MEM.cursx += v;
-    if (needupdate()) {
-      update();
-    } else {
-      viewupdate();
-    }
-  }
-  function autoxcroll(v) {
-    if (document.getElementById("AUTO_SCROLL").checked) {
-      xcroll(v);
-      setTimeout(function() {
-        autoxcroll(v);
-      }, 2000);
-    }
-  }
-  function rstyle(id, b) {
-    var a = b ? 0.1 : 0.0;
-    document
-      .getElementById(id)
-      .setAttribute(
-        "style",
-        "\
-    width: 32px; \
-    text-align: center;\
-    top: 0px;\
-    color:rgba(0,0,0,0.4);\
-    display:table;\
-    cursor: pointer;\
-    border: 1px solid rgba(0,0,0,0.4);\
-    background-color:rgba(0,0,0," +
-          a +
-          ");\
-  " +
-          "height:" +
-          MEM.windy +
-          "px"
-      );
-    document.getElementById(id + ".t").setAttribute(
-      "style",
-      "vertical-align:middle; display:table-cell"
-      //"position:absolute; top:"+(MEM.windy/2-20)+"px; left:"+(MEM.windx+20)+"px;"
-    );
-  }
-  function toggleVisible(id) {
-    var v = document.getElementById(id).style.display == "none";
-    document.getElementById(id).style.display = v ? "block" : "none";
-  }
-  function toggleText(id, a, b) {
-    var v = document.getElementById(id).innerHTML;
-    document.getElementById(id).innerHTML = v == "" || v == b ? a : b;
-  }
-  var lastScrollX = 0;
-  var pFrame = 0;
-  function present() {
-    var currScrollX = window.scrollX;
-    var step = 1;
-    document.body.scrollTo(Math.max(0, pFrame - 10), window.scrollY);
-
-    pFrame += step;
-
-    //console.log([lastScrollX,currScrollX]);
-
-    if (pFrame < 20 || Math.abs(lastScrollX - currScrollX) < step * 2) {
-      lastScrollX = currScrollX;
-      setTimeout(present, 1);
-    }
-  }
-  function reloadWSeed(s) {
-    var u = window.location.href.split("?")[0];
-    window.location.href = u + "?seed=" + s;
-    //window.location.reload(true)
-  }
-  var btnHoverCol = "rgba(0,0,0,0.1)";
-</script>
-
-<body style="margin:0">
-  <div
-    id="SETTING"
-    style="
-    position:fixed; 
-    z-index:1000; 
-    left: 40; 
-    top: 3;
-    "
-  >
-    <div
-      id="SET_BTN"
-      style="
-      width:32;
-      height:32;
-      color:rgba(0,0,0,0.4);
-      border: 1px solid rgba(0,0,0,0.4);
-      text-align: center;
-      display: table;
-      cursor: pointer;
-      "
-      onmouseover="document.getElementById('SET_BTN').style.backgroundColor=btnHoverCol"
-      onmouseout="document.getElementById('SET_BTN').style.backgroundColor='rgba(0,0,0,0)'"
-      onclick="toggleVisible('MENU');toggleText('SET_BTN.t','&#x2630;','&#x2715;')"
-      title="Settings"
-    >
-      <div style="display:table-cell; vertical-align: middle;">
-        <font id="SET_BTN.t" size="4px"> &#x2630; </font>
-      </div>
-      <script>
-        window.addEventListener("scroll", function(e) {
-          document.getElementById("SETTING").style.left = Math.max(
-            4,
-            40 - window.scrollX
+    seedStr("f", k);
+    for (var i = x0; i < x1; i += xstep) {
+      if (!occupied(i) && Math.random() < 0.01) {
+        for (var j = 0; j < 4 * Math.random(); j++) {
+          chadd(
+            reg,
+            { tag: "flatmount", x: i + 2 * (Math.random() - 0.5) * 700, y: 700 - j * 50 },
+            10,
           );
+        }
+      }
+    }
+
+    seedStr("b", k);
+    for (var i = x0; i < x1; i += xstep) {
+      if (Math.random() < 0.2) {
+        chadd(reg, { tag: "boat", x: i, y: 300 + Math.random() * 390 }, 400);
+      }
+    }
+
+    seedStr("birds", k);
+    if (Math.random() < 0.14) {
+      reg.push({ tag: "birds", x: x0 + Math.random() * CW, y: 70 + Math.random() * 170 });
+    }
+
+    // Inscriptions go in the most open stretch of sky in every third column.
+    seedStr("ins", k);
+    if (((k % 3) + 3) % 3 == 0 && Math.random() < INS_CHANCE) {
+      var peaks = [];
+      for (var kk = k - 2; kk <= k + 2; kk++) {
+        placeMounts(kk).forEach(function(m) {
+          if (m.tag == "mount") peaks.push(m.x);
         });
-      </script>
-    </div>
-    <div style="height:4px"></div>
-    <div
-      id="MENU"
-      style="
-      display:none;
-      background-color: rgba(0,0,0,0.1);
-      border: 1px solid rgba(0,0,0,0.4);
-      "
-    >
-      <table>
-        <tr>
-          <td><pre>SEED</pre></td>
-        </tr>
-        <tr>
-          <td>
-            <input title="random seed" id="INP_SEED" />
-            <button
-              onclick="reloadWSeed(document.getElementById('INP_SEED').value)"
-            >
-              Generate
-            </button>
-          </td>
-        </tr>
-        <tr>
-          <td><pre>VIEW</pre></td>
-        </tr>
-        <tr>
-          <td>
-            <button
-              title="view left"
-              onclick="xcroll(-parseFloat(document.getElementById('INC_STEP').value))"
-            >
-              <
-            </button>
-            <input
-              title="increment step"
-              id="INC_STEP"
-              type="number"
-              value="200"
-              min="0"
-              max="10000"
-              step="20"
-            />
-            <button
-              title="view right"
-              onclick="xcroll(parseFloat(document.getElementById('INC_STEP').value))"
-            >
-              >
-            </button>
-          </td>
-        </tr>
+      }
+      var best = 0,
+        bestD = -1;
+      for (var x = x0 + 40; x < x1 - 40; x += 16) {
+        var d = 1e9;
+        for (var n = 0; n < peaks.length; n++) d = Math.min(d, Math.abs(x - peaks[n]));
+        if (d > bestD) {
+          bestD = d;
+          best = x;
+        }
+      }
+      if (bestD > INS_CLEAR) reg.push({ tag: "inscription", x: best, y: 30 + Math.random() * 40 });
+    }
 
-        <tr>
-          <td>
-            <pre><input id = "AUTO_SCROLL" type="checkbox" 
-            onchange="autoxcroll(parseFloat(document.getElementById('INC_STEP').value))">Auto-scroll</pre>
-          </td>
+    var items = [];
+    function push(it) {
+      it.x0 = it.x + EXTENT[it.tag][0];
+      it.x1 = it.x + EXTENT[it.tag][1];
+      byId[it.id] = it;
+      items.push(it);
+    }
+    for (var i = 0; i < reg.length; i++) {
+      var r = reg[i];
+      var base = { k: k, i: i, x: r.x, y: r.y };
+      if (r.tag == "mount") {
+        push(Object.assign({ id: k + ":" + i, tag: "mount", key: r.y }, base));
+        push(Object.assign({ id: k + ":" + i + "w", tag: "water", key: r.y - 10000 }, base));
+      } else if (r.tag == "birds") {
+        push(Object.assign({ id: k + ":" + i, tag: r.tag, key: 20000 }, base));
+      } else if (r.tag == "inscription") {
+        push(Object.assign({ id: k + ":" + i, tag: r.tag, key: 30000, layer: "ann" }, base));
+      } else {
+        push(Object.assign({ id: k + ":" + i, tag: r.tag, key: r.y }, base));
+      }
+    }
+    return (plans[k] = items);
+  }
 
-          <td></td>
-        </tr>
+  // ---- new elements ----
 
-        <tr>
-          <td><pre>SAVE</pre></td>
-        </tr>
-        <tr>
-          <td>
-            <button
-              title="WARNING: This may take a while..."
-              type="button"
-              id="dwn-btn"
-              value="Download as SVG"
-              onclick="download(''+(Math.random())+'.svg', document.getElementById('BG').innerHTML);"
-            >
-              Download as .SVG
-            </button>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
+  // A flock of small ink birds, either in a loose V or scattered.
+  function birds(xoff, yoff) {
+    var canv = "";
+    var n = 3 + Math.floor(Math.random() * 9);
+    var dir = randChoice([-1, 1]);
+    var vee = Math.random() < 0.5;
+    var spread = 50 + Math.random() * 90;
+    for (var b = 0; b < n; b++) {
+      var bx, by;
+      if (vee) {
+        var rank = Math.ceil(b / 2);
+        var arm = b % 2 ? 1 : -1;
+        bx = xoff - dir * rank * normRand(10, 14);
+        by = yoff + arm * rank * normRand(4, 7) + normRand(-1.5, 1.5);
+      } else {
+        bx = xoff + normRand(-spread, spread);
+        by = yoff + normRand(-spread * 0.3, spread * 0.3);
+      }
+      canv += bird(bx, by, normRand(3.2, 6.5));
+    }
+    return canv;
+  }
 
-  <div
-    id="SOURCE_BTN"
-    style="
-      position:fixed; 
-      z-index:1000; 
-      left: 77; 
-      top: 3;
-      width:32;
-      height:32;
-      color:rgba(0,0,0,0.4);
-      border: 1px solid rgba(0,0,0,0.4);
-      text-align: center;
-      display: table;
-      cursor: pointer;"
-    onmouseover="document.getElementById('SOURCE_BTN').style.backgroundColor=btnHoverCol"
-    onmouseout="document.getElementById('SOURCE_BTN').style.backgroundColor='rgba(0,0,0,0)'"
-    onclick="window.location='https://github.com/LingDong-/shan-shui-inf';"
-    title="Fork me on Github!"
-  >
-    <div style="display:table-cell; vertical-align: middle;">
-      <font id="SET_BTN.t" size="4px"> &lt;/&gt; </font>
-    </div>
-    <script>
-      window.addEventListener("scroll", function(e) {
-        document.getElementById("SOURCE_BTN").style.left = Math.max(
-          41,
-          77 - window.scrollX
+  function bird(x, y, s) {
+    var u = normRand(0.25, 1);
+    var col = "rgba(100,100,100," + (0.55 + Math.random() * 0.3).toFixed(3) + ")";
+    var w = s * normRand(0.16, 0.24);
+    var left = [[x - s, y - s * 0.55 * u], [x - s * 0.45, y - s * 0.12 * u], [x, y + s * 0.08]];
+    var right = [[x, y + s * 0.08], [x + s * 0.5, y - s * 0.14 * u], [x + s * 1.05, y - s * 0.6 * u]];
+    return (
+      stroke(bezmh(left, 1).filter((v, i) => i % 4 == 0).concat([left[2]]), { wid: w, col: col, noi: 0.2 }) +
+      stroke(bezmh(right, 1).filter((v, i) => i % 4 == 0).concat([right[2]]), { wid: w, col: col, noi: 0.2 })
+    );
+  }
+
+  // Classical couplets written into open sky, in the manner of a colophon.
+  // Lines are quoted from Tang and Song poets, with the poet's name.
+  var POEMS = [
+    ["江流天地外", "山色有無中", "王維"],
+    ["明月松間照", "清泉石上流", "王維"],
+    ["空山新雨後", "天氣晚來秋", "王維"],
+    ["行到水窮處", "坐看雲起時", "王維"],
+    ["空山不見人", "但聞人語響", "王維"],
+    ["人閒桂花落", "夜靜春山空", "王維"],
+    ["兩岸青山相對出", "孤帆一片日邊來", "李白"],
+    ["眾鳥高飛盡", "孤雲獨去閒", "李白"],
+    ["兩岸猿聲啼不住", "輕舟已過萬重山", "李白"],
+    ["孤帆遠影碧空盡", "唯見長江天際流", "李白"],
+    ["會當凌絕頂", "一覽眾山小", "杜甫"],
+    ["窗含西嶺千秋雪", "門泊東吳萬里船", "杜甫"],
+    ["白日依山盡", "黃河入海流", "王之渙"],
+    ["千山鳥飛絕", "萬徑人蹤滅", "柳宗元"],
+    ["孤舟蓑笠翁", "獨釣寒江雪", "柳宗元"],
+    ["橫看成嶺側成峰", "遠近高低各不同", "蘇軾"],
+    ["遠上寒山石徑斜", "白雲生處有人家", "杜牧"],
+    ["野曠天低樹", "江清月近人", "孟浩然"],
+    ["春潮帶雨晚來急", "野渡無人舟自橫", "韋應物"],
+    ["採菊東籬下", "悠然見南山", "陶淵明"],
+    ["潮平兩岸闊", "風正一帆懸", "王灣"],
+    ["只在此山中", "雲深不知處", "賈島"],
+    ["山重水複疑無路", "柳暗花明又一村", "陸游"],
+    ["青山遮不住", "畢竟東流去", "辛棄疾"],
+  ];
+  var SEALS2 = ["臥遊", "山水", "煙霞", "清音", "無盡", "逍遙", "雲林", "自在", "天趣", "墨戲", "林泉"];
+  var SEALS4 = ["江山無盡", "山高水長", "行雲流水", "煙雲供養", "寄情山水"];
+
+  function roughRect(x, y, w, h, j) {
+    var c = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+    var pts = [];
+    for (var e = 0; e < 4; e++) {
+      var a = c[e],
+        b = c[(e + 1) % 4];
+      for (var i = 0; i < 5; i++) {
+        var t = i / 5;
+        pts.push([
+          a[0] + (b[0] - a[0]) * t + normRand(-j, j),
+          a[1] + (b[1] - a[1]) * t + normRand(-j, j),
+        ]);
+      }
+    }
+    return pts;
+  }
+
+  // Returns drawing primitives, not SVG, so the page can draw the text both
+  // as SVG and onto a canvas for snapshots.
+  function inscription(xc, top) {
+    var prims = [];
+    var poem = randChoice(POEMS);
+    var s = normRand(17, 21);
+    var adv = s * 1.16;
+    var gap = s * 1.55;
+    var colR = xc + gap;
+    var ink = function() {
+      return +(0.74 + Math.random() * 0.2).toFixed(2);
+    };
+    var r1 = function(v) {
+      return +v.toFixed(1);
+    };
+    function text(t, x, y, size, k, o, w) {
+      prims.push({ p: "text", t: t, x: r1(x), y: r1(y), s: r1(size), k: k, o: o, w: w || 400 });
+    }
+    function seal(cx, ty, chars, cols, rows, zhu) {
+      var cs = s * 0.6;
+      var pad = cs * 0.2;
+      var w = cols * cs + pad * 2;
+      var h = rows * cs + pad * 2;
+      var x0 = cx - w / 2;
+      var pts = roughRect(x0, ty, w, h, cs * 0.035).map(v => [r1(v[0]), r1(v[1])]);
+      prims.push({ p: "poly", k: zhu ? "seal-line" : "seal", pts: pts, sw: r1(cs * 0.11) });
+      for (var i = 0; i < chars.length; i++) {
+        var col = cols - 1 - Math.floor(i / rows);
+        var row = i % rows;
+        text(
+          chars[i],
+          x0 + pad + cs * (col + 0.5) + normRand(-0.2, 0.2),
+          ty + pad + cs * (row + 0.5) + normRand(-0.2, 0.2),
+          cs * 0.98,
+          zhu ? "seal-zhu" : "seal-cut",
+          1,
+          700,
         );
-      });
-    </script>
-  </div>
+      }
+      if (!zhu) {
+        for (var n = 0; n < 4; n++) {
+          var sx = x0 + Math.random() * w;
+          var sy = ty + Math.random() * h;
+          var rr = cs * normRand(0.03, 0.08);
+          var sp = [];
+          for (var a = 0; a < 6; a++) {
+            var ang = (a / 6) * Math.PI * 2;
+            var l = rr * normRand(0.6, 1.3);
+            sp.push([r1(sx + Math.cos(ang) * l * 1.6), r1(sy + Math.sin(ang) * l)]);
+          }
+          prims.push({ p: "poly", k: "speck", pts: sp });
+        }
+      }
+      return ty + h;
+    }
 
-  <table style="border-bottom: 1px solid rgba(0,0,0,0.1);">
-    <tr>
-      <td>
-        <div
-          id="L"
-          onmouseover="rstyle('L',true)"
-          onmouseout="rstyle('L',false)"
-          onclick="xcroll(-200)"
-        >
-          <div id="L.t"><font size="6px">&#x3008;</font></div>
-          <script>
-            rstyle("L", false);
-          </script>
-        </div>
-      </td>
+    // An optional leading seal at the top right, before the first line.
+    if (Math.random() < 0.4) {
+      seal(colR + gap * 0.95, top + s * 0.1, randChoice(SEALS2), 1, 2, Math.random() < 0.5);
+    }
+    for (var l = 0; l < 2; l++) {
+      var cx = colR - l * gap;
+      for (var c = 0; c < poem[l].length; c++) {
+        text(
+          poem[l][c],
+          cx + normRand(-0.5, 0.5),
+          top + adv * (c + 0.5) + normRand(-0.4, 0.4),
+          s * normRand(0.96, 1.04),
+          "ins",
+          ink(),
+        );
+      }
+    }
+    // Signature column: 錄某某句, "lines of so-and-so, recorded".
+    var sig = "錄" + poem[2] + "句";
+    var ss = s * 0.72;
+    var sx = colR - 2 * gap + gap * 0.1;
+    var sy = top + adv * 1.3;
+    for (var c = 0; c < sig.length; c++) {
+      text(sig[c], sx, sy + ss * 1.15 * (c + 0.5), ss, "ins", ink());
+    }
+    var four = Math.random() < 0.45;
+    seal(
+      sx,
+      sy + ss * 1.15 * sig.length + s * 0.35,
+      four ? randChoice(SEALS4) : randChoice(SEALS2),
+      four ? 2 : 1,
+      2,
+      Math.random() < 0.3,
+    );
+    return { prims: prims };
+  }
 
-      <td>
-        <div id="BG">
-          <script>
-            MEM.lasttick = new Date().getTime();
-            document.getElementById("INP_SEED").value = SEED;
-            document
-              .getElementById("BG")
-              .setAttribute("style", "width:" + MEM.windx + "px");
-            update();
-            document.body.scrollTo(0, 0);
-            console.log(["SCROLLX", window.scrollX]);
-            present();
-            //draw();
-          </script>
-        </div>
-      </td>
+  function renderItem(it) {
+    seedStr("r", it.k, it.i, it.tag);
+    switch (it.tag) {
+      case "mount":
+        return Mount.mountain(it.x, it.y, it.i * 2 * Math.random());
+      case "water":
+        return water(it.x, it.y, it.i * 2);
+      case "flatmount":
+        return Mount.flatMount(it.x, it.y, 2 * Math.random() * Math.PI, {
+          wid: 600 + Math.random() * 400,
+          hei: 100,
+          cho: 0.5 + Math.random() * 0.2,
+        });
+      case "distmount":
+        return Mount.distMount(it.x, it.y, Math.random() * 100, {
+          hei: 150,
+          len: randChoice([500, 1000, 1500]),
+        });
+      case "boat":
+        return Arch.boat01(it.x, it.y, Math.random(), {
+          sca: it.y / 800,
+          fli: randChoice([true, false]),
+        });
+      case "birds":
+        return birds(it.x, it.y);
+      case "inscription":
+        return inscription(it.x, it.y);
+    }
+    return "";
+  }
 
-      <td>
-        <div
-          id="R"
-          onmouseover="rstyle('R',true)"
-          onmouseout="rstyle('R',false)"
-          onclick="xcroll(200)"
-        >
-          <div id="R.t"><font size="6px">&#x3009;</font></div>
-          <script>
-            rstyle("R", false);
-          </script>
-        </div>
-      </td>
-    </tr>
-  </table>
-</body>
+  // The paper texture from the original page, as greyscale. The page tints
+  // it per style.
+  function paper() {
+    seedStr("paper");
+    var reso = 512;
+    var buf = new Uint8ClampedArray(reso * reso * 4);
+    function put(x, y, c) {
+      if (x < 0 || y < 0 || x >= reso || y >= reso) return;
+      var o = (y * reso + x) * 4;
+      buf[o] = buf[o + 1] = buf[o + 2] = c;
+      buf[o + 3] = 255;
+    }
+    for (var i = 0; i < reso / 2 + 1; i++) {
+      for (var j = 0; j < reso / 2 + 1; j++) {
+        var c = 245 + Noise.noise(i * 0.1, j * 0.1) * 10;
+        c -= Math.random() * 20;
+        c = Math.round(c);
+        put(i, j, c);
+        put(reso - i, j, c);
+        put(i, reso - j, c);
+        put(reso - i, reso - j, c);
+      }
+    }
+    send({ type: "paper", epoch: EPOCH, w: reso, h: reso, buf: buf }, [buf.buffer]);
+  }
 
-<canvas id="bgcanv" width="512" height="512" hidden> </canvas>
-<script>
-  var canvas = document.getElementById("bgcanv");
-  var ctx = canvas.getContext("2d");
-  var reso = 512;
+  // ---- messaging ----
 
-  for (var i = 0; i < reso / 2 + 1; i++) {
-    for (var j = 0; j < reso / 2 + 1; j++) {
-      var c = 245 + Noise.noise(i * 0.1, j * 0.1) * 10;
-      c -= Math.random() * 20;
+  function send(msg, transfer) {
+    if (IS_WORKER) self.postMessage(msg, transfer || []);
+    else window.__ssGenSend(msg);
+  }
 
-      var r = c.toFixed(0);
-      var g = (c * 0.95).toFixed(0);
-      var b = (c * 0.85).toFixed(0);
-      ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
-      ctx.fillRect(i, j, 1, 1);
-      ctx.fillRect(reso - i, j, 1, 1);
-      ctx.fillRect(i, reso - j, 1, 1);
-      ctx.fillRect(reso - i, reso - j, 1, 1);
+  function init(seed, epoch) {
+    SEED = String(seed);
+    EPOCH = epoch;
+    plans = {};
+    mounts = {};
+    byId = {};
+    queue = [];
+    // Same as the original: seed, then let the first noise call build the
+    // permutation table, so a seed keeps its mountain ranges.
+    Noise.reset();
+    Math.seed(SEED);
+    Noise.noise(0);
+    send({ type: "ready", epoch: EPOCH });
+    paper();
+  }
+
+  function pump() {
+    if (timer === null && queue.length) timer = setTimeout(step, 0);
+  }
+
+  function step() {
+    timer = null;
+    var id = queue.shift();
+    var it = byId[id];
+    if (it) {
+      var t0 = Date.now();
+      var data;
+      try {
+        data = renderItem(it);
+      } catch (err) {
+        data = "";
+        console.warn("item failed", id, err);
+      }
+      if (typeof data == "string" && data.indexOf("NaN") != -1) {
+        data = data.replace(/NaN/g, -1000);
+      }
+      send({ type: "item", epoch: EPOCH, id: id, data: data, ms: Date.now() - t0 });
+    }
+    pump();
+  }
+
+  function receive(e) {
+    var m = e.data;
+    if (m.type == "init") return init(m.seed, m.epoch);
+    if (m.epoch != EPOCH) return;
+    if (m.type == "plan") {
+      for (var n = 0; n < m.ks.length; n++) {
+        var k = m.ks[n];
+        send({ type: "plan", epoch: EPOCH, k: k, items: planColumn(k) });
+      }
+    } else if (m.type == "render") {
+      queue = m.ids.slice();
+      pump();
     }
   }
-  var img = canvas.toDataURL("image/png");
-  document.getElementById("BG").style.backgroundImage = "url(" + img + ")";
-  document.getElementsByTagName("body")[0].style.backgroundImage =
-    "url(" + img + ")";
+
+  if (IS_WORKER) {
+    self.onmessage = receive;
+  } else {
+    window.__ssGenRecv = function(m) {
+      receive({ data: m });
+    };
+  }
+
 </script>
+<script>
+(function() {
+  "use strict";
+
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var H = 700; // world units visible vertically (the original showed 800/1.142)
+  var CW = 512; // column width, must match the generator
+  var ARTIFACT = !!window.SS_ARTIFACT; // set in builds where downloads and URLs are unavailable
+  var REDUCED = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var root = document.documentElement;
+  var $ = function(id) {
+    return document.getElementById(id);
+  };
+
+  // ---------- styles ----------
+  // Paper, ink and UI colours live in the CSS tokens keyed by data-style.
+  // `css` holds rules for the painting itself; `$` is replaced by a scope.
+  var STYLES = {
+    ink: { zh: "水墨", en: "Ink", inkBlend: "multiply", annBlend: "multiply", css: "" },
+    qinglu: {
+      zh: "青綠",
+      en: "Blue-green",
+      inkBlend: "multiply",
+      annBlend: "multiply",
+      css:
+        "$ .mb.v0{fill:url(#qg0)!important}$ .mb.v1{fill:url(#qg1)!important}" +
+        "$ .mb.v2{fill:url(#qg2)!important}$ .rb{fill:url(#qg2)!important}" +
+        "$ .ft{fill:#f6e9cc!important}$ .it-distmount{filter:url(#f-dist-qinglu)}",
+    },
+    qianjiang: {
+      zh: "淺絳",
+      en: "Light crimson",
+      inkBlend: "multiply",
+      annBlend: "multiply",
+      css:
+        "$ .mb.v0{fill:url(#jg0)!important}$ .mb.v1{fill:url(#jg1)!important}" +
+        "$ .mb.v2{fill:url(#jg2)!important}$ .rb{fill:url(#jg1)!important}" +
+        "$ .ft{fill:#f8ecd6!important}",
+    },
+    snow: {
+      zh: "雪景",
+      en: "Snow",
+      inkBlend: "normal",
+      annBlend: "multiply",
+      css: "$ .it-distmount{opacity:.72}",
+      sky: {
+        blend: "multiply",
+        stops: [[0, "rgba(58,64,76,.5)"], [0.42, "rgba(58,64,76,.1)"], [0.6, "rgba(58,64,76,0)"], [1, "rgba(58,64,76,.2)"]],
+      },
+      snow: true,
+    },
+    night: {
+      zh: "月夜",
+      en: "Moonlight",
+      inkBlend: "normal",
+      inkFilter: "url(#f-night)",
+      annBlend: "normal",
+      css: "",
+      sky: {
+        blend: "normal",
+        stops: [[0, "rgba(4,7,14,.4)"], [0.55, "rgba(4,7,14,0)"]],
+        moon: { x: 0.8, y: 0.15, r: 0.042 },
+      },
+    },
+  };
+  var STYLE_ORDER = ["ink", "qinglu", "qianjiang", "snow", "night"];
+
+  // ---------- state ----------
+  var params = readParams();
+  var prefs = loadPrefs();
+  var state = {
+    seed: params.seed || String(Date.now()),
+    style: null,
+    styleChosen: false,
+    ins: prefs.ins !== false,
+  };
+  var cam = { x: params.x || 0, glide: 0, vel: 0, drift: false, speed: prefs.speed || 36, keyDir: 0, keyVel: 0, dir: 1 };
+  var view = { w: 1, h: 1, s: 1, top: 0, wu: 1, bandH: 1 };
+  var base = { x: 0, span: 16000 };
+
+  var epoch = 0;
+  var worker = null;
+  var plans = new Map(); // column -> items
+  var planReq = new Set();
+  var requested = new Set();
+  var lastRenderList = "";
+  var cache = new Map(); // id -> svg string or inscription data (LRU by insertion order)
+  var cacheSize = 0;
+  var CACHE_MAX = 48e6;
+  var live = { ink: [], ann: [] };
+  var insertQueue = [];
+  var paperCanvas = null;
+  var paperURL = null;
+
+  var camEl = $("cam"),
+    inkEl = $("ink"),
+    annEl = $("ann"),
+    inkWorld = $("inkWorld"),
+    annWorld = $("annWorld"),
+    paperTex = $("paperTex"),
+    skyEl = $("sky"),
+    moonEl = $("moon"),
+    themeCss = $("svgTheme");
+
+  // ---------- params & prefs ----------
+  function readParams() {
+    var out = {};
+    try {
+      var q = new URLSearchParams(location.search);
+      if (q.get("seed")) out.seed = q.get("seed");
+      if (q.get("x") && isFinite(+q.get("x"))) out.x = +q.get("x");
+      if (q.get("style") && q.get("style") in STYLES) out.style = q.get("style");
+    } catch (e) {}
+    return out;
+  }
+  function loadPrefs() {
+    try {
+      return JSON.parse(localStorage.getItem("shanshui.prefs") || "{}") || {};
+    } catch (e) {
+      return {};
+    }
+  }
+  function savePrefs() {
+    try {
+      localStorage.setItem(
+        "shanshui.prefs",
+        JSON.stringify({ style: state.styleChosen ? state.style : undefined, ins: state.ins, speed: cam.speed }),
+      );
+    } catch (e) {}
+  }
+
+  // ---------- generator worker ----------
+  function genSource() {
+    var parts = document.querySelectorAll('script[type="text/x-shanshui"]');
+    return Array.prototype.map
+      .call(parts, function(s) {
+        return s.textContent;
+      })
+      .join("\n;\n");
+  }
+
+  function startWorker() {
+    var src = genSource();
+    var ready = false;
+    function inline() {
+      if (worker && worker.inline) return;
+      if (worker && worker.terminate) worker.terminate();
+      var host = {
+        inline: true,
+        postMessage: function(m) {
+          setTimeout(function() {
+            window.__ssGenRecv(m);
+          }, 0);
+        },
+      };
+      window.__ssGenSend = function(m) {
+        onWorkerMessage({ data: m });
+      };
+      var s = document.createElement("script");
+      s.textContent = src;
+      document.head.appendChild(s);
+      worker = host;
+      sendInit();
+    }
+    try {
+      var url = URL.createObjectURL(new Blob([src], { type: "text/javascript" }));
+      worker = new Worker(url);
+      worker.onmessage = function(e) {
+        if (e.data.type == "ready") ready = true;
+        onWorkerMessage(e);
+      };
+      worker.onerror = function(e) {
+        if (!ready) {
+          e.preventDefault && e.preventDefault();
+          inline();
+        }
+      };
+    } catch (e) {
+      inline();
+    }
+  }
+
+  function sendInit() {
+    worker.postMessage({ type: "init", seed: state.seed, epoch: epoch });
+    planReq.clear();
+    requested.clear();
+    lastRenderList = "";
+    refresh();
+  }
+
+  function onWorkerMessage(e) {
+    var m = e.data;
+    if (m.epoch !== epoch) return;
+    if (m.type == "plan") {
+      plans.set(m.k, m.items);
+      planReq.delete(m.k);
+      dirty = true;
+      kick();
+    } else if (m.type == "item") {
+      requested.delete(m.id);
+      cachePut(m.id, m.data);
+      dirty = true;
+      kick();
+    } else if (m.type == "paper") {
+      setPaper(m);
+    }
+  }
+
+  function cachePut(id, data) {
+    if (cache.has(id)) return;
+    var size = typeof data == "string" ? data.length : 2000;
+    cache.set(id, data);
+    cacheSize += size;
+    if (cacheSize > CACHE_MAX) {
+      var it = cache.keys();
+      while (cacheSize > CACHE_MAX * 0.8) {
+        var k = it.next().value;
+        if (k === undefined) break;
+        var d = cache.get(k);
+        cacheSize -= typeof d == "string" ? d.length : 2000;
+        cache.delete(k);
+      }
+    }
+  }
+  function cacheGet(id) {
+    var d = cache.get(id);
+    if (d !== undefined) {
+      cache.delete(id);
+      cache.set(id, d);
+    }
+    return d;
+  }
+
+  function setPaper(m) {
+    var c = document.createElement("canvas");
+    c.width = m.w;
+    c.height = m.h;
+    c.getContext("2d").putImageData(new ImageData(m.buf, m.w, m.h), 0, 0);
+    paperCanvas = c;
+    c.toBlob(function(b) {
+      if (!b) return;
+      if (paperURL) URL.revokeObjectURL(paperURL);
+      paperURL = URL.createObjectURL(b);
+      paperTex.style.backgroundImage = "url(" + paperURL + ")";
+    });
+  }
+
+  // ---------- world bookkeeping ----------
+  function cmp(a, b) {
+    return a.key - b.key || a.k - b.k || a.i - b.i;
+  }
+
+  // Creates the item's empty group at its place in painting order. The
+  // markup is added piece by piece in processInserts.
+  function insertItem(it) {
+    var layer = it.layer == "ann" ? "ann" : "ink";
+    var arr = live[layer];
+    var g = document.createElementNS(SVGNS, "g");
+    g.setAttribute("class", "it it-" + it.tag);
+    var lo = 0,
+      hi = arr.length;
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (cmp(arr[mid], it) < 0) lo = mid + 1;
+      else hi = mid;
+    }
+    (layer == "ann" ? annWorld : inkWorld).insertBefore(g, lo < arr.length ? arr[lo].el : null);
+    arr.splice(lo, 0, it);
+    it.el = g;
+  }
+
+  function removeItem(it, layer, idx) {
+    it.el.remove();
+    it.el = null;
+    live[layer].splice(idx, 1);
+  }
+
+  function inRange(it, L, R) {
+    return it.x1 >= L && it.x0 <= R;
+  }
+
+  var dirty = true;
+  var lastRefreshX = -1e9;
+  var lastRefreshT = 0;
+  var pendingVisible = 0;
+
+  function refresh() {
+    if (!worker) return;
+    dirty = false;
+    lastRefreshX = cam.x;
+    lastRefreshT = performance.now();
+    var wu = view.wu;
+    var ahead = Math.max(wu, 1200);
+    var behind = Math.max(wu * 0.5, 600);
+    var L = cam.x - (cam.dir < 0 ? ahead : behind);
+    var R = cam.x + wu + (cam.dir > 0 ? ahead : behind);
+    var vL = cam.x,
+      vR = cam.x + wu;
+
+    // Plan every column whose items could reach into [L, R].
+    var kmin = Math.floor((L - 1520) / CW);
+    var kmax = Math.floor((R + 1100) / CW);
+    var need = [];
+    var mid = Math.floor((cam.x + wu / 2) / CW);
+    for (var k = kmin; k <= kmax; k++) {
+      if (!plans.has(k) && !planReq.has(k)) need.push(k);
+    }
+    if (need.length) {
+      need.sort(function(a, b) {
+        return Math.abs(a - mid) - Math.abs(b - mid);
+      });
+      need.forEach(function(k) {
+        planReq.add(k);
+      });
+      worker.postMessage({ type: "plan", epoch: epoch, ks: need });
+    }
+
+    // Decide what to draw, what to fetch, and what is still missing on screen.
+    var want = [];
+    var queued = new Set(insertQueue);
+    pendingVisible = 0;
+    for (var k = kmin; k <= kmax; k++) {
+      var items = plans.get(k);
+      if (!items) {
+        if (k * CW < vR + 1100 && (k + 1) * CW > vL - 1520) pendingVisible++;
+        continue;
+      }
+      for (var n = 0; n < items.length; n++) {
+        var it = items[n];
+        if (it.el || !inRange(it, L, R)) continue;
+        if (it.layer == "ann" && !state.ins) continue;
+        var vis = inRange(it, vL, vR);
+        if (vis) pendingVisible++;
+        if (cache.has(it.id)) {
+          if (!queued.has(it)) {
+            insertQueue.push(it);
+            queued.add(it);
+          }
+        } else {
+          it.vis = vis;
+          want.push(it);
+        }
+      }
+    }
+    var cx = cam.x + wu / 2;
+    want.sort(function(a, b) {
+      if (a.vis != b.vis) return a.vis ? -1 : 1;
+      if (a.vis) return cmp(a, b); // paint far to near, like a painter would
+      return Math.abs((a.x0 + a.x1) / 2 - cx) - Math.abs((b.x0 + b.x1) / 2 - cx);
+    });
+    var ids = want.map(function(it) {
+      return it.id;
+    });
+    var key = ids.join(",");
+    if (key != lastRenderList) {
+      lastRenderList = key;
+      requested = new Set(ids);
+      worker.postMessage({ type: "render", epoch: epoch, ids: ids });
+    }
+    insertQueue.sort(function(a, b) {
+      var av = inRange(a, vL, vR),
+        bv = inRange(b, vL, vR);
+      if (av != bv) return av ? -1 : 1;
+      return cmp(a, b);
+    });
+
+    // Let go of what is far away; it can always be painted again.
+    var CL = cam.x - wu * 1.5 - 1200,
+      CR = cam.x + wu * 2.5 + 1200;
+    ["ink", "ann"].forEach(function(layer) {
+      var arr = live[layer];
+      for (var i = arr.length - 1; i >= 0; i--) {
+        if (!inRange(arr[i], CL, CR) || (layer == "ann" && !state.ins)) removeItem(arr[i], layer, i);
+      }
+    });
+    if (plans.size > 600) {
+      plans.forEach(function(items, k) {
+        if (Math.abs(k - mid) > 120) plans.delete(k);
+      });
+    }
+    showStatus(pendingVisible > 0);
+  }
+
+  // A mountain can be 300 KB of markup. Parsing it in one go stalls a frame,
+  // so items go in as ~32 KB pieces within a per-frame time budget.
+  function splitMarkup(s) {
+    var out = [];
+    var i = 0;
+    while (i < s.length) {
+      var k = s.indexOf("<polyline", i + 32000);
+      if (k < 0) {
+        out.push(s.slice(i));
+        break;
+      }
+      out.push(s.slice(i, k));
+      i = k;
+    }
+    return out;
+  }
+
+  function processInserts(budget) {
+    var t0 = performance.now();
+    var inserted = 0;
+    var L = cam.x - view.wu * 1.5 - 1200,
+      R = cam.x + view.wu * 2.5 + 1200;
+    while (insertQueue.length && performance.now() - t0 < budget) {
+      var it = insertQueue[0];
+      if (!it.pieces) {
+        if (it.el || !inRange(it, L, R) || !plans.has(it.k) || (it.layer == "ann" && !state.ins)) {
+          insertQueue.shift();
+          continue;
+        }
+        var d = cacheGet(it.id);
+        if (d === undefined) {
+          insertQueue.shift();
+          continue;
+        }
+        it.pieces = it.layer == "ann" ? [annoSvg(d)] : splitMarkup(d);
+        it.pi = 0;
+        insertItem(it);
+      }
+      if (!it.el) {
+        it.pieces = null; // culled before it finished
+        insertQueue.shift();
+        continue;
+      }
+      var sub = document.createElementNS(SVGNS, "g");
+      sub.innerHTML = it.pieces[it.pi++];
+      it.el.appendChild(sub);
+      if (it.pi >= it.pieces.length) {
+        it.pieces = null;
+        insertQueue.shift();
+        inserted++;
+      }
+    }
+    if (inserted && !insertQueue.length) dirty = true;
+  }
+
+  // ---------- inscriptions ----------
+  function esc(t) {
+    return String(t).replace(/[&<>"']/g, function(c) {
+      return "&#" + c.charCodeAt(0) + ";";
+    });
+  }
+  function annoSvg(a) {
+    var out = "";
+    if (!a || !a.prims) return out;
+    a.prims.forEach(function(p) {
+      if (p.p == "poly") {
+        out +=
+          "<polygon class='" +
+          p.k +
+          "' points='" +
+          p.pts.join(" ") +
+          "'" +
+          (p.k == "seal-line" ? " style='stroke-width:" + p.sw + "'" : "") +
+          "/>";
+      } else {
+        out +=
+          "<text class='" +
+          p.k +
+          "' x='" +
+          p.x +
+          "' y='" +
+          p.y +
+          "' font-size='" +
+          p.s +
+          "' font-weight='" +
+          p.w +
+          "' text-anchor='middle' dominant-baseline='central'" +
+          (p.o < 1 ? " opacity='" + p.o + "'" : "") +
+          ">" +
+          esc(p.t) +
+          "</text>";
+      }
+    });
+    return out;
+  }
+
+  // ---------- camera ----------
+  function layout() {
+    var r = $("stage").getBoundingClientRect();
+    view.w = Math.max(1, r.width);
+    view.h = Math.max(1, r.height);
+    var s = view.h / H;
+    if (view.w / s < 480) s = view.w / 480;
+    view.s = s;
+    view.bandH = H * s;
+    view.top = Math.max(0, (view.h - view.bandH) / 2);
+    view.wu = view.w / s;
+    document.body.classList.toggle("banded", view.top > 1);
+    $("band").style.top = view.top + "px";
+    $("band").style.height = view.bandH + "px";
+    placeSky();
+    rebase();
+    fxResize();
+  }
+
+  // #cam holds a wide strip of the world starting at base.x. When the view
+  // nears either end, the strip is re-centred (one full repaint).
+  var rebasing = false;
+  function rebase() {
+    rebasing = true;
+    setTimeout(function() {
+      rebasing = false;
+    }, 100);
+    lastScroll = null;
+    base.span = Math.max(16000, Math.ceil(view.wu * 8));
+    base.x = Math.round(cam.x - (base.span - view.wu) / 2);
+    var wpx = (base.span * view.s).toFixed(1) + "px";
+    camEl.style.width = paperTex.style.width = skyEl.style.width = $("moonTrack").style.width = wpx;
+    paperTex.style.backgroundPosition = -((((base.x * view.s) % 512) + 512) % 512).toFixed(2) + "px 0";
+    [inkEl, annEl].forEach(function(el) {
+      el.setAttribute("viewBox", base.x + " 0 " + base.span + " " + H);
+      el.setAttribute("width", (base.span * view.s).toFixed(1));
+      el.setAttribute("height", view.bandH.toFixed(1));
+      el.style.top = view.top + "px";
+    });
+  }
+
+  function applyCamera() {
+    if (cam.x < base.x + view.wu * 0.5 || cam.x + view.wu * 1.5 > base.x + base.span) rebase();
+    var dpr = window.devicePixelRatio || 1;
+    var px = Math.round((cam.x - base.x) * view.s * dpr) / dpr;
+    if (px !== lastScroll) {
+      lastScroll = px;
+      stage.scrollLeft = px;
+    }
+    showPos();
+  }
+  // Any DOM change makes Chrome re-layerize the whole painting, so the
+  // position readout only updates while the menu is open, a few times a second.
+  var lastPosShown = null;
+  var lastPosT = 0;
+  function showPos(force) {
+    if ($("menu").hidden && !force) return;
+    var now = performance.now();
+    if (!force && now - lastPosT < 250) return;
+    lastPosT = now;
+    var pos = Math.round(cam.x);
+    if (pos !== lastPosShown) {
+      lastPosShown = pos;
+      $("posOut").textContent = pos.toLocaleString("en-US");
+    }
+  }
+
+  var lastScroll = null;
+  var rafId = 0;
+  var lastT = 0;
+  var lastUrlT = 0;
+  function kick() {
+    if (!rafId) {
+      lastT = performance.now();
+      rafId = requestAnimationFrame(frame);
+    }
+  }
+
+  function frame(t) {
+    rafId = 0;
+    var dt = Math.min(0.05, Math.max(0, (t - lastT) / 1000));
+    lastT = t;
+    var x0 = cam.x;
+    if (!drag) {
+      if (cam.glide) {
+        var g = cam.glide * (1 - Math.exp(-dt * 9));
+        if (Math.abs(cam.glide - g) < 0.25) g = cam.glide;
+        cam.x += g;
+        cam.glide -= g;
+      }
+      if (cam.vel) {
+        cam.x += cam.vel * dt;
+        cam.vel *= Math.exp(-dt * 2.4);
+        if (Math.abs(cam.vel) < 3) cam.vel = 0;
+      }
+      var target = cam.keyDir * 650;
+      if (cam.keyVel || target) {
+        cam.keyVel += (target - cam.keyVel) * (1 - Math.exp(-dt * 7));
+        if (!target && Math.abs(cam.keyVel) < 3) cam.keyVel = 0;
+        cam.x += cam.keyVel * dt;
+      }
+      if (cam.drift) cam.x += cam.speed * dt;
+    }
+    var dx = cam.x - x0;
+    if (dx) cam.dir = dx > 0 ? 1 : -1;
+    applyCamera();
+    if (dirty || Math.abs(cam.x - lastRefreshX) > 60 || (dx && t - lastRefreshT > 400)) refresh();
+    processInserts(dx ? 6 : 24);
+    fxStep(dt, dx);
+
+    var moving = cam.glide || cam.vel || cam.keyDir || cam.keyVel || cam.drift || drag;
+    if (moving && cam.drift && t - lastUrlT > 3000) {
+      lastUrlT = t;
+      writeUrl();
+    }
+    if (moving || insertQueue.length || dirty || fx.on) kick();
+    else scheduleUrl();
+  }
+
+  function glideBy(units) {
+    cam.vel = 0;
+    cam.glide += units;
+    kick();
+  }
+
+  // ---------- input ----------
+  var drag = null;
+  var stage = $("stage");
+  // Only this script scrolls the stage; if something else does (find in
+  // page, focus), follow it.
+  stage.addEventListener("scroll", function() {
+    if (lastScroll !== null && Math.abs(stage.scrollLeft - lastScroll) > 2 && !rebasing) {
+      cam.x = base.x + stage.scrollLeft / view.s;
+      lastScroll = stage.scrollLeft;
+      cam.glide = cam.vel = 0;
+      dirty = true;
+      kick();
+    }
+  });
+  stage.addEventListener("pointerdown", function(e) {
+    if (e.button !== 0) return;
+    try {
+      stage.setPointerCapture(e.pointerId);
+    } catch (err) {}
+    drag = { id: e.pointerId, x: e.clientX, hist: [[e.timeStamp, e.clientX]] };
+    cam.glide = 0;
+    cam.vel = 0;
+    stage.classList.add("dragging");
+    dismissHint();
+    kick();
+  });
+  stage.addEventListener("pointermove", function(e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    cam.x -= (e.clientX - drag.x) / view.s;
+    drag.x = e.clientX;
+    drag.hist.push([e.timeStamp, e.clientX]);
+    if (drag.hist.length > 8) drag.hist.shift();
+    kick();
+  });
+  function endDrag(e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var h = drag.hist;
+    var a = h[0],
+      b = h[h.length - 1];
+    var span = b[0] - a[0];
+    if (span > 0 && e.timeStamp - b[0] < 80) {
+      cam.vel = Math.max(-5000, Math.min(5000, -((b[1] - a[1]) / span) * 1000 / view.s));
+    }
+    drag = null;
+    stage.classList.remove("dragging");
+    kick();
+  }
+  stage.addEventListener("pointerup", endDrag);
+  stage.addEventListener("pointercancel", endDrag);
+
+  window.addEventListener(
+    "wheel",
+    function(e) {
+      if (e.target.closest && e.target.closest("#menu, #shot")) return;
+      e.preventDefault();
+      var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (e.deltaMode == 1) d *= 16;
+      else if (e.deltaMode == 2) d *= view.w;
+      dismissHint();
+      if (Math.abs(d) < 40) {
+        cam.x += d / view.s;
+        kick();
+      } else glideBy(d / view.s);
+    },
+    { passive: false },
+  );
+
+  window.addEventListener("keydown", function(e) {
+    if (e.target.closest && e.target.closest("input, textarea, select")) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k == "ArrowRight" || k == "ArrowLeft") {
+      cam.keyDir = k == "ArrowRight" ? 1 : -1;
+      cam.glide = 0;
+      dismissHint();
+      kick();
+      e.preventDefault();
+    } else if (k == "PageDown" || k == "PageUp") {
+      glideBy((k == "PageDown" ? 1 : -1) * view.wu * 0.8);
+      e.preventDefault();
+    } else if (k == " " && !(e.target.closest && e.target.closest("button, a"))) {
+      setDrift(!cam.drift);
+      dismissHint();
+      e.preventDefault();
+    } else if (k == "Home") {
+      jumpTo(0);
+      e.preventDefault();
+    } else if (k == "f" || k == "F") {
+      toggleFullscreen();
+    } else if (k == "Escape") {
+      if (!$("shot").hidden) closeShot();
+      else if (!$("menu").hidden) toggleMenu(false);
+    }
+  });
+  window.addEventListener("keyup", function(e) {
+    if ((e.key == "ArrowRight" && cam.keyDir == 1) || (e.key == "ArrowLeft" && cam.keyDir == -1)) {
+      cam.keyDir = 0;
+      kick();
+    }
+  });
+  window.addEventListener("blur", function() {
+    cam.keyDir = 0;
+  });
+
+  function jumpTo(x) {
+    cam.glide = 0;
+    cam.vel = 0;
+    if (Math.abs(x - cam.x) < view.wu * 3) glideBy(x - cam.x);
+    else {
+      cam.x = x;
+      dirty = true;
+      kick();
+    }
+  }
+
+  $("edgeL").addEventListener("click", function() {
+    glideBy(-view.wu * 0.6);
+  });
+  $("edgeR").addEventListener("click", function() {
+    glideBy(view.wu * 0.6);
+  });
+
+  var resizeQueued = false;
+  window.addEventListener("resize", function() {
+    if (resizeQueued) return;
+    resizeQueued = true;
+    requestAnimationFrame(function() {
+      resizeQueued = false;
+      layout();
+      applyCamera();
+      dirty = true;
+      kick();
+    });
+  });
+
+  // ---------- drift ----------
+  function setDrift(on) {
+    cam.drift = on;
+    var b = $("driftBtn");
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+    b.title = on ? "Pause drift (Space)" : "Drift (Space)";
+    b.querySelector("span").textContent = on ? "❚❚" : "▶";
+    $("driftChk").checked = on;
+    kick();
+  }
+
+  // ---------- style ----------
+  function systemDark() {
+    var t = root.getAttribute("data-theme");
+    if (t == "dark") return true;
+    if (t == "light") return false;
+    return window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
+  function applyStyle(name, chosen, save) {
+    if (!(name in STYLES)) name = "ink";
+    state.style = name;
+    if (chosen) state.styleChosen = true;
+    var st = STYLES[name];
+    root.setAttribute("data-style", name);
+    themeCss.textContent = st.css.replace(/\$/g, "#ink");
+    inkEl.style.mixBlendMode = st.inkBlend;
+    inkEl.style.filter = st.inkFilter || "";
+    annEl.style.mixBlendMode = st.annBlend;
+    placeSky();
+    fxSet(!!st.snow);
+    document.querySelectorAll("#styles button").forEach(function(b) {
+      b.setAttribute("aria-checked", b.dataset.style == name ? "true" : "false");
+      b.tabIndex = b.dataset.style == name ? 0 : -1;
+    });
+    if (save) {
+      savePrefs();
+      scheduleUrl();
+    }
+  }
+
+  function skyGradient(st, dir) {
+    return (
+      "linear-gradient(" +
+      dir +
+      "," +
+      st.sky.stops
+        .map(function(s) {
+          return s[1] + " " + s[0] * 100 + "%";
+        })
+        .join(",") +
+      ")"
+    );
+  }
+
+  function placeSky() {
+    var st = STYLES[state.style || "ink"];
+    skyEl.style.top = view.top + "px";
+    skyEl.style.height = view.bandH + "px";
+    if (st.sky) {
+      skyEl.style.backgroundImage = skyGradient(st, "to bottom");
+      skyEl.style.mixBlendMode = st.sky.blend;
+      skyEl.hidden = false;
+    } else {
+      skyEl.hidden = true;
+    }
+    if (st.sky && st.sky.moon) {
+      var m = st.sky.moon;
+      var r = m.r * view.bandH;
+      moonEl.style.width = moonEl.style.height = 2 * r + "px";
+      moonEl.style.left = m.x * view.w - r + "px";
+      moonEl.style.marginTop = view.top + m.y * view.bandH - r + "px";
+      moonEl.hidden = false;
+    } else {
+      moonEl.hidden = true;
+    }
+  }
+
+  // Follow the viewer's light/dark setting until they pick a style.
+  function followSystem() {
+    if (!state.styleChosen) applyStyle(systemDark() ? "night" : "ink", false);
+  }
+  if (window.matchMedia) {
+    var mq = matchMedia("(prefers-color-scheme: dark)");
+    mq.addEventListener && mq.addEventListener("change", followSystem);
+  }
+  new MutationObserver(followSystem).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+
+  // ---------- snow ----------
+  var fx = { enabled: false, on: false, flakes: [], ctx: null, w: 0, h: 0, dpr: 1, t: 0 };
+  var fxCanvas = $("fx");
+  function fxResize() {
+    fx.dpr = Math.min(2, window.devicePixelRatio || 1);
+    fx.w = view.w;
+    fx.h = view.h;
+    fxCanvas.width = Math.round(fx.w * fx.dpr);
+    fxCanvas.height = Math.round(fx.h * fx.dpr);
+    fx.ctx = fxCanvas.getContext("2d");
+    if (fx.enabled) {
+      fxSeed();
+      fxDraw();
+    }
+  }
+  function fxSeed() {
+    var n = Math.round(Math.min(420, (fx.w * fx.h) / 5200));
+    fx.flakes = [];
+    for (var i = 0; i < n; i++) {
+      var z = Math.random();
+      fx.flakes.push({
+        x: Math.random() * fx.w,
+        y: Math.random() * fx.h,
+        z: z,
+        r: 0.5 + z * 1.9,
+        vy: 14 + z * 46,
+        ph: Math.random() * 6.28,
+      });
+    }
+  }
+  // With reduced motion the flakes are drawn once and stay still.
+  function fxSet(on) {
+    fx.enabled = on;
+    fx.on = on && !REDUCED;
+    fxCanvas.hidden = !on;
+    if (on) {
+      fxSeed();
+      fxDraw();
+      kick();
+    } else if (fx.ctx) fx.ctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+  }
+  function fxStep(dt, dx) {
+    if (!fx.on) return;
+    fx.t += dt;
+    var shift = dx * view.s;
+    fx.flakes.forEach(function(f) {
+      f.y += f.vy * dt;
+      f.x += (Math.sin(fx.t * 0.7 + f.ph) * 8 + 6) * dt * (0.4 + f.z) - shift * (0.3 + f.z * 0.9);
+      if (f.y > fx.h + 4) {
+        f.y = -4;
+        f.x = Math.random() * fx.w;
+      }
+      if (f.x < -6) f.x += fx.w + 12;
+      else if (f.x > fx.w + 6) f.x -= fx.w + 12;
+    });
+    fxDraw();
+  }
+  function fxDraw(ctx, sx, sy, ox, oy) {
+    ctx = ctx || fx.ctx;
+    if (!ctx) return;
+    sx = sx || fx.dpr;
+    sy = sy || fx.dpr;
+    ox = ox || 0;
+    oy = oy || 0;
+    if (ctx === fx.ctx) ctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    fx.flakes.forEach(function(f) {
+      ctx.globalAlpha = 0.45 + f.z * 0.5;
+      ctx.beginPath();
+      ctx.arc((f.x - ox) * sx, (f.y - oy) * sy, f.r * sx, 0, 6.2832);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- URL ----------
+  var urlTimer = 0;
+  function scheduleUrl() {
+    if (ARTIFACT) return;
+    clearTimeout(urlTimer);
+    urlTimer = setTimeout(writeUrl, 500);
+  }
+  function shareUrl() {
+    var q = "?seed=" + encodeURIComponent(state.seed) + "&x=" + Math.round(cam.x);
+    if (state.styleChosen) q += "&style=" + state.style;
+    return location.origin + location.pathname + q;
+  }
+  function writeUrl() {
+    if (ARTIFACT) return;
+    try {
+      history.replaceState(null, "", shareUrl());
+    } catch (e) {}
+  }
+
+  // ---------- seeds ----------
+  function setSeed(seed, x) {
+    seed = String(seed).trim() || String(Date.now());
+    state.seed = seed;
+    $("seedIn").value = seed;
+    epoch++;
+    live.ink.concat(live.ann).forEach(function(it) {
+      it.el = null;
+    });
+    live = { ink: [], ann: [] };
+    inkWorld.textContent = "";
+    annWorld.textContent = "";
+    plans.clear();
+    cache.clear();
+    cacheSize = 0;
+    insertQueue = [];
+    cam.x = x || 0;
+    cam.glide = cam.vel = 0;
+    rebase();
+    applyCamera();
+    sendInit();
+    writeUrl();
+    kick();
+  }
+
+  // ---------- status & hint ----------
+  var statusTimer = 0;
+  function showStatus(on) {
+    var el = $("status");
+    clearTimeout(statusTimer);
+    if (on) {
+      statusTimer = setTimeout(function() {
+        el.classList.add("on");
+      }, 250);
+    } else el.classList.remove("on");
+  }
+  var hintGone = false;
+  function dismissHint() {
+    if (hintGone) return;
+    hintGone = true;
+    $("hint").classList.add("gone");
+  }
+  setTimeout(dismissHint, 9000);
+
+  // ---------- menu ----------
+  function toggleMenu(open) {
+    var m = $("menu");
+    open = open === undefined ? m.hidden : open;
+    m.hidden = !open;
+    $("menuBtn").setAttribute("aria-expanded", open ? "true" : "false");
+    $("menuBtn").querySelector("span").textContent = open ? "✕" : "☰";
+    if (open) {
+      dismissHint();
+      showPos(true);
+    }
+  }
+  $("menuBtn").addEventListener("click", function() {
+    toggleMenu();
+  });
+  $("driftBtn").addEventListener("click", function() {
+    setDrift(!cam.drift);
+    dismissHint();
+  });
+  $("driftChk").addEventListener("change", function(e) {
+    setDrift(e.target.checked);
+  });
+  $("speedIn").value = cam.speed;
+  $("speedOut").textContent = cam.speed;
+  $("speedIn").addEventListener("input", function(e) {
+    cam.speed = +e.target.value;
+    $("speedOut").textContent = cam.speed;
+    savePrefs();
+  });
+  $("insChk").checked = state.ins;
+  $("insChk").addEventListener("change", function(e) {
+    state.ins = e.target.checked;
+    annEl.style.display = state.ins ? "" : "none";
+    savePrefs();
+    dirty = true;
+    kick();
+  });
+  $("seedForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    setSeed($("seedIn").value, 0);
+  });
+  $("randBtn").addEventListener("click", function() {
+    setSeed(String(Date.now()), 0);
+  });
+  $("startBtn").addEventListener("click", function() {
+    jumpTo(0);
+  });
+
+  var styleWrap = $("styles");
+  STYLE_ORDER.forEach(function(name) {
+    var st = STYLES[name];
+    var b = document.createElement("button");
+    b.type = "button";
+    b.setAttribute("role", "radio");
+    b.dataset.style = name;
+    b.innerHTML = '<span class="zh" lang="zh-Hant">' + st.zh + '</span><span class="en">' + st.en + "</span>";
+    b.addEventListener("click", function() {
+      applyStyle(name, true, true);
+    });
+    styleWrap.appendChild(b);
+  });
+  styleWrap.addEventListener("keydown", function(e) {
+    var d = e.key == "ArrowRight" || e.key == "ArrowDown" ? 1 : e.key == "ArrowLeft" || e.key == "ArrowUp" ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var i = (STYLE_ORDER.indexOf(state.style) + d + STYLE_ORDER.length) % STYLE_ORDER.length;
+    applyStyle(STYLE_ORDER[i], true, true);
+    styleWrap.querySelector('[data-style="' + STYLE_ORDER[i] + '"]').focus();
+  });
+
+  var fsOK = document.fullscreenEnabled && root.requestFullscreen;
+  $("fsBtn").hidden = !fsOK;
+  function toggleFullscreen() {
+    if (!fsOK) return;
+    var p = document.fullscreenElement ? document.exitFullscreen() : root.requestFullscreen();
+    if (p && p.catch) p.catch(function() {});
+  }
+  $("fsBtn").addEventListener("click", toggleFullscreen);
+
+  if (ARTIFACT) {
+    root.classList.add("artifact");
+    document.querySelectorAll("[data-download], [data-share]").forEach(function(el) {
+      el.hidden = true;
+    });
+  }
+  $("linkBtn").addEventListener("click", function() {
+    var url = shareUrl();
+    var out = $("linkOut");
+    function shown() {
+      out.hidden = false;
+      out.value = url;
+      out.select();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(
+        function() {
+          flash($("linkBtn"), "Copied");
+        },
+        shown,
+      );
+    } else shown();
+  });
+  function flash(btn, text) {
+    var old = btn.textContent;
+    btn.textContent = text;
+    setTimeout(function() {
+      btn.textContent = old;
+    }, 1400);
+  }
+
+  // ---------- export ----------
+  function tokens() {
+    var cs = getComputedStyle(root);
+    var g = function(n) {
+      return cs.getPropertyValue(n).trim();
+    };
+    return { paper: g("--paper"), ins: g("--ins"), seal: g("--seal"), cut: g("--seal-cut"), zh: g("--font-zh") };
+  }
+
+  function visibleItems(layer) {
+    var L = cam.x,
+      R = cam.x + view.wu;
+    return live[layer].filter(function(it) {
+      return inRange(it, L, R);
+    });
+  }
+
+  function annCss(tk) {
+    return (
+      ".ins{fill:" + tk.ins + ";font-family:" + tk.zh + "}" +
+      ".seal{fill:" + tk.seal + ";opacity:.9}" +
+      ".seal-line{fill:none;stroke:" + tk.seal + ";opacity:.9}" +
+      ".seal-cut{fill:" + tk.cut + ";font-family:" + tk.zh + "}" +
+      ".seal-zhu{fill:" + tk.seal + ";font-family:" + tk.zh + "}" +
+      ".speck{fill:" + tk.cut + "}"
+    );
+  }
+
+  // Builds a standalone SVG of the current view. The paper and sky are
+  // optional so a PNG can draw them on the canvas instead.
+  function buildSvg(o) {
+    var st = STYLES[state.style];
+    var tk = tokens();
+    var x0 = +cam.x.toFixed(2),
+      wu = +view.wu.toFixed(2);
+    var out = [
+      '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' +
+        Math.round(o.w) +
+        '" height="' +
+        Math.round(o.h) +
+        '" viewBox="' +
+        x0 +
+        " 0 " +
+        wu +
+        " " +
+        H +
+        '">',
+    ];
+    out.push(inkEl.querySelector("defs").outerHTML);
+    out.push("<style>" + st.css.replace(/\$/g, "") + annCss(tk) + "</style>");
+    if (o.paper) {
+      out.push('<rect x="' + x0 + '" y="0" width="' + wu + '" height="' + H + '" fill="' + tk.paper + '"/>');
+      if (paperCanvas) {
+        var t = 512 / view.s;
+        var off = (((x0 * view.s) % 512) + 512) % 512;
+        out.push(
+          '<pattern id="ptex" patternUnits="userSpaceOnUse" width="' + t + '" height="' + t +
+            '" patternTransform="translate(' + (x0 - off / view.s) + "," + -view.top / view.s + ')">' +
+            '<image width="' + t + '" height="' + t + '" preserveAspectRatio="none" href="' +
+            paperCanvas.toDataURL("image/png") + '"/></pattern>' +
+            '<rect x="' + x0 + '" y="0" width="' + wu + '" height="' + H +
+            '" fill="url(#ptex)" style="mix-blend-mode:multiply"/>',
+        );
+      }
+    }
+    if (o.sky && st.sky) {
+      out.push(
+        '<linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1">' +
+          st.sky.stops
+            .map(function(s) {
+              return '<stop offset="' + s[0] + '" stop-color="' + s[1] + '"/>';
+            })
+            .join("") +
+          '</linearGradient><rect x="' + x0 + '" y="0" width="' + wu + '" height="' + H +
+          '" fill="url(#skyg)" style="mix-blend-mode:' + st.sky.blend + '"/>',
+      );
+      if (st.sky.moon) out.push(moonSvg(st.sky.moon, x0, wu));
+    }
+    out.push(
+      '<g style="mix-blend-mode:' + st.inkBlend + '"' + (st.inkFilter ? ' filter="' + st.inkFilter + '"' : "") + ">",
+    );
+    visibleItems("ink").forEach(function(it) {
+      var d = cache.get(it.id);
+      out.push('<g class="it it-' + it.tag + '">' + (typeof d == "string" ? d : it.el.innerHTML) + "</g>");
+    });
+    out.push("</g>");
+    if (o.ann && state.ins) {
+      out.push('<g style="mix-blend-mode:' + st.annBlend + '">');
+      visibleItems("ann").forEach(function(it) {
+        out.push('<g class="it it-' + it.tag + '">' + it.el.innerHTML + "</g>");
+      });
+      out.push("</g>");
+    }
+    out.push("</svg>");
+    return out.join("");
+  }
+
+  function moonSvg(m, x0, wu) {
+    var cx = x0 + m.x * wu,
+      cy = m.y * H,
+      r = m.r * H;
+    return (
+      '<radialGradient id="mglow"><stop offset="0" stop-color="#f3ecd6" stop-opacity=".22"/>' +
+      '<stop offset="1" stop-color="#f3ecd6" stop-opacity="0"/></radialGradient>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r * 5 + '" fill="url(#mglow)"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#efe8d2"/>'
+    );
+  }
+
+  function loadImage(url) {
+    return new Promise(function(res, rej) {
+      var img = new Image();
+      img.onload = function() {
+        res(img);
+      };
+      img.onerror = rej;
+      img.src = url;
+    });
+  }
+
+  function drawAnno(ctx, a, k, tk) {
+    var X = function(x) {
+      return (x - cam.x) * view.s * k;
+    };
+    var Y = function(y) {
+      return y * view.s * k;
+    };
+    a.prims.forEach(function(p) {
+      ctx.globalAlpha = 1;
+      if (p.p == "poly") {
+        ctx.beginPath();
+        p.pts.forEach(function(v, i) {
+          i ? ctx.lineTo(X(v[0]), Y(v[1])) : ctx.moveTo(X(v[0]), Y(v[1]));
+        });
+        ctx.closePath();
+        if (p.k == "seal-line") {
+          ctx.globalAlpha = 0.9;
+          ctx.strokeStyle = tk.seal;
+          ctx.lineWidth = p.sw * view.s * k;
+          ctx.stroke();
+        } else {
+          ctx.globalAlpha = p.k == "seal" ? 0.9 : 1;
+          ctx.fillStyle = p.k == "seal" ? tk.seal : tk.cut;
+          ctx.fill();
+        }
+      } else {
+        ctx.globalAlpha = p.o;
+        ctx.fillStyle = p.k == "ins" ? tk.ins : p.k == "seal-cut" ? tk.cut : tk.seal;
+        ctx.font = p.w + " " + (p.s * view.s * k).toFixed(2) + "px " + tk.zh;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(p.t, X(p.x), Y(p.y));
+      }
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  var shotURL = null;
+  var shotSvgURL = null;
+  async function snapshot() {
+    var btn = $("shotBtn");
+    btn.disabled = true;
+    var old = btn.textContent;
+    btn.textContent = "Rendering…";
+    try {
+      var st = STYLES[state.style];
+      var tk = tokens();
+      var k = Math.max(1, Math.min(2, 4096 / view.w));
+      var W = Math.round(view.w * k),
+        Hp = Math.round(view.bandH * k);
+      var c = document.createElement("canvas");
+      c.width = W;
+      c.height = Hp;
+      var ctx = c.getContext("2d");
+      ctx.fillStyle = tk.paper;
+      ctx.fillRect(0, 0, W, Hp);
+      if (paperCanvas) {
+        var pat = ctx.createPattern(paperCanvas, "repeat");
+        var off = (((cam.x * view.s) % 512) + 512) % 512;
+        pat.setTransform(new DOMMatrix().scale(k).translate(-off, -view.top));
+        ctx.globalCompositeOperation = "multiply";
+        ctx.fillStyle = pat;
+        ctx.fillRect(0, 0, W, Hp);
+      }
+      if (st.sky) {
+        var g = ctx.createLinearGradient(0, 0, 0, Hp);
+        st.sky.stops.forEach(function(s) {
+          g.addColorStop(s[0], s[1]);
+        });
+        ctx.globalCompositeOperation = st.sky.blend == "multiply" ? "multiply" : "source-over";
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, Hp);
+        if (st.sky.moon) {
+          ctx.globalCompositeOperation = "source-over";
+          var mimg = await loadImage(
+            URL.createObjectURL(
+              new Blob(
+                [
+                  '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + Hp + '" viewBox="0 0 ' +
+                    view.wu + " " + H + '">' + moonSvg(st.sky.moon, 0, view.wu) + "</svg>",
+                ],
+                { type: "image/svg+xml" },
+              ),
+            ),
+          );
+          ctx.drawImage(mimg, 0, 0, W, Hp);
+        }
+      }
+      var svg = buildSvg({ w: W, h: Hp, paper: false, sky: false, ann: false });
+      var url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+      var img = await loadImage(url);
+      URL.revokeObjectURL(url);
+      ctx.globalCompositeOperation = st.inkBlend == "multiply" ? "multiply" : "source-over";
+      ctx.drawImage(img, 0, 0, W, Hp);
+      if (state.ins) {
+        try {
+          await document.fonts.load("20px " + tk.zh, "山水");
+        } catch (e) {}
+        ctx.globalCompositeOperation = st.annBlend == "multiply" ? "multiply" : "source-over";
+        visibleItems("ann").forEach(function(it) {
+          var a = cache.get(it.id);
+          if (a && a.prims) drawAnno(ctx, a, k, tk);
+        });
+      }
+      if (st.snow) {
+        ctx.globalCompositeOperation = "source-over";
+        fxDraw(ctx, k, k, 0, view.top);
+      }
+      var blob = await new Promise(function(res) {
+        c.toBlob(res, "image/png");
+      });
+      if (!blob) throw new Error("empty");
+      if (shotURL) URL.revokeObjectURL(shotURL);
+      shotURL = URL.createObjectURL(blob);
+      if (shotSvgURL) URL.revokeObjectURL(shotSvgURL);
+      shotSvgURL = null;
+      openShot(shotURL);
+    } catch (e) {
+      console.warn(e);
+      flash(btn, "Snapshot failed");
+    } finally {
+      btn.disabled = false;
+      if (btn.textContent == "Rendering…") btn.textContent = old;
+    }
+  }
+
+  function fileBase() {
+    return "shan-shui-" + state.seed.replace(/[^\w-]+/g, "_").slice(0, 40) + "-" + Math.round(cam.x);
+  }
+  function openShot(url) {
+    $("shotImg").src = url;
+    $("shotPng").href = url;
+    $("shotPng").download = fileBase() + ".png";
+    $("shot").hidden = false;
+    $("shotClose").focus();
+  }
+  function closeShot() {
+    $("shot").hidden = true;
+    $("shotBtn").focus();
+  }
+  $("shotBtn").addEventListener("click", snapshot);
+  $("shotClose").addEventListener("click", closeShot);
+  $("shot").addEventListener("click", function(e) {
+    if (e.target === $("shot")) closeShot();
+  });
+  $("svgBtn").addEventListener("click", function() {
+    var svg = buildSvg({ w: view.w, h: view.bandH, paper: true, sky: true, ann: true });
+    var url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = fileBase() + ".svg";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function() {
+      URL.revokeObjectURL(url);
+    }, 4000);
+  });
+
+  // ---------- fonts ----------
+  // Ask Google Fonts for just the characters the page uses.
+  (function loadFonts() {
+    var chars = new Set();
+    var src = genSource() + STYLE_ORDER.map(function(n) {
+      return STYLES[n].zh;
+    }).join("") + document.title;
+    (src.match(/[㐀-鿿]/g) || []).forEach(function(c) {
+      chars.add(c);
+    });
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap&text=" +
+      encodeURIComponent(Array.from(chars).join(""));
+    document.head.appendChild(link);
+  })();
+
+  // A handle for tinkering from the console: add ?debug to the URL.
+  if (/[?&]debug\b/.test(location.search)) {
+    window.shanshui = {
+      cam: cam,
+      view: view,
+      state: state,
+      plans: plans,
+      live: function() {
+        return live;
+      },
+      jumpTo: jumpTo,
+      setSeed: setSeed,
+      applyStyle: applyStyle,
+      setDrift: setDrift,
+      kick: kick,
+      planColumns: function(ks) {
+        worker.postMessage({ type: "plan", epoch: epoch, ks: ks });
+      },
+    };
+  }
+
+  // ---------- boot ----------
+  $("seedIn").value = state.seed;
+  applyStyle(params.style || prefs.style || (systemDark() ? "night" : "ink"), !!(params.style || prefs.style), false);
+  if (!state.ins) annEl.style.display = "none";
+  layout();
+  applyCamera();
+  startWorker();
+  if (worker && !worker.inline) sendInit();
+  kick();
+})();
+</script>
+</body>
+</html>
