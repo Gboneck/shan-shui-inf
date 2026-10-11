@@ -21,8 +21,12 @@
     --seal: #b3382c; /* vermilion seal paste, the one accent */
     --ins: rgba(36, 30, 26, 0.86); /* inscription ink */
     --seal-cut: #ffffff; /* paper showing through a carved seal */
+    --cart: #fbf6e9; /* woodblock title cartouche */
+    --cart-line: rgba(40, 36, 30, 0.6);
     --font-ui: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
     --font-zh: "LXGW WenKai TC", "Kaiti TC", "STKaiti", "KaiTi", "BiauKai", "DFKai-SB", serif;
+    --font-ja: "Yuji Syuku", "LXGW WenKai TC", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-en: "IM Fell English", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
@@ -36,6 +40,8 @@
       --seal: #c0493b;
       --ins: rgba(234, 228, 210, 0.84);
       --seal-cut: #1e2432;
+      --cart: #2a3245;
+      --cart-line: rgba(234, 228, 210, 0.5);
       color-scheme: dark;
     }
   }
@@ -49,6 +55,8 @@
     --seal: #c0493b;
     --ins: rgba(234, 228, 210, 0.84);
     --seal-cut: #1e2432;
+    --cart: #2a3245;
+    --cart-line: rgba(234, 228, 210, 0.5);
     color-scheme: dark;
   }
   /* A chosen painting style decides the palette. */
@@ -110,6 +118,8 @@
     --seal: #c0493b;
     --ins: rgba(234, 228, 210, 0.84);
     --seal-cut: #1e2432;
+    --cart: #2a3245;
+    --cart-line: rgba(234, 228, 210, 0.5);
     color-scheme: dark;
   }
 
@@ -122,6 +132,85 @@
   .artifact .artifact-only {
     display: inline;
   }
+  :root[data-style="aizuri"] {
+    --paper: #f6efdf;
+    --paper-flat: #ebe2cf;
+    --ink: rgba(16, 30, 62, 0.64);
+    --line: rgba(16, 30, 62, 0.38);
+    --wash: rgba(16, 30, 62, 0.08);
+    --panel: rgba(240, 233, 216, 0.95);
+    --seal: #b8402f;
+    --ins: rgba(18, 32, 64, 0.9);
+    --seal-cut: #ffffff;
+    --cart: #fbf7ec;
+    --cart-line: rgba(28, 50, 96, 0.7);
+    color-scheme: light;
+  }
+  :root[data-style="akafuji"] {
+    --paper: #f8eacf;
+    --paper-flat: #eedcbd;
+    --ink: rgba(40, 24, 18, 0.64);
+    --line: rgba(40, 24, 18, 0.38);
+    --wash: rgba(40, 24, 18, 0.08);
+    --panel: rgba(243, 230, 205, 0.95);
+    --seal: #b8402f;
+    --ins: rgba(30, 30, 50, 0.9);
+    --seal-cut: #ffffff;
+    --cart: #f1dc9a;
+    --cart-line: rgba(150, 64, 42, 0.75);
+    color-scheme: light;
+  }
+  :root[data-style="yuki"] {
+    --paper: #c3c8cf;
+    --paper-flat: #b6bbc3;
+    --ink: rgba(12, 20, 40, 0.68);
+    --line: rgba(12, 20, 40, 0.4);
+    --wash: rgba(12, 20, 40, 0.08);
+    --panel: rgba(212, 215, 221, 0.95);
+    --seal: #b8402f;
+    --ins: rgba(16, 26, 50, 0.88);
+    --seal-cut: #ffffff;
+    --cart: #f2f1ec;
+    --cart-line: rgba(28, 50, 96, 0.6);
+    color-scheme: light;
+  }
+  :root[data-style="watercolour"] {
+    --paper: #fcf7ec;
+    --paper-flat: #f1eadb;
+    --ink: rgba(52, 40, 30, 0.62);
+    --line: rgba(52, 40, 30, 0.36);
+    --wash: rgba(52, 40, 30, 0.07);
+    --panel: rgba(246, 240, 228, 0.95);
+    --seal: #a8463a;
+    --ins: rgba(62, 46, 34, 0.84);
+    --seal-cut: #ffffff;
+    color-scheme: light;
+  }
+  :root[data-style="golden"] {
+    --paper: #fdf0d6;
+    --paper-flat: #f4e3c3;
+    --ink: rgba(58, 40, 22, 0.62);
+    --line: rgba(58, 40, 22, 0.36);
+    --wash: rgba(58, 40, 22, 0.08);
+    --panel: rgba(247, 233, 205, 0.95);
+    --seal: #a8463a;
+    --ins: rgba(70, 48, 28, 0.84);
+    --seal-cut: #ffffff;
+    color-scheme: light;
+  }
+  :root[data-style="sepia"] {
+    --paper: #f7eedb;
+    --paper-flat: #ece1cb;
+    --ink: rgba(58, 42, 28, 0.62);
+    --line: rgba(58, 42, 28, 0.36);
+    --wash: rgba(58, 42, 28, 0.08);
+    --panel: rgba(241, 232, 213, 0.95);
+    --seal: #a8463a;
+    --ins: rgba(64, 46, 30, 0.84);
+    --seal-cut: #ffffff;
+    color-scheme: light;
+  }
+
   html,
   body {
     height: 100%;
@@ -227,6 +316,21 @@
   }
   #ann .speck {
     fill: var(--seal-cut);
+  }
+  #ann text.f-ja {
+    font-family: var(--font-ja);
+  }
+  #ann text.f-en {
+    font-family: var(--font-en);
+    font-style: italic;
+  }
+  #ann .cart {
+    fill: var(--cart);
+    opacity: 0.95;
+  }
+  #ann .cart-line {
+    fill: none;
+    stroke: var(--cart-line);
   }
   #band {
     position: absolute;
@@ -389,12 +493,15 @@
     border: 1px solid var(--line);
     font-variant-numeric: tabular-nums;
   }
-  #styles {
+  .opts {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
     gap: 5px;
   }
-  #styles button {
+  #trads {
+    --cols: 3;
+  }
+  .opts button {
     position: relative;
     display: grid;
     justify-items: center;
@@ -405,14 +512,14 @@
     cursor: pointer;
     min-width: 0;
   }
-  #styles button:hover {
+  .opts button:hover {
     background: var(--wash);
   }
-  #styles .zh {
+  .opts .zh {
     font: 400 17px/1.1 var(--font-zh);
     writing-mode: horizontal-tb;
   }
-  #styles .en {
+  .opts .en {
     font-size: 9px;
     line-height: 1.15;
     text-align: center;
@@ -420,11 +527,17 @@
     max-width: 100%;
     overflow-wrap: anywhere;
   }
-  #styles button[aria-checked="true"] {
+  .opts .en.big {
+    font: italic 400 13px/1.15 var(--font-en);
+    opacity: 1;
+    align-self: center;
+    padding-block: 4px;
+  }
+  .opts button[aria-checked="true"] {
     border-color: var(--seal);
     box-shadow: inset 0 0 0 1px var(--seal);
   }
-  #styles button[aria-checked="true"]::after {
+  .opts button[aria-checked="true"]::after {
     content: "";
     position: absolute;
     top: 3px;
@@ -442,6 +555,10 @@
   input[type="checkbox"],
   input[type="range"] {
     accent-color: var(--seal);
+  }
+  #volIn {
+    flex: 1 1 110px;
+    min-width: 0;
   }
   #speedIn {
     flex: 1 1 110px;
@@ -566,6 +683,26 @@
     justify-content: space-between;
   }
 
+  /* Ambient mode: controls fade away while nobody is touching anything. */
+  #bar,
+  .edge,
+  #status {
+    transition: opacity 1.2s;
+  }
+  .idle #bar,
+  .idle .edge,
+  .idle #status,
+  .idle #hint {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .idle #stage {
+    cursor: none;
+  }
+  #seasonOut {
+    opacity: 0.85;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     #status::before {
       animation: none;
@@ -613,6 +750,59 @@
         <stop offset="0" stop-color="#b5c5bd" /><stop offset="0.45" stop-color="#ded2b3" />
         <stop offset="0.8" stop-color="#eaccb2" /><stop offset="1" stop-color="#ffffff" />
       </linearGradient>
+      <!-- Mist lying across the bases of a range -->
+      <linearGradient id="mistg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0" /><stop offset="0.35" stop-color="#ffffff" stop-opacity="0.7" />
+        <stop offset="0.7" stop-color="#ffffff" stop-opacity="0.96" /><stop offset="1" stop-color="#ffffff" stop-opacity="0.85" />
+      </linearGradient>
+      <!-- Woodblock blue print (aizuri): bokashi from Prussian blue to paper -->
+      <linearGradient id="ai0" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#90a9c3" /><stop offset="0.6" stop-color="#cfd9e3" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="ai1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#6f8eae" /><stop offset="0.5" stop-color="#bac8d6" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="ai2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#557a8e" /><stop offset="0.45" stop-color="#a6bcc2" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="aifj" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#6c8db0" /><stop offset="0.7" stop-color="#bccbda" /><stop offset="1" stop-color="#e8eef3" />
+      </linearGradient>
+      <!-- Red Fuji at dawn: red-brown far peaks, olive and green nearer -->
+      <linearGradient id="rf0" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#b65a3c" /><stop offset="0.55" stop-color="#e3b28c" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="rf1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#7e8b57" /><stop offset="0.6" stop-color="#cfc89c" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="rf2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#4f7553" /><stop offset="0.5" stop-color="#a8ba8f" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="rffj" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#a9452c" /><stop offset="0.55" stop-color="#c96a45" /><stop offset="1" stop-color="#e8b48c" />
+      </linearGradient>
+      <!-- Watercolour: washes that cool and pale with distance -->
+      <linearGradient id="wc0" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#aab6cf" /><stop offset="0.6" stop-color="#d7dde7" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="wc1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#94a8a7" /><stop offset="0.6" stop-color="#cdd4c5" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="wc2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#8fa478" /><stop offset="0.55" stop-color="#cbca9e" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="wc3" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#9c9b63" /><stop offset="0.5" stop-color="#d5c290" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="gd0" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e8cf9f" /><stop offset="0.6" stop-color="#f6e8cc" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <linearGradient id="gd1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#d4ae6c" /><stop offset="0.55" stop-color="#ecd6aa" /><stop offset="1" stop-color="#ffffff" />
+      </linearGradient>
+      <filter id="f-dist-wc" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values="0.55 0 0 0 0.27  0 0.6 0 0 0.3  0 0 0.7 0 0.31  0 0 0 1 0" />
+      </filter>
       <filter id="f-dist-qinglu" color-interpolation-filters="sRGB">
         <feColorMatrix type="matrix" values="0.55 0 0 0 0.25  0 0.7 0 0 0.22  0 0 0.85 0 0.17  0 0 0 1 0" />
       </filter>
@@ -635,6 +825,7 @@
 <div id="bar">
   <button class="sq" id="menuBtn" type="button" title="Settings" aria-label="Settings" aria-expanded="false" aria-controls="menu"><span>&#x2630;</span></button>
   <button class="sq" id="driftBtn" type="button" title="Drift (Space)" aria-label="Drift" aria-pressed="false"><span class="glyph-sm">&#x25b6;</span></button>
+  <button class="sq" id="soundBtn" type="button" title="Sound on (M)" aria-label="Sound" aria-pressed="false"><span class="glyph-sm">&#x266a;</span></button>
   <a class="sq" id="srcBtn" href="https://github.com/LingDong-/shan-shui-inf" target="_blank" rel="noopener" title="Source on GitHub" aria-label="Source on GitHub"><span class="glyph-sm">&lt;/&gt;</span></a>
 </div>
 
@@ -647,9 +838,13 @@
       <button class="btn" type="button" id="randBtn" title="New random seed">Random</button>
     </form>
   </section>
+  <section aria-labelledby="h-trad">
+    <h2 id="h-trad">Tradition</h2>
+    <div id="trads" class="opts" role="radiogroup" aria-labelledby="h-trad"></div>
+  </section>
   <section aria-labelledby="h-style">
     <h2 id="h-style">Style</h2>
-    <div id="styles" role="radiogroup" aria-labelledby="h-style"></div>
+    <div id="styles" class="opts" role="radiogroup" aria-labelledby="h-style"></div>
   </section>
   <section aria-labelledby="h-motion">
     <h2 id="h-motion">Travel</h2>
@@ -663,7 +858,19 @@
       <button class="btn" type="button" id="startBtn">Back to start</button>
       <button class="btn" type="button" id="fsBtn">Full screen</button>
     </div>
-    <label class="chk"><input type="checkbox" id="insChk" /> Show inscriptions and seals</label>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="seasonChk" /> Travel through the seasons</label>
+      <span id="seasonOut"></span>
+    </div>
+    <label class="chk"><input type="checkbox" id="insChk" /> Show poems and seals</label>
+    <label class="chk"><input type="checkbox" id="ambientChk" /> Ambient: hide controls and drift when idle</label>
+  </section>
+  <section id="soundSec" aria-labelledby="h-sound">
+    <h2 id="h-sound">Sound</h2>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="soundChk" /> Play the landscape</label>
+      <input type="range" id="volIn" min="0" max="1" step="0.05" aria-label="Volume" />
+    </div>
   </section>
   <section aria-labelledby="h-save">
     <h2 id="h-save">Save</h2>
@@ -681,9 +888,10 @@
       <dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>travel while held</dd>
       <dt><kbd>Space</kbd></dt><dd>drift on or off</dd>
       <dt><kbd>F</kbd></dt><dd>full screen</dd>
+      <dt><kbd>M</kbd></dt><dd>sound on or off</dd>
     </dl>
   </section>
-  <p class="about">Generative landscape by <a href="https://github.com/LingDong-/shan-shui-inf" target="_blank" rel="noopener">Lingdong Huang</a>, MIT licence. Poems quoted from Tang and Song poets.</p>
+  <p class="about">Generative landscape by <a href="https://github.com/LingDong-/shan-shui-inf" target="_blank" rel="noopener">Lingdong Huang</a>, MIT licence. Poems quoted from Chinese, Japanese and English poets.</p>
 </div>
 
 <div id="status" aria-hidden="true">painting</div>
@@ -1460,7 +1668,7 @@
                 len: Math.random() * 20 * (reso - i) * 0.2 + 10,
                 wid: Math.random() * 6 + 3,
                 ang: ((Math.random() - 0.5) * Math.PI) / 6,
-                col:
+                col: HOOK.leaf(
                   "rgba(" +
                   leafcol[0] +
                   "," +
@@ -1469,7 +1677,7 @@
                   leafcol[2] +
                   "," +
                   (Math.random() * 0.2 + parseFloat(leafcol[3])).toFixed(1) +
-                  ")",
+                  ")", "pine"),
               },
             );
           }
@@ -1515,7 +1723,7 @@
             },
             wid: Math.random() * wid * 0.75 + wid * 0.5,
             len: Math.random() * hei * 0.75 + hei * 0.5,
-            col: col,
+            col: HOOK.leaf(col, "clump"),
           },
         );
       }
@@ -1569,7 +1777,7 @@
                 len: ox * 2,
                 wid: Math.random() * 6 + 3,
                 ang: ((Math.random() - 0.5) * Math.PI) / 6,
-                col:
+                col: HOOK.leaf(
                   "rgba(" +
                   leafcol[0] +
                   "," +
@@ -1578,7 +1786,7 @@
                   leafcol[2] +
                   "," +
                   (Math.random() * 0.2 + parseFloat(leafcol[3])).toFixed(3) +
-                  ")",
+                  ")", "pine"),
               },
             );
           }
@@ -1722,7 +1930,7 @@
                 len: (15 + 12 * Math.random()) * wid,
                 ang:
                   ang / 2 + Math.PI / 2 + Math.PI * 0.2 * (Math.random() - 0.5),
-                col: "rgba(100,100,100," + (0.5 + dep * 0.2).toFixed(3) + ")",
+                col: HOOK.leaf("rgba(100,100,100," + (0.5 + dep * 0.2).toFixed(3) + ")", "pine"),
                 fun: function(x) {
                   return x <= 1
                     ? Math.pow(Math.sin(x * Math.PI) * x, 0.5)
@@ -2255,7 +2463,7 @@
       for (var k = 0; k < T.length; k++) {
         var m = PolyTools.midPt(T[k]);
         var c = (Noise.noise(m[0] * 0.02, m[1] * 0.02) * 200 + 50) | 0;
-        var co = "rgba(" + c + "," + c + "," + c + ",0.8)";
+        var co = HOOK.leaf("rgba(" + c + "," + c + "," + c + ",0.8)", "broad");
         canv += poly(T[k], { fil: co, str: co, wid: 0 });
       }
       return canv;
@@ -2331,6 +2539,7 @@
           wid: 0.8,
           col: "rgba(100,100,100,0.5)",
         });
+        if (dep == 0) tcanv += HOOK.bloom(ept[0], ept[1]);
         if (dep != 0) {
           var nben = ben + randChoice([-1, 1]) * Math.PI * 0.001 * dep * dep;
           if (Math.random() < 0.5) {
@@ -2561,7 +2770,11 @@
         yof: yoff,
         fil: "white",
         str: "none",
-        cls: "mb v" + (Math.abs(Math.round(xoff + yoff)) % 3),
+        cls:
+          "mb v" +
+          (Math.abs(Math.round(xoff + yoff)) % 3) +
+          " d" +
+          Math.max(0, Math.min(3, Math.floor((yoff - 300) / 110))),
       });
       //OUTLINE
       canv += stroke(
@@ -2579,6 +2792,7 @@
         sha: randChoice([0, 0, 0, 0, 5]),
         col: col,
       });
+      canv += HOOK.fall(ptlist, xoff, yoff, h, w);
 
       //TOP
       vegetate(
@@ -2674,6 +2888,7 @@
       //BOTT ARCH
       vegetate(
         function(x, y) {
+          if (HOOK.bottArch) return HOOK.bottArch(x + xoff, y + yoff, seed);
           var tt = randChoice([0, 0, 1, 1, 1, 2]);
           if (tt == 1) {
             return Arch.arch02(x + xoff, y + yoff, seed, {
@@ -2705,6 +2920,7 @@
       //TOP ARCH
       vegetate(
         function(x, y) {
+          if (HOOK.topArch) return HOOK.topArch(x + xoff, y + yoff, seed);
           return Arch.arch03(x + xoff, y + yoff, seed, {
             sto: randChoice([5, 7]),
             wid: 40 + Math.random() * 20,
@@ -2814,7 +3030,11 @@
         yof: yoff,
         fil: "white",
         str: "none",
-        cls: "mb v" + (Math.abs(Math.round(xoff + yoff)) % 3),
+        cls:
+          "mb v" +
+          (Math.abs(Math.round(xoff + yoff)) % 3) +
+          " d" +
+          Math.max(0, Math.min(3, Math.floor((yoff - 300) / 110))),
       });
       //OUTLINE
       canv += stroke(
@@ -2912,6 +3132,7 @@
       };
 
       canv += this.flatDec(xoff, yoff, bound(grlist));
+      canv += HOOK.flatExtra(xoff, yoff, bound(grlist));
 
       return canv;
     };
@@ -3036,7 +3257,7 @@
 
       var ts = randChoice([0, 0, 0, 0, 1]);
       if (ts == 1 && tt != 4) {
-        canv += Arch.arch01(
+        canv += (HOOK.flatArch || Arch.arch01)(
           xoff + normRand(grbd.xmin, grbd.xmax),
           yoff + (grbd.ymin + grbd.ymax) / 2 + 20,
           Math.random(),
@@ -4390,10 +4611,11 @@
   }
 </script>
 <script type="text/x-shanshui" id="Planner">
-  // Everything above this script is the original generator. This part plans
-  // the world column by column and renders one item at a time, so the page can
-  // ask for exactly the pieces it needs. It runs in a Web Worker when it can,
-  // or inline on the page as a fallback.
+  // Everything above this script is the original generator, plus the
+  // Japanese and European elements. This part plans the world column by
+  // column and renders one item at a time, so the page can ask for exactly
+  // the pieces it needs. It runs in a Web Worker when it can, or inline on
+  // the page as a fallback.
 
   var IS_WORKER = typeof window === "undefined";
   var CW = 512; // column width, same as the original chunk width
@@ -4401,6 +4623,9 @@
   var INS_CLEAR = 420; // no mountain closer than this to an inscription
   var SEED = "";
   var EPOCH = -1;
+  var TRAD_NAME = "shanshui";
+  var TRAD = null;
+  var SEASONS = true;
   var plans = {};
   var mounts = {};
   var byId = {};
@@ -4437,6 +4662,481 @@
     }
     Prng.s = y;
     for (var i = 0; i < 10; i++) Prng.next();
+  }
+
+  // Run fn on its own random stream and then put the main stream back, so
+  // optional extras (waterfalls, bridges, blossom) never change the rest of
+  // the drawing.
+  function aside(key, fn) {
+    var s0 = Prng.s;
+    seedStr.apply(null, ["aside"].concat(key));
+    try {
+      return fn();
+    } finally {
+      Prng.s = s0;
+    }
+  }
+
+  function hash01(n) {
+    var s = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
+    return s - Math.floor(s);
+  }
+
+  // ---- seasons ----
+  // The scroll passes through spring, summer, autumn and winter, one season
+  // every SEASON_LEN units, blending over the last quarter of each.
+
+  var SEASON_LEN = 9000;
+  var YEAR = SEASON_LEN * 4;
+  var BLEND = 0.25;
+  var SEASON_NAMES = ["spring", "summer", "autumn", "winter"];
+  var seasonPhase = 0;
+  var SUMMER = { w: [0, 1, 0, 0], dom: 1 };
+  var CUR = SUMMER;
+
+  function seasonAt(x) {
+    if (!SEASONS) return SUMMER;
+    var u = ((((x + seasonPhase) / SEASON_LEN) % 4) + 4) % 4;
+    var i = Math.floor(u);
+    var f = u - i;
+    var w = [0, 0, 0, 0];
+    if (f > 1 - BLEND) {
+      var t = (f - (1 - BLEND)) / BLEND;
+      t = t * t * (3 - 2 * t);
+      w[i] = 1 - t;
+      w[(i + 1) % 4] = t;
+    } else {
+      w[i] = 1;
+    }
+    return { w: w, dom: w[i] >= 0.5 ? i : (i + 1) % 4 };
+  }
+
+  // Leaf colours by tradition, season and kind of tree. Each option is
+  // [rgba prefix or null to keep the ink, weight, alpha factor].
+  var LEAF = {
+    shanshui: {
+      spring: { clump: [["rgba(219,124,138,", 0.28, 1]] },
+      autumn: {
+        clump: [["rgba(192,88,52,", 0.3, 1], ["rgba(201,148,62,", 0.18, 1]],
+        broad: [["rgba(168,88,58,", 0.35, 1]],
+      },
+      winter: { clump: [[null, 1, 0.35]], broad: [[null, 1, 0.45]], pine: [[null, 1, 0.85]] },
+    },
+    ukiyoe: {
+      spring: { clump: [["rgba(234,150,168,", 0.6, 1]] },
+      summer: { clump: [["rgba(52,96,82,", 0.5, 1]] },
+      autumn: { clump: [["rgba(196,58,40,", 0.5, 1], ["rgba(220,138,42,", 0.18, 1]], broad: [["rgba(180,62,44,", 0.4, 1]] },
+      winter: { clump: [[null, 1, 0.35]], broad: [[null, 1, 0.45]], pine: [[null, 1, 0.85]] },
+    },
+    romantic: {
+      spring: {
+        clump: [["rgba(122,162,84,", 0.65, 0.9], ["rgba(236,196,204,", 0.2, 1]],
+        pine: [["rgba(72,104,74,", 1, 1]],
+        broad: [["rgba(110,150,82,", 1, 1]],
+      },
+      summer: {
+        clump: [["rgba(82,122,62,", 1, 1]],
+        pine: [["rgba(56,86,62,", 1, 1]],
+        broad: [["rgba(72,108,62,", 1, 1]],
+      },
+      autumn: {
+        clump: [["rgba(188,108,48,", 0.4, 1], ["rgba(198,158,62,", 0.3, 1], ["rgba(120,92,52,", 0.3, 1]],
+        pine: [["rgba(62,88,66,", 1, 1]],
+        broad: [["rgba(160,96,52,", 1, 1]],
+      },
+      winter: {
+        clump: [["rgba(112,102,96,", 1, 0.3]],
+        pine: [["rgba(62,82,72,", 1, 0.9]],
+        broad: [["rgba(112,102,96,", 1, 0.4]],
+      },
+    },
+  };
+  var BLOSSOM = {
+    shanshui: ["rgba(206,72,84,0.8)", "rgba(250,246,240,0.95)"],
+    ukiyoe: ["rgba(238,164,180,0.9)", "rgba(246,212,220,0.95)"],
+    romantic: ["rgba(242,206,214,0.9)", "rgba(250,246,240,0.95)"],
+  };
+  var leafN = 0;
+  var META = {};
+
+  // Hooks the generator calls (see the HOOK.* calls in the Generators code).
+  var HOOK = {
+    leaf: function(col, kind) {
+      var pal = LEAF[TRAD_NAME];
+      var r = hash01(++leafN);
+      var s = 0;
+      for (; s < 3; s++) {
+        r -= CUR.w[s];
+        if (r < 0) break;
+      }
+      var opts = pal[SEASON_NAMES[s]] && pal[SEASON_NAMES[s]][kind];
+      if (!opts) return col;
+      var r2 = hash01(++leafN * 1.37 + 0.5);
+      var pick = null;
+      for (var n = 0; n < opts.length; n++) {
+        r2 -= opts[n][1];
+        if (r2 < 0) {
+          pick = opts[n];
+          break;
+        }
+      }
+      if (!pick) return col;
+      var m = /rgba\(([\d.]+),([\d.]+),([\d.]+),([\d.]+)\)/.exec(col);
+      if (!m) return col;
+      var a = Math.min(1, +m[4] * pick[2]);
+      return (pick[0] || "rgba(" + m[1] + "," + m[2] + "," + m[3] + ",") + a.toFixed(3) + ")";
+    },
+    // Spring blossom on the bare, gnarled trees.
+    bloom: function(x, y) {
+      var sp = CUR.w[0];
+      if (sp < 0.05 || hash01(++leafN) > sp * 0.75) return "";
+      var col = BLOSSOM[TRAD_NAME][hash01(++leafN) < 0.7 ? 0 : 1];
+      var r = 1.3 + hash01(++leafN) * 1.2;
+      var pts = [];
+      for (var a = 0; a < 5; a++) {
+        var ang = (a / 5) * Math.PI * 2 + leafN;
+        pts.push([x + Math.cos(ang) * r, y + Math.sin(ang) * r]);
+      }
+      return poly(pts, { fil: col, str: col, wid: 0.3 });
+    },
+    fall: function(ptlist, xoff, yoff, h, w) {
+      META.h = h;
+      if (!FEATURES.falls || h < 260) return "";
+      return aside(["fall", Math.round(xoff), Math.round(yoff)], function() {
+        if (Math.random() > 0.14) return "";
+        META.fall = 1;
+        return waterfall(ptlist, xoff, yoff, h);
+      });
+    },
+    flatExtra: function(xoff, yoff, grbd) {
+      if (!FEATURES.bridges) return "";
+      return aside(["bridge", Math.round(xoff), Math.round(yoff)], function() {
+        if (Math.random() > 0.45 || grbd.xmax - grbd.xmin < 140) return "";
+        META.bridge = 1;
+        var x = xoff + normRand(grbd.xmin * 0.55, grbd.xmax * 0.55);
+        var y = yoff + (grbd.ymin + grbd.ymax) / 2 + 22;
+        var len = normRand(55, 95);
+        return creek(x, y, len) + TRAD.bridge(x, y, len);
+      });
+    },
+  };
+  var FEATURES = { falls: true, bridges: true };
+
+  // ---- painterly extras ----
+
+  // A ribbon of white water down the face of a mountain, with a pool.
+  function waterfall(ptlist, xoff, yoff, h) {
+    var jc = Math.round(25 + normRand(-7, 7));
+    var path = [];
+    for (var i = 1; i < ptlist.length - 1; i++) {
+      path.push([ptlist[i][jc][0] + xoff, ptlist[i][jc][1] + yoff]);
+    }
+    path = div(path, 4);
+    var hw = 3.2 + h / 110;
+    var L = [],
+      R = [];
+    for (var n = 0; n < path.length; n++) {
+      var t = n / (path.length - 1);
+      var ww = hw * (0.6 + 0.7 * t) * (0.8 + 0.4 * Noise.noise(n * 0.3, xoff * 0.01, 3));
+      L.push([path[n][0] - ww, path[n][1]]);
+      R.push([path[n][0] + ww, path[n][1]]);
+    }
+    var canv = poly(L.concat(R.slice().reverse()), { fil: "white", str: "none", cls: "wf" });
+    // Dark rock on either side is what makes the white read as water.
+    var edge = function(pl, side) {
+      var out = "";
+      var a = 0;
+      while (a < pl.length - 3) {
+        var b = Math.min(pl.length, a + 3 + Math.floor(Math.random() * 6));
+        out += stroke(pl.slice(a, b), {
+          col: "rgba(100,100,100," + (0.45 + Math.random() * 0.25).toFixed(3) + ")",
+          wid: 1.5,
+          noi: 0.6,
+        });
+        a = b + Math.floor(Math.random() * 3);
+      }
+      for (var n = 1; n < pl.length - 1; n += 2) {
+        if (Math.random() < 0.55) {
+          out += blob(pl[n][0] + side * normRand(2, 5), pl[n][1] + normRand(-2, 2), {
+            len: normRand(5, 11),
+            wid: normRand(2, 3.5),
+            ang: Math.PI / 2 + normRand(-0.3, 0.3),
+            col: "rgba(100,100,100," + (0.25 + Math.random() * 0.25).toFixed(3) + ")",
+          });
+        }
+      }
+      return out;
+    };
+    canv += edge(L, -1) + edge(R, 1);
+    for (var s = 0; s < 3; s++) {
+      var u = normRand(-0.6, 0.6);
+      var a = Math.floor(Math.random() * path.length * 0.5);
+      var b = Math.min(path.length, a + 4 + Math.floor(Math.random() * path.length * 0.5));
+      var sl = [];
+      for (var n = a; n < b; n++) sl.push([(L[n][0] + R[n][0]) / 2 + ((R[n][0] - L[n][0]) / 2) * u, L[n][1]]);
+      if (sl.length > 2) canv += stroke(sl, { col: "rgba(100,100,100,0.16)", wid: 0.5, noi: 0.3 });
+    }
+    var end = path[path.length - 1];
+    canv += poly(
+      div([[end[0] - hw * 3, end[1] + 2], [end[0], end[1] - 2], [end[0] + hw * 3, end[1] + 2], [end[0], end[1] + 5]], 3),
+      { fil: "white", str: "none", cls: "wf" },
+    );
+    for (var r = 0; r < 3; r++) {
+      var rl = normRand(8, 20) + r * 6;
+      var ry = end[1] + 4 + r * 3;
+      var dx = normRand(-4, 4);
+      canv += stroke(div([[end[0] - rl + dx, ry], [end[0] + rl + dx, ry]], 6), {
+        col: "rgba(100,100,100," + (0.3 - r * 0.07).toFixed(3) + ")",
+        wid: 0.7,
+      });
+    }
+    return canv;
+  }
+
+  // A few lines of water crossing flat ground, for a bridge to span.
+  function creek(x, y, len) {
+    var canv = "";
+    for (var i = 0; i < 4; i++) {
+      var l = len * normRand(0.55, 0.85);
+      var yy = y + 1 + i * 2.6;
+      var pts = [];
+      for (var t = -l; t <= l; t += 5) {
+        pts.push([x + t + normRand(-1, 1), yy + Math.sin(t * 0.2 + i) * 0.6]);
+      }
+      canv += stroke(pts, { col: "rgba(100,100,100," + (0.18 + Math.random() * 0.15).toFixed(3) + ")", wid: 0.8 });
+    }
+    return canv;
+  }
+
+  // A small arched stone bridge with a low parapet, after the little
+  // bridges over streams in Song and Ming paintings.
+  function bridgeCN(xoff, yoff, len) {
+    var canv = "";
+    var rise = len * normRand(0.12, 0.2);
+    var top = [];
+    var N = 16;
+    for (var i = 0; i <= N; i++) {
+      var t = i / N;
+      top.push([xoff + (t - 0.5) * len, yoff - rise * Math.sin(t * Math.PI) - 1]);
+    }
+    var arch = [];
+    var aw = len * 0.3;
+    for (var i = 0; i <= 10; i++) {
+      var th = (i / 10) * Math.PI;
+      arch.push([xoff + Math.cos(th) * aw, yoff + 2 - Math.sin(th) * rise * 0.85]);
+    }
+    var sil = top.concat([[xoff + len / 2, yoff + 2]], arch, [[xoff - len / 2, yoff + 2]]);
+    canv += poly(sil, { fil: "white", str: "none", cls: "st" });
+    canv += stroke(top, { col: "rgba(100,100,100,0.45)", wid: 1.4, noi: 0.5 });
+    canv += stroke(arch, { col: "rgba(100,100,100,0.4)", wid: 1.1, noi: 0.5 });
+    var rail = top.map(function(p) {
+      return [p[0], p[1] - 4.5];
+    });
+    canv += stroke(rail.slice(2, rail.length - 2), { col: "rgba(100,100,100,0.4)", wid: 0.8, noi: 0.4 });
+    for (var i = 2; i < top.length - 2; i += 2) {
+      canv += stroke(div([top[i], rail[i]], 3), { col: "rgba(100,100,100,0.4)", wid: 0.6, fun: x => 1 });
+    }
+    var men = randChoice([0, 1, 1, 2]);
+    for (var m = 0; m < men; m++) {
+      var t = normRand(0.3, 0.7);
+      canv += Man.man(xoff + (t - 0.5) * len, yoff - rise * Math.sin(t * Math.PI) - 1, {
+        sca: 0.36,
+        fli: randChoice([true, false]),
+        hat: randChoice([Man.hat01, Man.hat02]),
+        ite: Math.random() < 0.5 ? Man.stick01 : undefined,
+      });
+    }
+    return canv;
+  }
+
+  // Soft mist lying across the bases of a range: white fading upward.
+  function mistBand(xc, yk, len, thick) {
+    var top = [],
+      bot = [];
+    var n0 = Math.random() * 10;
+    for (var i = 0; i <= 40; i++) {
+      var t = i / 40;
+      var prof = Math.pow(Math.sin(t * Math.PI), 0.6);
+      var x = xc + (t - 0.5) * len;
+      top.push([x, yk - thick * prof * (0.6 + 0.6 * Noise.noise(t * 3, n0))]);
+      bot.push([x, yk + 6 * prof * Noise.noise(t * 4, n0 + 2)]);
+    }
+    return poly(top.concat(bot.reverse()), { fil: "url(#mistg)", str: "none", cls: "mist" });
+  }
+
+  // A grey wash over the sky and water through each winter, so the white
+  // mountains read as snow. One item per column; crisp edges let
+  // neighbouring columns meet without a visible seam.
+  var WASH_COL = { shanshui: "64,72,86", ukiyoe: "34,54,96", romantic: "88,98,112" };
+  function wash(x0, x1) {
+    var id = "wg" + EPOCH + "_" + Math.round(x0);
+    var stops = "";
+    for (var i = 0; i <= 8; i++) {
+      var t = i / 8;
+      var a = seasonAt(x0 + (x1 - x0) * t).w[3] * 0.42;
+      stops += "<stop offset='" + t.toFixed(3) + "' stop-color='rgb(" + WASH_COL[TRAD_NAME] + ")' stop-opacity='" + a.toFixed(3) + "'/>";
+    }
+    return (
+      "<linearGradient id='" + id + "' gradientUnits='userSpaceOnUse' x1='" + x0 + "' x2='" + x1 + "' y1='0' y2='0'>" +
+      stops +
+      "</linearGradient><polyline class='wash' points='" +
+      x0 + ",-60 " + x1 + ",-60 " + x1 + ",900 " + x0 + ",900" +
+      "' style='fill:url(#" + id + ");stroke:none;shape-rendering:crispEdges'/>"
+    );
+  }
+
+  // ---- traditions ----
+
+  function chooseArchCN(x, y, seed) {
+    // Same choices, in the same order, as the original BOTT ARCH.
+    var tt = randChoice([0, 0, 1, 1, 1, 2]);
+    if (tt == 1) {
+      META.house = (META.house || 0) + 1;
+      return Arch.arch02(x, y, seed, {
+        wid: normRand(40, 70),
+        sto: randChoice([1, 2, 2, 3]),
+        rot: Math.random(),
+        sty: randChoice([1, 2, 3]),
+      });
+    } else if (tt == 2) {
+      META.house = (META.house || 0) + 1;
+      return Arch.arch04(x, y, seed, { sto: randChoice([1, 1, 1, 2, 2]) });
+    }
+    return "";
+  }
+
+  var TRADS = {
+    shanshui: {
+      tone: null,
+      bottArch: chooseArchCN,
+      topArch: function(x, y, seed) {
+        META.house = (META.house || 0) + 1;
+        return Arch.arch03(x, y, seed, { sto: randChoice([5, 7]), wid: 40 + Math.random() * 20 });
+      },
+      flatArch: null,
+      boat: function(x, y, args) {
+        return Arch.boat01(x, y, Math.random(), args);
+      },
+      bridge: bridgeCN,
+      mist: function(x, y, len, thick) {
+        return mistBand(x, y, len, thick);
+      },
+      ins: function(x, y) {
+        return inscriptionCN(x, y);
+      },
+      insHalf: 90,
+    },
+  };
+
+  function house(fn) {
+    return function(x, y, seed, args) {
+      META.house = (META.house || 0) + 1;
+      return fn(x, y, seed, args || {});
+    };
+  }
+
+  // Woodblock prints: Prussian-blue keylines, torii, minka and pagodas,
+  // Mount Fuji in the distance and banded suyari-gasumi mist.
+  if (typeof Japan != "undefined") {
+    TRADS.ukiyoe = {
+      tone: [22, 40, 78, 1],
+      bottArch: function(x, y, seed) {
+        var tt = randChoice([0, 0, 1, 1, 1, 2, 3]);
+        if (tt == 1) return house(Japan.minka)(x, y, seed);
+        if (tt == 2) return house(Japan.torii)(x, y, seed);
+        if (tt == 3) return Japan.lantern(x, y, seed, {});
+        return "";
+      },
+      topArch: function(x, y, seed) {
+        return house(Japan.pagoda)(x, y, seed, { sto: randChoice([3, 5, 5]) });
+      },
+      flatArch: function(x, y, seed, args) {
+        return house(randChoice([Japan.minka, Japan.minka, Japan.torii]))(x, y, seed);
+      },
+      boat: function(x, y, args) {
+        return Japan.boat(x, y, Math.random(), args);
+      },
+      bridge: function(x, y, len) {
+        return Japan.bridge(x, y, Math.random(), { len: len });
+      },
+      mist: function(x, y, len, thick) {
+        return Japan.kasumi(x, y, Math.random(), { len: len });
+      },
+      fuji: function(x, y) {
+        return (
+          Japan.fuji(x, y, Math.random(), { wid: normRand(850, 1150), hei: normRand(260, 330) }) +
+          Japan.kasumi(x + normRand(-100, 100), y + 4, Math.random(), { len: normRand(700, 1000) })
+        );
+      },
+      // Fuji rises behind the far hills every few screens.
+      extra: function(k, reg) {
+        seedStr("fuji", k);
+        if (((k % 9) + 9) % 9 == 4 && Math.random() < 0.8) {
+          reg.push({ tag: "fuji", x: k * CW + CW / 2 + normRand(-120, 120), y: 288 });
+        }
+      },
+      ins: function(x, y) {
+        return inscriptionJP(x, y);
+      },
+      insHalf: 60,
+    };
+  }
+
+  // English Romantic watercolour: sepia line, cottages, churches, castles,
+  // mills, stone bridges and sailing boats.
+  if (typeof Europe != "undefined") {
+    TRADS.romantic = {
+      tone: [92, 60, 36, 0.85],
+      bottArch: function(x, y, seed) {
+        var tt = randChoice([0, 0, 1, 1, 1, 2]);
+        if (tt == 1) return house(Europe.cottage)(x, y, seed);
+        if (tt == 2) return house(randChoice([Europe.church, Europe.windmill]))(x, y, seed);
+        return "";
+      },
+      topArch: function(x, y, seed) {
+        if (Math.random() < 0.25) return house(Europe.ruin)(x, y, seed);
+        return house(Europe.castle)(x, y, seed, { ruin: Math.random() < 0.35 });
+      },
+      flatArch: function(x, y, seed, args) {
+        return house(randChoice([Europe.cottage, Europe.church, Europe.windmill, Europe.ruin]))(x, y, seed);
+      },
+      boat: function(x, y, args) {
+        return Europe.sailboat(x, y, Math.random(), args);
+      },
+      bridge: function(x, y, len) {
+        return Europe.bridge(x, y, Math.random(), { len: len * 1.3 });
+      },
+      mist: function(x, y, len, thick) {
+        return mistBand(x, y, len, thick);
+      },
+      ins: function(x, y) {
+        return inscriptionEN(x, y);
+      },
+      insHalf: 230,
+    };
+  }
+
+  function useTradition(name) {
+    TRAD_NAME = TRADS[name] ? name : "shanshui";
+    TRAD = TRADS[TRAD_NAME];
+    HOOK.bottArch = TRAD.bottArch;
+    HOOK.topArch = TRAD.topArch;
+    HOOK.flatArch = TRAD.flatArch;
+  }
+
+  // Recolour every grey in the drawing toward the tradition's ink: Prussian
+  // blue for woodblock prints, sepia for watercolour. White stays white.
+  function tone(s) {
+    var t = TRAD.tone;
+    if (!t || typeof s != "string") return s;
+    return s.replace(/rgba?\((\d+),\1,\1(,[\d.]+)?\)/g, function(m, g, a) {
+      var v = Math.pow(+g / 255, 1.3);
+      var c = [0, 1, 2].map(function(i) {
+        return Math.round(t[i] + (255 - t[i]) * v);
+      });
+      if (!a) return "rgb(" + c.join(",") + ")";
+      return "rgba(" + c.join(",") + "," + (parseFloat(a.slice(1)) * t[3]).toFixed(3) + ")";
+    });
   }
 
   // ---- planning (adapted from the original mountplanner) ----
@@ -4506,9 +5206,9 @@
     water: [-480, 480],
     flatmount: [-1080, 1080],
     distmount: [-10, 1510],
-    boat: [-130, 130],
+    boat: [-150, 150],
     birds: [-170, 170],
-    inscription: [-90, 90],
+    fuji: [-700, 700],
   };
 
   function planColumn(k) {
@@ -4538,10 +5238,48 @@
       }
     }
 
+    // More birds when they migrate.
     seedStr("birds", k);
-    if (Math.random() < 0.14) {
+    var sw = seasonAt(x0 + CW / 2).w;
+    if (Math.random() < 0.14 * (1 + 0.8 * (sw[0] + sw[2]))) {
       reg.push({ tag: "birds", x: x0 + Math.random() * CW, y: 70 + Math.random() * 170 });
     }
+
+    // Mist across the bases of a range, thicker in misty stretches.
+    if (FEATURES.mist) {
+      seedStr("mist", k);
+      var fog = Noise.noise(k * 0.37, 11.3);
+      var nb = fog > 0.6 ? 2 : fog > 0.44 ? 1 : 0;
+      // Sit in the middle distance, under where this column's mountains
+      // stand, so nearer ranges don't simply cover it.
+      var ms = placeMounts(k)
+        .filter(function(m) {
+          return m.tag == "mount";
+        })
+        .sort(function(a, b) {
+          return a.y - b.y;
+        });
+      for (var b = 0; b < nb; b++) {
+        var my, mx;
+        if (ms.length) {
+          var m = ms[Math.floor(ms.length * normRand(0.35, 0.8))];
+          my = m.y + normRand(8, 24);
+          mx = m.x + normRand(-120, 120);
+        } else if (Math.random() < 0.5) {
+          my = normRand(330, 430);
+          mx = x0 + CW / 2 + normRand(-150, 150);
+        } else continue;
+        var len = normRand(500, 1100);
+        reg.push({ tag: "mist", x: mx, y: my, len: len, thick: normRand(90, 160), x0: mx - len / 2, x1: mx + len / 2 });
+      }
+    }
+
+    // A wash over every column touched by winter.
+    if (SEASONS && (seasonAt(x0).w[3] > 0 || seasonAt(x1).w[3] > 0 || seasonAt(x0 + CW / 2).w[3] > 0)) {
+      reg.push({ tag: "wash", x: x0 + CW / 2, y: 0, x0: x0, x1: x1 });
+    }
+
+    if (TRAD.extra) TRAD.extra(k, reg);
 
     // Inscriptions go in the most open stretch of sky in every third column.
     seedStr("ins", k);
@@ -4562,32 +5300,44 @@
           best = x;
         }
       }
-      if (bestD > INS_CLEAR) reg.push({ tag: "inscription", x: best, y: 30 + Math.random() * 40 });
+      if (bestD > INS_CLEAR) {
+        reg.push({ tag: "inscription", x: best, y: 30 + Math.random() * 40, x0: best - TRAD.insHalf, x1: best + TRAD.insHalf });
+      }
     }
 
     var items = [];
-    function push(it) {
-      it.x0 = it.x + EXTENT[it.tag][0];
-      it.x1 = it.x + EXTENT[it.tag][1];
+    function push(it, r) {
+      it.x0 = r.x0 != undefined ? r.x0 : it.x + EXTENT[it.tag][0];
+      it.x1 = r.x1 != undefined ? r.x1 : it.x + EXTENT[it.tag][1];
+      if (r.len) {
+        it.len = r.len;
+        it.thick = r.thick;
+      }
       byId[it.id] = it;
       items.push(it);
     }
     for (var i = 0; i < reg.length; i++) {
       var r = reg[i];
       var base = { k: k, i: i, x: r.x, y: r.y };
+      var id = k + ":" + i;
       if (r.tag == "mount") {
-        push(Object.assign({ id: k + ":" + i, tag: "mount", key: r.y }, base));
-        push(Object.assign({ id: k + ":" + i + "w", tag: "water", key: r.y - 10000 }, base));
+        push(Object.assign({ id: id, tag: "mount", key: r.y }, base), {});
+        push(Object.assign({ id: id + "w", tag: "water", key: r.y - 10000 }, base), {});
       } else if (r.tag == "birds") {
-        push(Object.assign({ id: k + ":" + i, tag: r.tag, key: 20000 }, base));
+        push(Object.assign({ id: id, tag: r.tag, key: 20000 }, base), r);
       } else if (r.tag == "inscription") {
-        push(Object.assign({ id: k + ":" + i, tag: r.tag, key: 30000, layer: "ann" }, base));
+        push(Object.assign({ id: id, tag: r.tag, key: 30000, layer: "ann" }, base), r);
+      } else if (r.tag == "wash") {
+        push(Object.assign({ id: id, tag: r.tag, key: -30000 }, base), r);
+      } else if (r.tag == "fuji") {
+        push(Object.assign({ id: id, tag: r.tag, key: 150 }, base), r);
       } else {
-        push(Object.assign({ id: k + ":" + i, tag: r.tag, key: r.y }, base));
+        push(Object.assign({ id: id, tag: r.tag, key: r.y }, base), r);
       }
     }
     return (plans[k] = items);
   }
+  FEATURES.mist = true;
 
   // ---- new elements ----
 
@@ -4626,36 +5376,103 @@
     );
   }
 
-  // Classical couplets written into open sky, in the manner of a colophon.
-  // Lines are quoted from Tang and Song poets, with the poet's name.
-  var POEMS = [
-    ["江流天地外", "山色有無中", "王維"],
-    ["明月松間照", "清泉石上流", "王維"],
-    ["空山新雨後", "天氣晚來秋", "王維"],
-    ["行到水窮處", "坐看雲起時", "王維"],
-    ["空山不見人", "但聞人語響", "王維"],
-    ["人閒桂花落", "夜靜春山空", "王維"],
-    ["兩岸青山相對出", "孤帆一片日邊來", "李白"],
-    ["眾鳥高飛盡", "孤雲獨去閒", "李白"],
-    ["兩岸猿聲啼不住", "輕舟已過萬重山", "李白"],
-    ["孤帆遠影碧空盡", "唯見長江天際流", "李白"],
-    ["會當凌絕頂", "一覽眾山小", "杜甫"],
-    ["窗含西嶺千秋雪", "門泊東吳萬里船", "杜甫"],
-    ["白日依山盡", "黃河入海流", "王之渙"],
-    ["千山鳥飛絕", "萬徑人蹤滅", "柳宗元"],
-    ["孤舟蓑笠翁", "獨釣寒江雪", "柳宗元"],
-    ["橫看成嶺側成峰", "遠近高低各不同", "蘇軾"],
-    ["遠上寒山石徑斜", "白雲生處有人家", "杜牧"],
-    ["野曠天低樹", "江清月近人", "孟浩然"],
-    ["春潮帶雨晚來急", "野渡無人舟自橫", "韋應物"],
-    ["採菊東籬下", "悠然見南山", "陶淵明"],
-    ["潮平兩岸闊", "風正一帆懸", "王灣"],
-    ["只在此山中", "雲深不知處", "賈島"],
-    ["山重水複疑無路", "柳暗花明又一村", "陸游"],
-    ["青山遮不住", "畢竟東流去", "辛棄疾"],
+  // ---- poems ----
+  // Each entry ends with the season it belongs to ("" fits any season).
+  // Chinese couplets from Tang and Song poets.
+  var POEMS_CN = [
+    ["江流天地外", "山色有無中", "王維", ""],
+    ["明月松間照", "清泉石上流", "王維", "autumn"],
+    ["空山新雨後", "天氣晚來秋", "王維", "autumn"],
+    ["行到水窮處", "坐看雲起時", "王維", ""],
+    ["空山不見人", "但聞人語響", "王維", ""],
+    ["人閒桂花落", "夜靜春山空", "王維", "spring"],
+    ["兩岸青山相對出", "孤帆一片日邊來", "李白", ""],
+    ["眾鳥高飛盡", "孤雲獨去閒", "李白", ""],
+    ["兩岸猿聲啼不住", "輕舟已過萬重山", "李白", ""],
+    ["孤帆遠影碧空盡", "唯見長江天際流", "李白", "spring"],
+    ["會當凌絕頂", "一覽眾山小", "杜甫", ""],
+    ["窗含西嶺千秋雪", "門泊東吳萬里船", "杜甫", ""],
+    ["白日依山盡", "黃河入海流", "王之渙", ""],
+    ["千山鳥飛絕", "萬徑人蹤滅", "柳宗元", "winter"],
+    ["孤舟蓑笠翁", "獨釣寒江雪", "柳宗元", "winter"],
+    ["橫看成嶺側成峰", "遠近高低各不同", "蘇軾", ""],
+    ["遠上寒山石徑斜", "白雲生處有人家", "杜牧", "autumn"],
+    ["停車坐愛楓林晚", "霜葉紅於二月花", "杜牧", "autumn"],
+    ["野曠天低樹", "江清月近人", "孟浩然", ""],
+    ["春潮帶雨晚來急", "野渡無人舟自橫", "韋應物", "spring"],
+    ["採菊東籬下", "悠然見南山", "陶淵明", "autumn"],
+    ["潮平兩岸闊", "風正一帆懸", "王灣", ""],
+    ["只在此山中", "雲深不知處", "賈島", ""],
+    ["山重水複疑無路", "柳暗花明又一村", "陸游", "spring"],
+    ["青山遮不住", "畢竟東流去", "辛棄疾", ""],
+    ["日出江花紅勝火", "春來江水綠如藍", "白居易", "spring"],
+    ["竹外桃花三兩枝", "春江水暖鴨先知", "蘇軾", "spring"],
+    ["接天蓮葉無窮碧", "映日荷花別樣紅", "楊萬里", "summer"],
+    ["綠樹陰濃夏日長", "樓臺倒影入池塘", "高駢", "summer"],
+    ["晚來天欲雪", "能飲一杯無", "白居易", "winter"],
+    ["忽如一夜春風來", "千樹萬樹梨花開", "岑參", "winter"],
+    ["牆角數枝梅", "凌寒獨自開", "王安石", "winter"],
   ];
   var SEALS2 = ["臥遊", "山水", "煙霞", "清音", "無盡", "逍遙", "雲林", "自在", "天趣", "墨戲", "林泉"];
   var SEALS4 = ["江山無盡", "山高水長", "行雲流水", "煙雲供養", "寄情山水"];
+
+  // Haiku in three parts, with the poet.
+  var HAIKU = [
+    ["古池や", "蛙飛び込む", "水の音", "芭蕉", "spring"],
+    ["山路来て", "何やらゆかし", "すみれ草", "芭蕉", "spring"],
+    ["菜の花や", "月は東に", "日は西に", "蕪村", "spring"],
+    ["春の海", "終日のたり", "のたりかな", "蕪村", "spring"],
+    ["雪とけて", "村いっぱいの", "子どもかな", "一茶", "spring"],
+    ["閑さや", "岩にしみ入る", "蝉の声", "芭蕉", "summer"],
+    ["夏草や", "兵どもが", "夢の跡", "芭蕉", "summer"],
+    ["五月雨を", "あつめて早し", "最上川", "芭蕉", "summer"],
+    ["五月雨や", "大河を前に", "家二軒", "蕪村", "summer"],
+    ["涼しさや", "鐘をはなるる", "かねの声", "蕪村", "summer"],
+    ["夏河を", "越すうれしさよ", "手に草履", "蕪村", "summer"],
+    ["荒海や", "佐渡によこたふ", "天河", "芭蕉", "autumn"],
+    ["秋深き", "隣は何を", "する人ぞ", "芭蕉", "autumn"],
+    ["名月を", "取ってくれろと", "泣く子かな", "一茶", "autumn"],
+    ["朝顔に", "釣瓶とられて", "もらひ水", "千代女", "autumn"],
+    ["柿くへば", "鐘が鳴るなり", "法隆寺", "子規", "autumn"],
+    ["旅に病で", "夢は枯野を", "かけ廻る", "芭蕉", "winter"],
+    ["初しぐれ", "猿も小蓑を", "ほしげなり", "芭蕉", "winter"],
+    ["いざさらば", "雪見にころぶ", "所まで", "芭蕉", "winter"],
+    ["斧入れて", "香におどろくや", "冬木立", "蕪村", "winter"],
+    ["うまさうな", "雪がふうはり", "ふはりかな", "一茶", "winter"],
+  ];
+
+  // Lines from English poets, mostly of the Romantic period.
+  var VERSE = [
+    ["I wandered lonely as a cloud", "That floats on high o'er vales and hills", "Wordsworth", "spring"],
+    ["Loveliest of trees, the cherry now", "Is hung with bloom along the bough", "Housman", "spring"],
+    ["Oh, to be in England", "Now that April's there", "Browning", "spring"],
+    ["There is a pleasure in the pathless woods,", "There is a rapture on the lonely shore", "Byron", "summer"],
+    ["Earth has not anything to show more fair:", "Dull would he be of soul who could pass by", "Wordsworth", "summer"],
+    ["Season of mists and mellow fruitfulness,", "Close bosom-friend of the maturing sun", "Keats", "autumn"],
+    ["O wild West Wind, thou breath of Autumn's being,", "Thou, from whose unseen presence the leaves dead", "Shelley", "autumn"],
+    ["The trees are in their autumn beauty,", "The woodland paths are dry", "Yeats", "autumn"],
+    ["In the bleak mid-winter frosty wind made moan,", "Earth stood hard as iron, water like a stone", "Christina Rossetti", "winter"],
+    ["The frost performs its secret ministry,", "Unhelped by any wind", "Coleridge", "winter"],
+    ["Now winter nights enlarge", "The number of their hours", "Campion", "winter"],
+    ["For men may come and men may go,", "But I go on for ever", "Tennyson", ""],
+    ["The everlasting universe of things", "Flows through the mind", "Shelley", ""],
+    ["My heart's in the Highlands, my heart is not here;", "My heart's in the Highlands, a-chasing the deer", "Burns", ""],
+    ["To see a World in a Grain of Sand", "And a Heaven in a Wild Flower", "Blake", ""],
+  ];
+
+  // Pick a poem for the season at x, falling back to any-season poems.
+  function poemFor(list, x, si) {
+    var s = SEASONS ? SEASON_NAMES[seasonAt(x).dom] : "";
+    var fit = list.filter(function(p) {
+      return p[si] == s;
+    });
+    if (!fit.length || Math.random() < 0.3) {
+      fit = list.filter(function(p) {
+        return p[si] == "" || !SEASONS;
+      });
+    }
+    return randChoice(fit.length ? fit : list);
+  }
 
   function roughRect(x, y, w, h, j) {
     var c = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
@@ -4674,77 +5491,79 @@
     return pts;
   }
 
-  // Returns drawing primitives, not SVG, so the page can draw the text both
-  // as SVG and onto a canvas for snapshots.
-  function inscription(xc, top) {
+  // Inscriptions return drawing primitives, not SVG, so the page can draw the
+  // text both as SVG and onto a canvas for snapshots.
+  function r1(v) {
+    return +v.toFixed(1);
+  }
+  function inkAlpha() {
+    return +(0.74 + Math.random() * 0.2).toFixed(2);
+  }
+  function Prims() {
     var prims = [];
-    var poem = randChoice(POEMS);
+    return {
+      prims: prims,
+      text: function(t, x, y, size, k, o, w, f, anchor) {
+        prims.push({ p: "text", t: t, x: r1(x), y: r1(y), s: r1(size), k: k, o: o, w: w || 400, f: f || "zh", a: anchor || "middle" });
+      },
+      poly: function(pts, k, sw) {
+        prims.push({ p: "poly", k: k, pts: pts.map(v => [r1(v[0]), r1(v[1])]), sw: sw ? r1(sw) : undefined });
+      },
+    };
+  }
+
+  function seal(P, cx, ty, chars, cols, rows, zhu, cs, font) {
+    var pad = cs * 0.2;
+    var w = cols * cs + pad * 2;
+    var h = rows * cs + pad * 2;
+    var x0 = cx - w / 2;
+    P.poly(roughRect(x0, ty, w, h, cs * 0.035), zhu ? "seal-line" : "seal", cs * 0.11);
+    for (var i = 0; i < chars.length; i++) {
+      var col = cols - 1 - Math.floor(i / rows);
+      var row = i % rows;
+      P.text(
+        chars[i],
+        x0 + pad + cs * (col + 0.5) + normRand(-0.2, 0.2),
+        ty + pad + cs * (row + 0.5) + normRand(-0.2, 0.2),
+        cs * 0.98,
+        zhu ? "seal-zhu" : "seal-cut",
+        1,
+        700,
+        font,
+      );
+    }
+    if (!zhu) {
+      for (var n = 0; n < 4; n++) {
+        var sx = x0 + Math.random() * w;
+        var sy = ty + Math.random() * h;
+        var rr = cs * normRand(0.03, 0.08);
+        var sp = [];
+        for (var a = 0; a < 6; a++) {
+          var ang = (a / 6) * Math.PI * 2;
+          var l = rr * normRand(0.6, 1.3);
+          sp.push([sx + Math.cos(ang) * l * 1.6, sy + Math.sin(ang) * l]);
+        }
+        P.poly(sp, "speck");
+      }
+    }
+    return ty + h;
+  }
+
+  // A Chinese colophon: a couplet in two columns, the poet, and seals.
+  function inscriptionCN(xc, top) {
+    var P = Prims();
+    var poem = poemFor(POEMS_CN, xc, 3);
     var s = normRand(17, 21);
     var adv = s * 1.16;
     var gap = s * 1.55;
     var colR = xc + gap;
-    var ink = function() {
-      return +(0.74 + Math.random() * 0.2).toFixed(2);
-    };
-    var r1 = function(v) {
-      return +v.toFixed(1);
-    };
-    function text(t, x, y, size, k, o, w) {
-      prims.push({ p: "text", t: t, x: r1(x), y: r1(y), s: r1(size), k: k, o: o, w: w || 400 });
-    }
-    function seal(cx, ty, chars, cols, rows, zhu) {
-      var cs = s * 0.6;
-      var pad = cs * 0.2;
-      var w = cols * cs + pad * 2;
-      var h = rows * cs + pad * 2;
-      var x0 = cx - w / 2;
-      var pts = roughRect(x0, ty, w, h, cs * 0.035).map(v => [r1(v[0]), r1(v[1])]);
-      prims.push({ p: "poly", k: zhu ? "seal-line" : "seal", pts: pts, sw: r1(cs * 0.11) });
-      for (var i = 0; i < chars.length; i++) {
-        var col = cols - 1 - Math.floor(i / rows);
-        var row = i % rows;
-        text(
-          chars[i],
-          x0 + pad + cs * (col + 0.5) + normRand(-0.2, 0.2),
-          ty + pad + cs * (row + 0.5) + normRand(-0.2, 0.2),
-          cs * 0.98,
-          zhu ? "seal-zhu" : "seal-cut",
-          1,
-          700,
-        );
-      }
-      if (!zhu) {
-        for (var n = 0; n < 4; n++) {
-          var sx = x0 + Math.random() * w;
-          var sy = ty + Math.random() * h;
-          var rr = cs * normRand(0.03, 0.08);
-          var sp = [];
-          for (var a = 0; a < 6; a++) {
-            var ang = (a / 6) * Math.PI * 2;
-            var l = rr * normRand(0.6, 1.3);
-            sp.push([r1(sx + Math.cos(ang) * l * 1.6), r1(sy + Math.sin(ang) * l)]);
-          }
-          prims.push({ p: "poly", k: "speck", pts: sp });
-        }
-      }
-      return ty + h;
-    }
-
-    // An optional leading seal at the top right, before the first line.
     if (Math.random() < 0.4) {
-      seal(colR + gap * 0.95, top + s * 0.1, randChoice(SEALS2), 1, 2, Math.random() < 0.5);
+      seal(P, colR + gap * 0.95, top + s * 0.1, randChoice(SEALS2), 1, 2, Math.random() < 0.5, s * 0.6);
     }
     for (var l = 0; l < 2; l++) {
       var cx = colR - l * gap;
       for (var c = 0; c < poem[l].length; c++) {
-        text(
-          poem[l][c],
-          cx + normRand(-0.5, 0.5),
-          top + adv * (c + 0.5) + normRand(-0.4, 0.4),
-          s * normRand(0.96, 1.04),
-          "ins",
-          ink(),
-        );
+        P.text(poem[l][c], cx + normRand(-0.5, 0.5), top + adv * (c + 0.5) + normRand(-0.4, 0.4), s * normRand(0.96, 1.04), "ins", inkAlpha());
       }
     }
     // Signature column: 錄某某句, "lines of so-and-so, recorded".
@@ -4753,49 +5572,110 @@
     var sx = colR - 2 * gap + gap * 0.1;
     var sy = top + adv * 1.3;
     for (var c = 0; c < sig.length; c++) {
-      text(sig[c], sx, sy + ss * 1.15 * (c + 0.5), ss, "ins", ink());
+      P.text(sig[c], sx, sy + ss * 1.15 * (c + 0.5), ss, "ins", inkAlpha());
     }
     var four = Math.random() < 0.45;
-    seal(
-      sx,
-      sy + ss * 1.15 * sig.length + s * 0.35,
-      four ? randChoice(SEALS4) : randChoice(SEALS2),
-      four ? 2 : 1,
-      2,
-      Math.random() < 0.3,
-    );
-    return { prims: prims };
+    seal(P, sx, sy + ss * 1.15 * sig.length + s * 0.35, four ? randChoice(SEALS4) : randChoice(SEALS2), four ? 2 : 1, 2, Math.random() < 0.3, s * 0.6);
+    return { prims: P.prims };
+  }
+
+  // A woodblock-print title cartouche holding a haiku in three columns,
+  // with the poet's name and a round kiwame (approval) seal.
+  function inscriptionJP(xc, top) {
+    var P = Prims();
+    var h = poemFor(HAIKU, xc, 4);
+    var s = normRand(14, 17);
+    var adv = s * 1.08;
+    var gap = s * 1.4;
+    var pad = s * 0.7;
+    var rows = Math.max(h[0].length, h[1].length, h[2].length + 1 + h[3].length * 0.75);
+    var w = gap * 3 + pad * 2 - s * 0.3;
+    var ht = rows * adv + pad * 2;
+    var x0 = xc - w / 2;
+    P.poly(roughRect(x0, top, w, ht, 0.4), "cart");
+    P.poly(roughRect(x0 + 2.5, top + 2.5, w - 5, ht - 5, 0.3), "cart-line", 0.7);
+    for (var l = 0; l < 3; l++) {
+      var cx = x0 + w - pad - s * 0.35 - l * gap;
+      var y0 = top + pad + l * s * 0.5;
+      for (var c = 0; c < h[l].length; c++) {
+        P.text(h[l][c], cx, y0 + adv * (c + 0.5), s, "ins", inkAlpha(), 400, "ja");
+      }
+    }
+    var px = x0 + pad + s * 0.1;
+    var py = top + ht - pad - h[3].length * s * 0.8;
+    for (var c = 0; c < h[3].length; c++) {
+      P.text(h[3][c], px, py + s * 0.8 * (c + 0.5), s * 0.72, "ins", inkAlpha(), 400, "ja");
+    }
+    // round kiwame seal below the cartouche
+    var cr = s * 0.55;
+    var ring = [];
+    for (var a = 0; a < 18; a++) {
+      var ang = (a / 18) * Math.PI * 2;
+      ring.push([xc + w * 0.32 + Math.cos(ang) * cr * normRand(0.96, 1.04), top + ht + cr * 1.6 + Math.sin(ang) * cr * normRand(0.96, 1.04)]);
+    }
+    P.poly(ring, "seal-line", cr * 0.13);
+    P.text("極", xc + w * 0.32, top + ht + cr * 1.6, cr * 1.2, "seal-zhu", 1, 700, "ja");
+    return { prims: P.prims };
+  }
+
+  // Two lines of verse set across the sky, with the poet's name.
+  function inscriptionEN(xc, top) {
+    var P = Prims();
+    var v = poemFor(VERSE, xc, 3);
+    var s = normRand(15, 17.5);
+    var y = top + s * 1.2;
+    var half = Math.max(v[0].length, v[1].length) * s * 0.2;
+    P.text(v[0], xc - half, y, s, "ins", inkAlpha(), 400, "en", "start");
+    P.text(v[1], xc - half + s * 1.2, y + s * 1.4, s, "ins", inkAlpha(), 400, "en", "start");
+    P.text("— " + v[2], xc + half + s * 1.2, y + s * 3, s * 0.78, "ins", inkAlpha(), 400, "en", "end");
+    return { prims: P.prims };
   }
 
   function renderItem(it) {
     seedStr("r", it.k, it.i, it.tag);
+    CUR = seasonAt(it.x);
+    leafN = 0;
+    META = {};
+    var out;
     switch (it.tag) {
       case "mount":
-        return Mount.mountain(it.x, it.y, it.i * 2 * Math.random());
+        out = Mount.mountain(it.x, it.y, it.i * 2 * Math.random());
+        break;
       case "water":
-        return water(it.x, it.y, it.i * 2);
+        out = water(it.x, it.y, it.i * 2);
+        break;
       case "flatmount":
-        return Mount.flatMount(it.x, it.y, 2 * Math.random() * Math.PI, {
+        out = Mount.flatMount(it.x, it.y, 2 * Math.random() * Math.PI, {
           wid: 600 + Math.random() * 400,
           hei: 100,
           cho: 0.5 + Math.random() * 0.2,
         });
+        break;
       case "distmount":
-        return Mount.distMount(it.x, it.y, Math.random() * 100, {
+        out = Mount.distMount(it.x, it.y, Math.random() * 100, {
           hei: 150,
           len: randChoice([500, 1000, 1500]),
         });
+        break;
       case "boat":
-        return Arch.boat01(it.x, it.y, Math.random(), {
-          sca: it.y / 800,
-          fli: randChoice([true, false]),
-        });
+        out = TRAD.boat(it.x, it.y, { sca: it.y / 800, fli: randChoice([true, false]) });
+        break;
       case "birds":
-        return birds(it.x, it.y);
+        out = birds(it.x, it.y);
+        break;
+      case "mist":
+        out = TRAD.mist(it.x, it.y, it.len, it.thick);
+        break;
+      case "wash":
+        out = wash(it.x0, it.x1);
+        break;
+      case "fuji":
+        out = TRAD.fuji(it.x, it.y);
+        break;
       case "inscription":
-        return inscription(it.x, it.y);
+        return { data: TRAD.ins(it.x, it.y), meta: META };
     }
-    return "";
+    return { data: tone(out || ""), meta: META };
   }
 
   // The paper texture from the original page, as greyscale. The page tints
@@ -4831,9 +5711,11 @@
     else window.__ssGenSend(msg);
   }
 
-  function init(seed, epoch) {
-    SEED = String(seed);
-    EPOCH = epoch;
+  function init(m) {
+    SEED = String(m.seed);
+    EPOCH = m.epoch;
+    SEASONS = m.seasons !== false;
+    useTradition(m.trad);
     plans = {};
     mounts = {};
     byId = {};
@@ -4843,6 +5725,7 @@
     Noise.reset();
     Math.seed(SEED);
     Noise.noise(0);
+    seasonPhase = cyrb53(SEED + "\u0001season") % YEAR;
     send({ type: "ready", epoch: EPOCH });
     paper();
   }
@@ -4857,29 +5740,35 @@
     var it = byId[id];
     if (it) {
       var t0 = Date.now();
-      var data;
+      var res;
       try {
-        data = renderItem(it);
+        res = renderItem(it);
       } catch (err) {
-        data = "";
+        res = { data: "", meta: {} };
         console.warn("item failed", id, err);
       }
-      if (typeof data == "string" && data.indexOf("NaN") != -1) {
-        data = data.replace(/NaN/g, -1000);
+      if (typeof res.data == "string" && res.data.indexOf("NaN") != -1) {
+        res.data = res.data.replace(/NaN/g, -1000);
       }
-      send({ type: "item", epoch: EPOCH, id: id, data: data, ms: Date.now() - t0 });
+      send({ type: "item", epoch: EPOCH, id: id, data: res.data, meta: res.meta, ms: Date.now() - t0 });
     }
     pump();
   }
 
+  // The page asks where each season falls, to label it.
+  function seasonInfo(x) {
+    var s = seasonAt(x);
+    return { dom: s.dom, w: s.w };
+  }
+
   function receive(e) {
     var m = e.data;
-    if (m.type == "init") return init(m.seed, m.epoch);
+    if (m.type == "init") return init(m);
     if (m.epoch != EPOCH) return;
     if (m.type == "plan") {
       for (var n = 0; n < m.ks.length; n++) {
         var k = m.ks[n];
-        send({ type: "plan", epoch: EPOCH, k: k, items: planColumn(k) });
+        send({ type: "plan", epoch: EPOCH, k: k, items: planColumn(k), season: seasonInfo(k * CW + CW / 2) });
       }
     } else if (m.type == "render") {
       queue = m.ids.slice();
@@ -4894,6 +5783,672 @@
       receive({ data: m });
     };
   }
+
+</script>
+<script id="SoundEngine">
+/* sound.js - generative ambient sound for the infinite landscape painting.
+ *
+ * Plain ES2015 + Web Audio API. No libraries, no audio files. Defines one global: Sound.
+ *
+ *   Sound.start(tradition) -> Promise   Sound.stop()   Sound.isOn()
+ *   Sound.setTradition("shanshui" | "ukiyoe" | "romantic")
+ *   Sound.setSeason("spring" | "summer" | "autumn" | "winter")
+ *   Sound.setMotion(worldUnitsPerSecond)   Sound.setVolume(0..1)
+ *   Sound.event({ kind, depth, height, pan })  kind: mount fall house boat birds bridge ins
+ *
+ * Graph
+ *   string voices -> tradition bus (body EQ, crossfade level) --+--------------> mix
+ *   flute, chirps -> fx bus / bell -> far bus -------------------+               ^
+ *   ambience (water, wind, warmth, Aeolian harp) -> amb bus -----+--> reverb ----+
+ *   mix -> tone LP -> season gain -> volume -> fade -> HP 28 Hz -> compressor -> trim -> out
+ *
+ * Time: events go into a small priority queue. A slow, swung pulse (0.5-1.2 s) takes at
+ * most one event per beat; a token bucket caps the long-run note rate; events older than
+ * MAX_AGE are forgotten and the least salient are dropped when the queue is full.
+ */
+var Sound = (function () {
+  'use strict';
+
+  // ------------------------------------------------------------------ configuration
+  // root: MIDI number of the lowest note; steps: scale (semitones); count: notes in range.
+  const TRADITIONS = {
+    shanshui: { inst: 'guqin', root: 36, steps: [0, 2, 4, 7, 9], count: 14, pulse: 0.95, rate: 0.5,
+      amb: { water: 1, wind: 0.2, aeol: 0 } },          // C gong pentatonic, C2..G4
+    ukiyoe: { inst: 'koto', root: 52, steps: [0, 1, 5, 7, 8], count: 13, pulse: 0.9, rate: 0.45,
+      amb: { water: 0.55, wind: 0.5, aeol: 0 } },       // in scale (miyako-bushi) on E, E3..A5
+    romantic: { inst: 'harp', root: 50, steps: [0, 2, 4, 7, 9], alt: [0, 2, 3, 7, 9, 10], count: 14,
+      pulse: 0.78, rate: 0.6, amb: { water: 0.12, wind: 0.75, aeol: 1 } }  // D major pent. / D Dorian colour
+  };
+  const SEASONS = {
+    spring: { rate: 1, pulse: 1, rest: 0.12, level: 1, amb: 1, gust: 1, warm: 0.15, verb: 1, tone: 9000 },
+    summer: { rate: 1.1, pulse: 0.95, rest: 0.1, level: 1, amb: 1.25, gust: 0.8, warm: 1, verb: 0.9, tone: 7000 },
+    autumn: { rate: 0.9, pulse: 1.05, rest: 0.15, level: 0.95, amb: 1.05, gust: 2.5, warm: 0.3, verb: 1.1, tone: 8000 },
+    winter: { rate: 0.55, pulse: 1.12, rest: 0.3, level: 0.72, amb: 0.6, gust: 0.7, warm: 0, verb: 1.6, tone: 3800 }
+  };
+  // Karplus-Strong strings. damp: loop low-pass coefficient (higher = darker, highs die sooner);
+  // t60lo/t60hi: decay (s) at 65 Hz / 1 kHz; pick: pluck position (fraction of string);
+  // ex: excitation low-pass coefficient; max: buffer length cap (s); eq: body filters on the bus.
+  const INSTRUMENTS = {
+    guqin: { damp: 0.5, t60lo: 9, t60hi: 4, pick: 0.14, ex: 0.55, max: 7, gain: 1, send: 0.3,
+      eq: [['lowshelf', 140, 0.7, 3], ['peaking', 230, 1.2, 3], ['lowpass', 3000, 0.6, 0]] },
+    koto: { damp: 0.2, t60lo: 4.5, t60hi: 2.2, pick: 0.09, ex: 0.2, max: 4.5, gain: 0.8, send: 0.38,
+      eq: [['peaking', 520, 1, 2], ['highshelf', 3000, 0.7, 1], ['lowpass', 6500, 0.7, 0]] },
+    harp: { damp: 0.32, t60lo: 6, t60hi: 2.8, pick: 0.42, ex: 0.4, max: 5.5, gain: 0.85, send: 0.34,
+      eq: [['lowshelf', 200, 0.7, 2], ['lowpass', 4200, 0.7, 0]] }
+  };
+  const SALIENCE = { mount: 0.5, fall: 2, house: 1.2, boat: 1.2, birds: 1, bridge: 1.5, ins: 3 };
+  const COST = { mount: 1, fall: 1.5, house: 1.2, boat: 1.2, birds: 1, bridge: 1.5, ins: 1.5 };
+  // Level calibration (linear, before the compressor).
+  // trim = 1 / 1.607 undoes the compressor's automatic make-up gain (measured), so quiet
+  // material passes at unity and only peaks above about -12 dBFS are squeezed.
+  const LV = { pluck: 0.6, fanyin: 0.12, bell: 0.1, flute: 0.08, chirp: 0.016, trim: 0.622,
+    flow: 0.5, babble: 1.6, wind: 2, whistle: 0.9, warm: 0.5, aeol: 0.18, aeolNoise: 6, amb: 0.16 };
+  const QMAX = 6, MAX_AGE = 2.5, LOOKAHEAD = 0.3, MAXV = 12, AEOL_F0 = 73.416; // D2
+
+  // ------------------------------------------------------------------ helpers
+  const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+  const num = (x, d) => (typeof x === 'number' && isFinite(x) ? x : d);
+  const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+  function rng(seed) { // mulberry32: small seeded PRNG so offline renders are reproducible
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function makeNoise(ctx, R, secs) {
+    const len = Math.floor(ctx.sampleRate * secs), buf = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = buf.getChannelData(c); for (let i = 0; i < len; i++) d[i] = R() * 2 - 1; }
+    return buf;
+  }
+  // Smooth random control signal in [-1, 1] (cosine-interpolated knots at `hz`), loopable.
+  function makeCtrl(ctx, R, secs, hz) {
+    let sr = 3000, buf;
+    try { buf = ctx.createBuffer(1, 8, sr); } catch (e) { sr = ctx.sampleRate; }
+    const step = Math.floor(sr / hz), knots = Math.ceil(secs * hz), k = [];
+    for (let i = 0; i < knots; i++) k.push(R() * 2 - 1);
+    k.push(k[0]);
+    buf = ctx.createBuffer(1, knots * step, sr);
+    const d = buf.getChannelData(0);
+    for (let n = 0; n < d.length; n++) {
+      const i = Math.floor(n / step), c = (1 - Math.cos(Math.PI * (n % step) / step)) / 2;
+      d[n] = k[i] + (k[i + 1] - k[i]) * c;
+    }
+    return buf;
+  }
+  // Reverb impulse: decaying stereo noise (-60 dB at `secs`), progressively low-passed so the
+  // tail darkens, 12 ms fade-in, normalised to unit energy per channel.
+  function makeIR(ctx, R, secs) {
+    const sr = ctx.sampleRate, len = Math.floor(sr * secs), buf = ctx.createBuffer(2, len, sr);
+    for (let c = 0; c < 2; c++) {
+      const d = buf.getChannelData(c);
+      let lp = 0, e = 0;
+      for (let n = 0; n < len; n++) {
+        const t = n / sr, k = 0.2 + 0.7 * Math.min(1, 1.5 * t / secs);
+        lp = (1 - k) * (R() * 2 - 1) + k * lp;
+        d[n] = lp * Math.exp(-6.9 * t / secs) * Math.min(1, t / 0.012);
+        e += d[n] * d[n];
+      }
+      const s = 1 / Math.sqrt(e);
+      for (let n = 0; n < len; n++) d[n] *= s;
+    }
+    return buf;
+  }
+  // Fade the first `a` and last `z` seconds of a buffer, then normalise its peak to 1.
+  function finish(d, sr, a, z) {
+    const na = Math.floor(a * sr), nz = Math.floor(z * sr), len = d.length;
+    let pk = 0;
+    for (let n = 0; n < na; n++) d[n] *= n / na;
+    for (let n = 0; n < nz; n++) d[len - 1 - n] *= 0.5 - 0.5 * Math.cos(Math.PI * n / nz);
+    for (let n = 0; n < len; n++) pk = Math.max(pk, Math.abs(d[n]));
+    if (pk > 0) for (let n = 0; n < len; n++) d[n] /= pk;
+  }
+
+  // Karplus-Strong plucked string, rendered into a buffer. (A DelayNode feedback loop cannot be
+  // shorter than one 128-frame render quantum, which would cap the pitch at ~350 Hz.)
+  function ksBuffer(ctx, R, P, f, vel) {
+    const sr = ctx.sampleRate, period = sr / f, w = 2 * Math.PI * f / sr, a = P.damp;
+    // Loop filter s = (1-a)x + a*s. Its phase delay at f is subtracted from the delay line so the
+    // string stays in tune, and its loss at f is compensated so the fundamental gets the wanted T60.
+    const re = 1 - a * Math.cos(w), im = a * Math.sin(w);
+    const D = period - Math.atan2(im, re) / w, mag = (1 - a) / Math.hypot(re, im);
+    const u = clamp(Math.log(f / 65) / Math.log(1000 / 65), 0, 1);
+    const t60 = P.t60lo * Math.pow(P.t60hi / P.t60lo, u);
+    const g = Math.min(0.9999, Math.pow(0.001, 1 / (f * t60)) / mag);
+    const len = Math.ceil(sr * Math.min(P.max, t60 * 0.8));
+    const buf = ctx.createBuffer(1, len, sr), y = buf.getChannelData(0);
+    // Excitation: one period of low-passed (softer = darker), zero-mean noise, combed at the
+    // pluck position, which notches every (1/pick)-th harmonic.
+    const L = Math.max(2, Math.round(period)), M = Math.max(1, Math.round(P.pick * period));
+    const b = clamp(P.ex + (1 - vel) * 0.25, 0, 0.92), ex = new Float32Array(L + M);
+    let lp = 0, mean = 0;
+    for (let i = 0; i < L; i++) { lp = (1 - b) * (R() * 2 - 1) + b * lp; ex[i] = lp; mean += lp / L; }
+    for (let i = 0; i < L; i++) ex[i] -= mean;
+    for (let i = L + M - 1; i >= M; i--) ex[i] -= ex[i - M];
+    let s = 0;
+    for (let n = 0; n < len; n++) {
+      const rp = n - D;
+      let v = 0;
+      if (rp >= 0) { const k = rp | 0; v = y[k] + (rp - k) * (y[k + 1] - y[k]); } // fractional delay
+      s = (1 - a) * v + a * s;
+      y[n] = (n < L + M ? ex[n] : 0) + g * s;
+    }
+    finish(y, sr, 0.002, len / sr * 0.2);
+    return buf;
+  }
+
+  // Modal synthesis: sum of exponentially decaying sines. partials: [ratio, amp, t60, +Hz detune].
+  // Each partial is a two-term recurrence (no Math.sin per sample).
+  function modalBuffer(ctx, R, partials, f, dur, thud) {
+    const sr = ctx.sampleRate, len = Math.ceil(sr * dur), buf = ctx.createBuffer(1, len, sr), y = buf.getChannelData(0);
+    partials.forEach(p => {
+      const fr = f * p[0] + (p[3] || 0);
+      if (fr > sr * 0.45) return;
+      const w = 2 * Math.PI * fr / sr, c = 2 * Math.cos(w), d = Math.pow(0.001, 1 / (p[2] * sr));
+      let s1 = -Math.sin(w), s2 = -Math.sin(2 * w), A = p[1];
+      for (let n = 0; n < len && A > 1e-5; n++) { const s0 = c * s1 - s2; s2 = s1; s1 = s0; y[n] += A * s0; A *= d; }
+    });
+    if (thud) { // soft wooden strike: low-passed noise, ~15 ms decay
+      let lp = 0;
+      for (let n = 0, m = Math.floor(0.08 * sr); n < m; n++) { lp = 0.96 * lp + 0.04 * (R() * 2 - 1); y[n] += thud * 8 * lp * Math.exp(-n / (0.015 * sr)); }
+    }
+    finish(y, sr, 0.008, dur * 0.15);
+    return buf;
+  }
+
+  // ------------------------------------------------------------------ engine
+  // Builds the whole graph on `ctx` (AudioContext or OfflineAudioContext). Everything is timed
+  // from ctx.currentTime and driven by tick(), so offline renders behave exactly like live ones.
+  function Engine(ctx, init, seed) {
+    const R = rng(seed), sr = ctx.sampleRate;
+    const S = { tradition: init.tradition, season: init.season, motion: init.motion, volume: init.volume };
+    const stats = { events: 0, dropped: 0, beats: 0, figures: 0, notes: 0, made: 0, freed: 0, stolen: 0, peakVoices: 0, plays: [], types: {} };
+    const noise = makeNoise(ctx, R, 6), ctrl = makeCtrl(ctx, R, 24, 6);
+    const now = () => ctx.currentTime;
+
+    function gain(v, dest) { const g = ctx.createGain(); g.gain.value = v; if (dest) g.connect(dest); return g; }
+    function filt(type, f, q, dest) {
+      const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q;
+      if (dest) b.connect(dest);
+      return b;
+    }
+    function panner(p, dest) {
+      const n = ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain();
+      if (n.pan) n.pan.value = clamp(p, -1, 1);
+      if (dest) n.connect(dest);
+      return n;
+    }
+    function set(param, v, t, tc) { if (isFinite(v)) param.setTargetAtTime(v, t, tc); }
+    function loop(buf, rate, offset) {
+      const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.playbackRate.value = rate;
+      s.start(now(), offset % buf.duration);
+      return s;
+    }
+    const volCurve = v => v * v;
+
+    // --- output chain
+    const comp = ctx.createDynamicsCompressor(); // gentle limiter; its auto make-up gain is undone by trim
+    comp.threshold.value = -12; comp.knee.value = 10; comp.ratio.value = 8;
+    comp.attack.value = 0.004; comp.release.value = 0.3;
+    comp.connect(gain(LV.trim, ctx.destination));
+    const fade = gain(0, filt('highpass', 28, 0.7, comp));
+    const vol = gain(volCurve(S.volume), fade);
+    const seasonG = gain(SEASONS[S.season].level, vol);
+    const tone = filt('lowpass', SEASONS[S.season].tone, 0.5, seasonG);
+    const mix = gain(1, tone);
+    const verb = ctx.createConvolver();
+    verb.normalize = false; verb.buffer = makeIR(ctx, R, 3.6);
+    const verbOut = gain(SEASONS[S.season].verb, mix); verb.connect(verbOut);
+    const verbIn = gain(1, verb);
+
+    // --- buses: input -> EQ chain -> level -> mix (+ send -> reverb)
+    function makeBus(eq, dry, send) {
+      const input = ctx.createGain(), level = gain(dry, mix);
+      let last = input;
+      (eq || []).forEach(q => { const f = filt(q[0], q[1], q[2]); f.gain.value = q[3]; last.connect(f); last = f; });
+      last.connect(level); level.connect(gain(send, verbIn));
+      return { input, level };
+    }
+    const buses = {};
+    function bus(name) {
+      if (!buses[name]) { const P = INSTRUMENTS[name]; buses[name] = makeBus(P.eq, 0, P.send); }
+      return buses[name];
+    }
+    bus(TRADITIONS[S.tradition].inst).level.gain.value = 1;
+    const fx = makeBus(null, 1, 0.4), far = makeBus(null, 0.45, 0.8);
+
+    // --- ambience
+    const amb = gain(LV.amb, mix); amb.connect(gain(0.2, verbIn));
+    const srcA = loop(noise, 1, 0), srcB = loop(noise, 0.97, 3.1);
+    // Water: a soft broadband flow plus two "babbling" band-passes whose centres and levels are
+    // pushed around at audio rate by smooth random control signals.
+    const water = gain(0, amb), wHP = filt('highpass', 140, 0.5);
+    srcA.connect(wHP);
+    wHP.connect(filt('lowpass', 650, 0.4, gain(LV.flow, water)));
+    [[700, 260, 4, 1.0], [1650, 600, 5, 1.6]].forEach((b, i) => {
+      const bp = filt('bandpass', b[0], b[2]), amp = gain(0.5, gain(LV.babble, water));
+      wHP.connect(bp); bp.connect(amp);
+      loop(ctrl, 1 + i * 0.37, i * 5.3).connect(gain(b[1], bp.frequency));
+      loop(ctrl, b[3], 11 + i * 3).connect(gain(0.45, amp.gain));
+    });
+    // Wind: a moving band of noise; strong gusts add a faint whistle.
+    const wind = gain(0, amb), windPan = panner(0, wind);
+    const windBP = filt('bandpass', 450, 0.9), windAmp = gain(0.3, windPan);
+    const whistleBP = filt('bandpass', 1900, 7), whistle = gain(0, windPan);
+    srcB.connect(windBP); windBP.connect(windAmp); srcB.connect(whistleBP); whistleBP.connect(whistle);
+    // Summer warmth: a low, soft rumble.
+    const warm = gain(0, amb);
+    srcA.connect(filt('lowpass', 230, 0.5, warm));
+
+    // Aeolian harp (romantic): wind drives harmonics 3..12 of D2. Which harmonic speaks depends on
+    // the wind on the string (vortex shedding), so gusts make the drone swell and climb.
+    let aeol = null;
+    function makeAeol(t) {
+      const out = gain(0, amb), L = panner(-0.4, out), Rt = panner(0.4, out), parts = [];
+      for (let k = 3; k <= 12; k++) {
+        const o = ctx.createOscillator(), g = gain(0, k % 2 ? L : Rt);
+        o.frequency.value = AEOL_F0 * k; o.detune.value = (R() - 0.5) * 8;
+        o.connect(g); o.start(t);
+        parts.push({ k, o, g });
+      }
+      const bp = filt('bandpass', AEOL_F0 * 5, 22), ng = gain(0, out); // breath of wind on the string
+      srcB.connect(bp); bp.connect(ng);
+      return {
+        out, parts, bp, ng, w: 0.3, off: 0,
+        kill(t) {
+          parts[0].o.onended = () => { srcB.disconnect(bp); [out, L, Rt, bp, ng].concat(parts.map(p => p.g), parts.map(p => p.o)).forEach(n => n.disconnect()); };
+          parts.forEach(p => p.o.stop(t + 0.05));
+        }
+      };
+    }
+
+    let wTarget = 0.3, wState = 0.3, flow = 0.75, swell = 0, panW = 0, lastAmb = -1;
+    function ambience(t, dt) {
+      const T = TRADITIONS[S.tradition], Z = SEASONS[S.season];
+      const m = clamp(Math.log(1 + S.motion / 40) / Math.log(51), 0, 1); // 0 at rest, ~0.16 drifting, 1 fast
+      const lift = 0.8 + 0.5 * m, base = Z.amb * lift, tc = 1.5;           // tc 1.5 s: crossfade ~4 s
+      // Gusts arrive at random (Poisson), the wind relaxes back to calm over ~6 s.
+      if (R() < dt * 0.07 * Z.gust) wTarget = Math.min(1, 0.45 + 0.55 * R());
+      wTarget += (0.22 - wTarget) * Math.min(1, dt / 6);
+      wState += (wTarget - wState) * Math.min(1, dt / 2);
+      flow = clamp(flow + (R() - 0.5) * 0.15 * dt, 0.55, 1);
+      swell *= Math.exp(-dt / 3);
+      panW = clamp(panW + (R() - 0.5) * 0.3 * dt, -0.5, 0.5);
+      set(water.gain, T.amb.water * base * flow * (1 + swell), t, tc);
+      set(wind.gain, LV.wind * T.amb.wind * base, t, tc);
+      set(windAmp.gain, 0.25 + 0.75 * wState, t, 1.2);
+      set(windBP.frequency, 320 + 650 * wState + 250 * m, t, 1.5);
+      set(whistle.gain, LV.whistle * Math.pow(Math.max(0, wState - 0.45), 2) * 4, t, 1);
+      if (windPan.pan) set(windPan.pan, panW, t, 3);
+      set(warm.gain, LV.warm * Z.warm * base, t, tc);
+      set(seasonG.gain, Z.level, t, 1.5);
+      set(verbOut.gain, Z.verb, t, 1.5);
+      set(tone.frequency, Z.tone, t, 1.5);
+      // Aeolian harp: created when needed, faded out and released when not.
+      const want = T.amb.aeol > 0;
+      if (want && !aeol) aeol = makeAeol(t);
+      if (!aeol) return;
+      if (!want) {
+        set(aeol.out.gain, 0, t, 1.2);
+        if (!aeol.off) aeol.off = t + 6;
+        else if (t > aeol.off) { aeol.kill(t); aeol = null; }
+        return;
+      }
+      aeol.off = 0;
+      aeol.w = clamp(aeol.w + (wState - aeol.w) * Math.min(1, dt / 4) + (R() - 0.5) * 0.12 * dt, 0, 1);
+      const c = 3 + 9 * aeol.w, strength = 0.15 + 0.85 * aeol.w * aeol.w;
+      set(aeol.out.gain, T.amb.aeol * base, t, tc);
+      aeol.parts.forEach(p => {
+        set(p.g.gain, LV.aeol * strength * Math.exp(-Math.pow((p.k - c) / 1.2, 2)) / Math.sqrt(p.k / 3), t, 1.8 + R());
+        set(p.o.detune, (R() - 0.5) * 8, t, 4);
+      });
+      set(aeol.bp.frequency, AEOL_F0 * Math.round(c), t, 1);
+      set(aeol.ng.gain, LV.aeolNoise * LV.aeol * strength, t, 1.5);
+    }
+
+    // --- voices: limited count, oldest stolen with a short fade, nodes disconnected when done
+    const voices = [];
+    function prune(t) { for (let i = voices.length - 1; i >= 0; i--) if (voices[i].end < t) voices.splice(i, 1); }
+    function voice(type, srcs, nodes, end, g) {
+      stats.types[type] = (stats.types[type] || 0) + 1;
+      prune(now());
+      while (voices.length >= MAXV) {
+        const v = voices.shift(), t = now();
+        v.g.gain.cancelScheduledValues(t); v.g.gain.setTargetAtTime(0, t, 0.03);
+        v.srcs.forEach(s => { try { s.stop(t + 0.25); } catch (e) { /* already stopped */ } });
+        stats.stolen++;
+      }
+      voices.push({ srcs, end, g });
+      stats.made++; stats.peakVoices = Math.max(stats.peakVoices, voices.length);
+      srcs[0].onended = () => { nodes.forEach(n => n.disconnect()); stats.freed++; };
+    }
+    function env(p, t, amp) { p.setValueAtTime(0, t); p.linearRampToValueAtTime(amp, t + 0.006); } // 6 ms attack
+
+    function pluck(midi, t, vel, pan, bend) {
+      const name = TRADITIONS[S.tradition].inst, P = INSTRUMENTS[name];
+      vel = clamp(vel, 0.05, 1);
+      const buf = ksBuffer(ctx, R, P, mtof(midi), vel);
+      const src = ctx.createBufferSource(), g = gain(0), p = panner(clamp(pan, -1, 1) * 0.75, bus(name).input);
+      src.buffer = buf; src.connect(g); g.connect(p);
+      env(g.gain, t, LV.pluck * P.gain * Math.pow(vel, 1.5));
+      if (bend) { // guqin slide / koto press: a glide up to the next scale tone after the attack
+        const t1 = t + 0.25 + R() * 0.3;
+        src.playbackRate.setValueAtTime(1, t1);
+        src.playbackRate.setTargetAtTime(Math.pow(2, bend / 12), t1, name === 'guqin' ? 0.3 : 0.08);
+      }
+      src.start(t);
+      voice('pluck', [src], [src, g, p], t + buf.duration, g);
+      stats.notes++;
+    }
+    // Guqin harmonic (fanyin): pure, bell-like overtone tone.
+    function fanyin(midi, t, vel, pan) {
+      const buf = modalBuffer(ctx, R, [[1, 1, 3.5], [2, 0.12, 2.2], [3, 0.04, 1.2]], mtof(midi), 3.5);
+      const src = ctx.createBufferSource(), g = gain(0), p = panner(pan * 0.7, bus('guqin').input);
+      src.buffer = buf; src.connect(g); g.connect(p);
+      env(g.gain, t, LV.fanyin * vel);
+      src.start(t);
+      voice('fanyin', [src], [src, g, p], t + buf.duration, g);
+      stats.notes++;
+    }
+    // Distant temple bell (bonsho): inharmonic partials, beating doublets, long decay.
+    const BELL = [[0.5, 0.5, 16], [0.5, 0.3, 15, 0.35], [1, 1, 11], [1, 0.55, 10, 0.6], [1.68, 0.35, 7],
+      [2.41, 0.3, 5.5], [2.97, 0.2, 4.5], [3.92, 0.12, 3.2], [5.18, 0.07, 2.2], [6.43, 0.04, 1.6]];
+    function bell(t, vel, pan) {
+      const buf = modalBuffer(ctx, R, BELL, mtof(TRADITIONS.ukiyoe.root) * (R() < 0.5 ? 1 : 0.749), 11, 0.3);
+      const src = ctx.createBufferSource(), lp = filt('lowpass', 1200, 0.5), g = gain(0), p = panner(pan * 0.5, far.input);
+      src.buffer = buf; src.connect(lp); lp.connect(g); g.connect(p);
+      env(g.gain, t, LV.bell * (0.7 + 0.3 * vel));
+      src.start(t);
+      voice('bell', [src], [src, lp, g, p], t + buf.duration, g);
+      stats.notes++;
+    }
+    // Shakuhachi-like breathy tone: sine (+ a little octave) and noise band-passed at the pitch,
+    // plus a broad breath band; soft attack, starts flat and rises (meri-kari), slow vibrato.
+    function flute(midi, t, vel, pan) {
+      const f = mtof(midi), dur = 2.2 + R() * 1.5, end = t + dur + 1.8;
+      const out = gain(0), p = panner(pan * 0.6, fx.input), o = ctx.createOscillator(), o2 = ctx.createOscillator();
+      const lfo = ctx.createOscillator(), depth = gain(0), n = ctx.createBufferSource();
+      const tb = filt('bandpass', f, 12), bb = filt('bandpass', 2400, 0.8), g2 = gain(0.06, out), gt = gain(3, out), gb = gain(0.1, out);
+      out.connect(p);
+      o.frequency.value = f; o2.frequency.value = 2 * f; lfo.frequency.value = 4 + R();
+      o.connect(out); o2.connect(g2); lfo.connect(depth); depth.connect(o.detune); depth.connect(o2.detune);
+      n.buffer = noise; n.loop = true; n.connect(tb); tb.connect(gt); n.connect(bb); bb.connect(gb);
+      [o.detune, o2.detune].forEach(d => { d.setValueAtTime(-40, t); d.setTargetAtTime(0, t + 0.05, 0.2); });
+      depth.gain.setValueAtTime(0, t); depth.gain.linearRampToValueAtTime(14, t + dur * 0.7); // vibrato (cents) deepens
+      const amp = LV.flute * (0.6 + 0.4 * vel);
+      out.gain.setValueAtTime(0, t);
+      out.gain.linearRampToValueAtTime(amp * 0.7, t + 0.4);
+      out.gain.linearRampToValueAtTime(amp, t + dur * 0.55);
+      out.gain.setTargetAtTime(0, t + dur, 0.35);
+      [o, o2, lfo].forEach(s => { s.start(t); s.stop(end); });
+      n.start(t, R() * 5); n.stop(end);
+      voice('flute', [o, o2, lfo, n], [o, o2, lfo, n, depth, tb, bb, g2, gt, gb, out, p], end, out);
+      stats.notes++;
+    }
+    // Spring: a few tiny chirps (short rising sine sweeps) from one oscillator.
+    function chirps(t, pan) {
+      const o = ctx.createOscillator(), g = gain(0), p = panner(pan, far.input), k = 2 + Math.floor(R() * 3);
+      const base = 2600 + R() * 1600, amp = LV.chirp * (0.6 + 0.4 * R());
+      o.connect(g); g.connect(p);
+      let tk = t;
+      for (let i = 0; i < k; i++) {
+        const d = 0.045 + R() * 0.04, f0 = base * (0.9 + R() * 0.2), f1 = f0 * (R() < 0.75 ? 1.25 + R() * 0.35 : 0.8);
+        o.frequency.setValueAtTime(f0, tk); o.frequency.exponentialRampToValueAtTime(f1, tk + d);
+        g.gain.setValueAtTime(0, tk); g.gain.linearRampToValueAtTime(amp, tk + 0.006); g.gain.linearRampToValueAtTime(0, tk + d);
+        tk += d + 0.05 + R() * 0.08;
+      }
+      o.start(t); o.stop(tk + 0.05);
+      voice('chirp', [o], [o, g, p], tk + 0.05, g);
+    }
+
+    // --- melody
+    let lastIdx = -1, prevIdx = -1, dorian = -99;
+    const cool = {};
+    const ready = (name, t, secs) => (t - (cool[name] === undefined ? -1e9 : cool[name]) >= secs ? ((cool[name] = t), true) : false);
+    function midiAt(i, t) {
+      const T = TRADITIONS[S.tradition], st = T.alt && t < dorian ? T.alt : T.steps;
+      i = clamp(Math.round(i), 0, T.count - 1);
+      return T.root + 12 * Math.floor(i / st.length) + st[i % st.length];
+    }
+    // Taller -> higher, nearer -> a little higher; then stay melodic (at most 3 scale steps from the
+    // previous note) and avoid a third repetition.
+    function chooseIdx(ev) {
+      const n = TRADITIONS[S.tradition].count;
+      let x = (0.08 + 0.55 * ev.height + 0.32 * ev.depth) * (n - 1) + (R() - 0.5) * 2;
+      if (lastIdx >= 0) x = lastIdx + clamp(x - lastIdx, -3, 3);
+      let i = clamp(Math.round(x), 0, n - 1);
+      if (i === lastIdx && i === prevIdx) i += i > n / 2 ? -1 : 1;
+      prevIdx = lastIdx; lastIdx = i;
+      return i;
+    }
+    function note(i, t, v, pan, bend) { pluck(midiAt(i, t), t, v, pan, bend); }
+
+    function play(ev, t) {
+      const tr = S.tradition, n = TRADITIONS[tr].count, pan = ev.pan, gap = 0.18 + R() * 0.08;
+      const v = (0.22 + 0.78 * Math.pow(ev.depth, 1.3)) * (0.85 + 0.3 * R()); // far = softer
+      let i;
+      stats.figures++;
+      if (stats.plays.length < 400) stats.plays.push({ t: +t.toFixed(3), kind: ev.kind });
+      switch (ev.kind) {
+        case 'fall': // a small descending cascade, and the water swells
+          i = clamp(chooseIdx(ev) + 2, 3, n - 1);
+          for (let k = 0; k < 3; k++) note(i - k - (k && R() < 0.3 ? 1 : 0), t + k * gap, v * (0.65 - 0.12 * k), pan + (k - 1) * 0.15);
+          lastIdx = i - 2;
+          swell = Math.max(swell, 0.4 + 0.5 * ev.depth);
+          return;
+        case 'house': // a soft, low, rolled open fifth - or, in Japan, sometimes a far temple bell
+          if (tr === 'ukiyoe' && R() < 0.25 && ready('bell', t, 30)) return bell(t, v, pan);
+          i = clamp(chooseIdx(ev) - 3, 0, n - 4);
+          note(i, t, v * 0.7, pan - 0.1); note(i + 3, t + 0.05 + R() * 0.04, v * 0.5, pan + 0.1);
+          lastIdx = i;
+          return;
+        case 'boat': // a slow rocking low figure
+          i = clamp(Math.round(n * 0.2 + R() * 3), 0, n - 3);
+          note(i, t, v * 0.8, pan, tr === 'shanshui' && R() < 0.5 ? midiAt(i + 1, t) - midiAt(i, t) : 0);
+          note(i + 1 + (R() < 0.5 ? 1 : 0), t + 0.7 + R() * 0.2, v * 0.5, pan);
+          lastIdx = i + 1;
+          return;
+        case 'birds': // high grace notes, or a shakuhachi phrase in Japan
+          if (tr === 'ukiyoe' && R() < 0.6 && ready('flute', t, 16)) {
+            i = 5 + Math.floor(R() * 5);
+            flute(midiAt(i, t), t, v, pan);
+            return;
+          }
+          i = n - 1 - Math.floor(R() * 4);
+          note(i, t, v * 0.45, pan); note(i - 1, t + 0.11 + R() * 0.05, v * 0.35, pan);
+          return;
+        case 'bridge': // a gentle arch
+          i = clamp(chooseIdx(ev) - 1, 0, n - 3);
+          note(i, t, v * 0.6, pan - 0.2); note(i + 2, t + gap + 0.06, v * 0.7, pan); note(i + 1, t + 2 * (gap + 0.06), v * 0.55, pan + 0.2);
+          lastIdx = i + 1;
+          return;
+        case 'ins': // an inscription: guqin harmonics / temple bell / a rolled harp chord
+          if (tr === 'ukiyoe' && ready('bell', t, 25)) return bell(t, v, pan);
+          if (tr === 'shanshui' && ready('fanyin', t, 8)) {
+            i = 7 + Math.floor(R() * 5);
+            fanyin(midiAt(i, t) + 12, t, v, pan);
+            fanyin(midiAt(i + (R() < 0.5 ? 3 : -2), t) + 12, t + 0.9 + R() * 0.3, v * 0.7, pan);
+            return;
+          }
+          if (tr === 'romantic') {
+            i = clamp(chooseIdx(ev) - 3, 0, n - 6);
+            for (let k = 0; k < 4; k++) note(i + [0, 2, 4, 5][k], t + k * 0.07, v * (0.7 - 0.08 * k), pan - 0.3 + 0.2 * k);
+            return;
+          }
+          // falls through to a plain note
+        default: { // mount
+          i = chooseIdx(ev);
+          let bend = 0;
+          if (tr === 'shanshui' && ev.depth > 0.6 && R() < 0.35) bend = midiAt(i + 1, t) - midiAt(i, t);
+          const step = midiAt(i + 1, t) - midiAt(i, t);
+          if (tr === 'ukiyoe' && ev.depth > 0.55 && step === 1 && R() < 0.3) bend = 1;
+          note(i, t, v, pan, bend);
+        }
+      }
+    }
+
+    // --- pulse and rate limiting
+    const queue = [];
+    let tokens = 1.5, lastBeat = now(), nextBeat = now() + 0.4, beatN = 0, tempo = 1;
+    function beatLen() {
+      const T = TRADITIONS[S.tradition], Z = SEASONS[S.season];
+      tempo = clamp(tempo + (R() - 0.5) * 0.03, 0.92, 1.08);                 // slow tempo drift
+      const p = T.pulse * Z.pulse * tempo * (beatN++ % 2 ? 0.88 : 1.12);     // long-short swing
+      return clamp(p * (0.97 + R() * 0.06), 0.5, 1.2);
+    }
+    function beat(t) {
+      const T = TRADITIONS[S.tradition], Z = SEASONS[S.season];
+      stats.beats++;
+      tokens = Math.min(2.2, tokens + T.rate * Z.rate * (t - lastBeat));
+      lastBeat = t;
+      if (T.alt && t > dorian + 40 && R() < 0.012) dorian = t + 18 + R() * 25; // a passing Dorian cloud
+      for (let i = queue.length - 1; i >= 0; i--) if (t - queue[i].time > MAX_AGE) { queue.splice(i, 1); stats.dropped++; }
+      if (!queue.length || tokens < 1 || R() < Z.rest) return;
+      let bi = 0;
+      for (let i = 1; i < queue.length; i++) if (queue[i].score - 0.4 * (t - queue[i].time) > queue[bi].score - 0.4 * (t - queue[bi].time)) bi = i;
+      const ev = queue.splice(bi, 1)[0];
+      tokens -= COST[ev.kind];
+      play(ev, t);
+    }
+
+    function event(e) {
+      if (!e || !SALIENCE[e.kind]) return;
+      stats.events++;
+      const t = now(), ev = {
+        kind: e.kind, time: t, depth: clamp(num(e.depth, 0.5), 0, 1),
+        height: clamp(num(e.height, 0.5), 0, 1), pan: clamp(num(e.pan, 0), -1, 1)
+      };
+      ev.score = SALIENCE[ev.kind] + 0.6 * ev.depth + 0.4 * ev.height + 0.2 * R();
+      if (ev.kind === 'birds' && S.season === 'spring' && ready('chirp', t, 5)) chirps(t + 0.1 + R() * 0.4, ev.pan);
+      queue.push(ev);
+      if (queue.length > QMAX) { // drop the least salient
+        let w = 0;
+        for (let i = 1; i < queue.length; i++) if (queue[i].score < queue[w].score) w = i;
+        queue.splice(w, 1); stats.dropped++;
+      }
+    }
+
+    function tick() {
+      const t = now();
+      if (nextBeat < t) nextBeat = t + 0.05; // after a stall, never replay a backlog
+      while (nextBeat < t + LOOKAHEAD) { beat(nextBeat); nextBeat += beatLen(); }
+      if (lastAmb < 0 || t - lastAmb >= 0.5) {
+        const dt = lastAmb < 0 ? 0.5 : Math.min(1, t - lastAmb);
+        lastAmb = t;
+        if (S.season === 'spring' && R() < dt / 22 && ready('chirp', t, 6)) chirps(t + 0.1, R() * 1.6 - 0.8);
+        ambience(t, dt);
+      }
+      prune(t);
+    }
+
+    return {
+      stats, tick, event,
+      setTradition(tr) {
+        if (tr === S.tradition) return;
+        const t = now(), old = TRADITIONS[S.tradition].inst, nu = TRADITIONS[tr].inst;
+        S.tradition = tr; lastIdx = prevIdx = -1;
+        if (old !== nu) { set(bus(old).level.gain, 0, t, 1); set(bus(nu).level.gain, 1, t, 0.6); }
+        lastAmb = -1;
+      },
+      setSeason(s) { S.season = s; lastAmb = -1; },
+      setMotion(m) { S.motion = m; },
+      setVolume(v) { S.volume = v; set(vol.gain, volCurve(v), now(), 0.08); },
+      fadeTo(target, secs) {
+        const g = fade.gain, t = now();
+        g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(target, t + secs);
+      },
+      clear() { queue.length = 0; },
+      info() { return { queue: queue.length, voices: voices.length, tokens: +tokens.toFixed(2), aeolian: !!aeol }; }
+    };
+  }
+
+  // ------------------------------------------------------------------ live wrapper
+  const st = { tradition: 'shanshui', season: 'spring', motion: 36, volume: 0.8 };
+  let ctx = null, eng = null, on = false, timer = 0, gen = 0;
+  const hidden = () => typeof document !== 'undefined' && document.hidden;
+
+  function startTimer() { if (!timer) timer = setInterval(() => { try { eng.tick(); } catch (e) { console.warn('Sound:', e); } }, 100); }
+  function stopTimer() { clearInterval(timer); timer = 0; }
+  function safe(fn) {
+    return function () { try { return fn.apply(null, arguments); } catch (e) { if (typeof console !== 'undefined') console.warn('Sound:', e); } };
+  }
+
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', safe(() => {
+      if (!ctx) return;
+      if (document.hidden) { stopTimer(); if (ctx.state === 'running') ctx.suspend(); }
+      else if (on) { ctx.resume(); eng.tick(); startTimer(); }
+    }));
+  }
+
+  const api = {
+    start: function (tradition) {
+      try {
+        if (TRADITIONS[tradition]) api.setTradition(tradition);
+        const AC = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
+        if (!AC) return Promise.resolve(false);
+        if (!ctx) {
+          try { ctx = new AC({ latencyHint: 'playback' }); } catch (e) { ctx = new AC(); }
+          eng = Engine(ctx, st, (Math.random() * 4294967296) >>> 0);
+        }
+        on = true; gen++;
+        const p = ctx.resume ? ctx.resume() : Promise.resolve();
+        eng.fadeTo(1, 2);
+        eng.tick();
+        if (!hidden()) startTimer();
+        return Promise.resolve(p).then(() => on, () => false);
+      } catch (e) {
+        if (typeof console !== 'undefined') console.warn('Sound:', e);
+        return Promise.resolve(false);
+      }
+    },
+    stop: safe(() => {
+      if (!on) return;
+      on = false;
+      const g = ++gen;
+      stopTimer(); eng.clear(); eng.fadeTo(0, 1.5);
+      setTimeout(safe(() => { if (!on && g === gen && ctx.state === 'running') ctx.suspend(); }), 1600);
+    }),
+    isOn: () => on,
+    setTradition: safe(t => { if (!TRADITIONS[t]) return; st.tradition = t; if (eng) eng.setTradition(t); }),
+    setSeason: safe(s => { if (!SEASONS[s]) return; st.season = s; if (eng) eng.setSeason(s); }),
+    setMotion: safe(v => { st.motion = clamp(Math.abs(num(v, 0)), 0, 5000); if (eng) eng.setMotion(st.motion); }),
+    setVolume: safe(v => { st.volume = clamp(num(v, st.volume), 0, 1); if (eng) eng.setVolume(st.volume); }),
+    event: safe(e => { if (on && eng && !hidden()) eng.event(e); }),
+
+    // Test hook: render `seconds` of audio offline. `events` is a list of
+    // {t, kind, depth, height, pan} or {t, set: 'tradition'|'season'|'motion'|'volume', value}.
+    // Events are delivered at 0.1 s ticks, as the live 100 ms timer would. Resolves {buffer, stats}.
+    _render: function (o) {
+      o = o || {};
+      const secs = o.seconds || 20, sr = o.sampleRate || 44100;
+      const octx = new OfflineAudioContext(2, Math.ceil(secs * sr), sr);
+      const init = { tradition: o.tradition || 'shanshui', season: o.season || 'spring', motion: num(o.motion, 36), volume: num(o.volume, 1) };
+      const e = Engine(octx, init, o.seed || 1), evs = (o.events || []).slice().sort((a, b) => a.t - b.t);
+      const setters = { tradition: e.setTradition, season: e.setSeason, motion: e.setMotion, volume: e.setVolume };
+      let ei = 0;
+      e.fadeTo(1, 2);
+      e.tick();
+      for (let k = 1; k * 0.1 < secs - 0.05; k++) {
+        const t = k * 0.1;
+        octx.suspend(t).then(() => {
+          while (ei < evs.length && evs[ei].t <= t + 1e-6) {
+            const x = evs[ei++];
+            if (x.set) setters[x.set](x.value); else e.event(x);
+          }
+          e.tick();
+          octx.resume();
+        });
+      }
+      return octx.startRendering().then(buffer => ({ buffer, stats: e.stats, info: e.info() }));
+    },
+    _state: () => ({ on, ctx: ctx ? ctx.state : 'none', settings: Object.assign({}, st), engine: eng ? eng.info() : null })
+  };
+  return api;
+})();
 
 </script>
 <script>
@@ -4913,11 +6468,9 @@
   // ---------- styles ----------
   // Paper, ink and UI colours live in the CSS tokens keyed by data-style.
   // `css` holds rules for the painting itself; `$` is replaced by a scope.
-  var STYLES = {
-    ink: { zh: "水墨", en: "Ink", inkBlend: "multiply", annBlend: "multiply", css: "" },
+ var STYLES = {
+    ink: { inkBlend: "multiply", annBlend: "multiply", css: "" },
     qinglu: {
-      zh: "青綠",
-      en: "Blue-green",
       inkBlend: "multiply",
       annBlend: "multiply",
       css:
@@ -4926,8 +6479,6 @@
         "$ .ft{fill:#f6e9cc!important}$ .it-distmount{filter:url(#f-dist-qinglu)}",
     },
     qianjiang: {
-      zh: "淺絳",
-      en: "Light crimson",
       inkBlend: "multiply",
       annBlend: "multiply",
       css:
@@ -4936,11 +6487,9 @@
         "$ .ft{fill:#f8ecd6!important}",
     },
     snow: {
-      zh: "雪景",
-      en: "Snow",
       inkBlend: "normal",
       annBlend: "multiply",
-      css: "$ .it-distmount{opacity:.72}",
+      css: "$ .it-distmount{opacity:.72}$ .vm{fill:#c9503a!important}",
       sky: {
         blend: "multiply",
         stops: [[0, "rgba(58,64,76,.5)"], [0.42, "rgba(58,64,76,.1)"], [0.6, "rgba(58,64,76,0)"], [1, "rgba(58,64,76,.2)"]],
@@ -4948,26 +6497,118 @@
       snow: true,
     },
     night: {
-      zh: "月夜",
-      en: "Moonlight",
       inkBlend: "normal",
       inkFilter: "url(#f-night)",
       annBlend: "normal",
-      css: "",
+      css: "$ .wash{display:none}",
       sky: {
         blend: "normal",
         stops: [[0, "rgba(4,7,14,.4)"], [0.55, "rgba(4,7,14,0)"]],
         moon: { x: 0.8, y: 0.15, r: 0.042 },
       },
     },
+    // Woodblock prints: Prussian blue keylines, flat bokashi-graded colour.
+    aizuri: {
+      inkBlend: "multiply",
+      annBlend: "multiply",
+      css:
+        "$ .mb.d0{fill:url(#ai0)!important}$ .mb.d1{fill:url(#ai1)!important}" +
+        "$ .mb.d2,$ .mb.d3,$ .rb{fill:url(#ai2)!important}$ .ft{fill:#eef1f2!important}" +
+        "$ .vm{fill:#c9503a!important}$ .fj{fill:url(#aifj)!important}$ .ksm{fill:#fdfaf2!important}",
+      sky: { blend: "multiply", stops: [[0, "rgba(28,56,112,.78)"], [0.13, "rgba(28,56,112,.3)"], [0.27, "rgba(28,56,112,0)"]] },
+    },
+    akafuji: {
+      inkBlend: "multiply",
+      annBlend: "multiply",
+      css:
+        "$ .mb.d0{fill:url(#rf0)!important}$ .mb.d1{fill:url(#rf1)!important}" +
+        "$ .mb.d2,$ .mb.d3,$ .rb{fill:url(#rf2)!important}$ .ft{fill:#f3ead6!important}" +
+        "$ .vm{fill:#c9503a!important}$ .fj{fill:url(#rffj)!important}$ .ksm{fill:#f8e8cb!important}",
+      sky: {
+        blend: "multiply",
+        stops: [[0, "rgba(34,66,128,.75)"], [0.16, "rgba(34,66,128,.2)"], [0.3, "rgba(232,168,118,.12)"], [0.45, "rgba(232,168,118,0)"]],
+      },
+    },
+    yuki: {
+      inkBlend: "normal",
+      annBlend: "multiply",
+      css: "$ .it-distmount{opacity:.75}$ .vm{fill:#c9503a!important}$ .ksm{fill:#f4f2ec!important}",
+      sky: {
+        blend: "multiply",
+        stops: [[0, "rgba(26,40,72,.62)"], [0.4, "rgba(26,40,72,.14)"], [0.6, "rgba(26,40,72,0)"], [1, "rgba(26,40,72,.22)"]],
+      },
+      snow: true,
+    },
+    // Watercolour: sepia line, washes that cool and pale with distance.
+    watercolour: {
+      inkBlend: "multiply",
+      annBlend: "multiply",
+      css:
+        "$ .mb.d0{fill:url(#wc0)!important}$ .mb.d1{fill:url(#wc1)!important}" +
+        "$ .mb.d2{fill:url(#wc2)!important}$ .mb.d3,$ .rb{fill:url(#wc3)!important}$ .ft{fill:#f1e9d6!important}" +
+        "$ .wl{fill:#f0e4ca!important}$ .rf{fill:#929aa6!important}$ .th{fill:#d2b67e!important}" +
+        "$ .st{fill:#d8cfbd!important}$ .sl{fill:#f1e4c6!important}$ .hl{fill:#7d6651!important}" +
+        "$ .it-distmount{filter:url(#f-dist-wc)}",
+      sky: { blend: "multiply", stops: [[0, "rgba(112,154,204,.42)"], [0.32, "rgba(150,186,218,.14)"], [0.5, "rgba(150,186,218,0)"]] },
+    },
+    golden: {
+      inkBlend: "multiply",
+      annBlend: "multiply",
+      inkOpacity: 0.8,
+      css:
+        "$ .mb.d0{fill:url(#gd0)!important}$ .mb.d1,$ .mb.d2,$ .mb.d3,$ .rb{fill:url(#gd1)!important}" +
+        "$ .wl{fill:#f4e2bf!important}$ .rf{fill:#b29a82!important}$ .th{fill:#dcbc7c!important}" +
+        "$ .st{fill:#e3d0aa!important}$ .sl{fill:#f6e6c2!important}$ .hl{fill:#86664a!important}",
+      sky: {
+        blend: "multiply",
+        stops: [[0, "rgba(232,164,86,.5)"], [0.3, "rgba(244,198,128,.3)"], [0.55, "rgba(244,198,128,0)"], [1, "rgba(220,158,90,.16)"]],
+      },
+    },
+    sepia: { inkBlend: "multiply", annBlend: "multiply", css: "" },
   };
-  var STYLE_ORDER = ["ink", "qinglu", "qianjiang", "snow", "night"];
+
+  // Each tradition has its own buildings, poems and sound, and its own set of
+  // painting styles: [style, native name, English name].
+  var TRADITIONS = {
+    shanshui: {
+      zh: "山水",
+      en: "Shan shui",
+      lang: "zh-Hant",
+      styles: [["ink", "水墨", "Ink"], ["qinglu", "青綠", "Blue-green"], ["qianjiang", "淺絳", "Light crimson"], ["snow", "雪景", "Snow"], ["night", "月夜", "Moonlight"]],
+      seasons: ["春", "夏", "秋", "冬"],
+    },
+    ukiyoe: {
+      zh: "浮世絵",
+      en: "Ukiyo-e",
+      lang: "ja",
+      styles: [["aizuri", "藍摺", "Blue print"], ["akafuji", "赤富士", "Red Fuji"], ["yuki", "雪", "Snow"], ["night", "夜", "Night"]],
+      seasons: ["春", "夏", "秋", "冬"],
+    },
+    romantic: {
+      zh: "",
+      en: "Romantic",
+      lang: "en",
+      styles: [["watercolour", "", "Watercolour"], ["golden", "", "Golden hour"], ["sepia", "", "Sepia"], ["snow", "", "Winter"], ["night", "", "Nocturne"]],
+      seasons: null,
+    },
+  };
+  var TRAD_ORDER = ["shanshui", "ukiyoe", "romantic"];
+  var SEASON_EN = ["Spring", "Summer", "Autumn", "Winter"];
+  function tradStyles(t) {
+    return TRADITIONS[t].styles.map(function(x) {
+      return x[0];
+    });
+  }
 
   // ---------- state ----------
   var params = readParams();
   var prefs = loadPrefs();
   var state = {
     seed: params.seed || String(Date.now()),
+    trad: params.trad in TRADITIONS ? params.trad : prefs.trad in TRADITIONS ? prefs.trad : "shanshui",
+    seasons: params.seasons === false ? false : prefs.seasons !== false,
+    ambient: prefs.ambient === true,
+    volume: prefs.volume != undefined ? prefs.volume : 0.6,
     style: null,
     styleChosen: false,
     ins: prefs.ins !== false,
@@ -4979,6 +6620,8 @@
   var epoch = 0;
   var worker = null;
   var plans = new Map(); // column -> items
+  var itemIndex = new Map(); // id -> item
+  var seasonOf = new Map(); // column -> {dom, w}
   var planReq = new Set();
   var requested = new Set();
   var lastRenderList = "";
@@ -5008,6 +6651,8 @@
       if (q.get("seed")) out.seed = q.get("seed");
       if (q.get("x") && isFinite(+q.get("x"))) out.x = +q.get("x");
       if (q.get("style") && q.get("style") in STYLES) out.style = q.get("style");
+      if (q.get("trad")) out.trad = q.get("trad");
+      if (q.get("seasons") == "0") out.seasons = false;
     } catch (e) {}
     return out;
   }
@@ -5022,7 +6667,15 @@
     try {
       localStorage.setItem(
         "shanshui.prefs",
-        JSON.stringify({ style: state.styleChosen ? state.style : undefined, ins: state.ins, speed: cam.speed }),
+        JSON.stringify({
+          trad: state.trad,
+          styles: prefs.styles,
+          ins: state.ins,
+          speed: cam.speed,
+          seasons: state.seasons,
+          ambient: state.ambient,
+          volume: state.volume,
+        }),
       );
     } catch (e) {}
   }
@@ -5079,7 +6732,7 @@
   }
 
   function sendInit() {
-    worker.postMessage({ type: "init", seed: state.seed, epoch: epoch });
+    worker.postMessage({ type: "init", seed: state.seed, epoch: epoch, trad: state.trad, seasons: state.seasons });
     planReq.clear();
     requested.clear();
     lastRenderList = "";
@@ -5091,12 +6744,18 @@
     if (m.epoch !== epoch) return;
     if (m.type == "plan") {
       plans.set(m.k, m.items);
+      m.items.forEach(function(it) {
+        itemIndex.set(it.id, it);
+      });
+      seasonOf.set(m.k, m.season);
       planReq.delete(m.k);
       dirty = true;
       kick();
     } else if (m.type == "item") {
       requested.delete(m.id);
       cachePut(m.id, m.data);
+      var it = itemIndex.get(m.id);
+      if (it) it.meta = m.meta;
       dirty = true;
       kick();
     } else if (m.type == "paper") {
@@ -5351,12 +7010,14 @@
           "' points='" +
           p.pts.join(" ") +
           "'" +
-          (p.k == "seal-line" ? " style='stroke-width:" + p.sw + "'" : "") +
+          (p.sw && /line/.test(p.k) ? " style='stroke-width:" + p.sw + "'" : "") +
           "/>";
       } else {
         out +=
           "<text class='" +
           p.k +
+          " f-" +
+          (p.f || "zh") +
           "' x='" +
           p.x +
           "' y='" +
@@ -5365,7 +7026,9 @@
           p.s +
           "' font-weight='" +
           p.w +
-          "' text-anchor='middle' dominant-baseline='central'" +
+          "' text-anchor='" +
+          (p.a || "middle") +
+          "' dominant-baseline='central'" +
           (p.o < 1 ? " opacity='" + p.o + "'" : "") +
           ">" +
           esc(p.t) +
@@ -5440,6 +7103,18 @@
       lastPosShown = pos;
       $("posOut").textContent = pos.toLocaleString("en-US");
     }
+    var si = seasonHere();
+    var label = "";
+    if (state.seasons && si != null) {
+      var tr = TRADITIONS[state.trad];
+      label = (tr.seasons ? tr.seasons[si] + " " : "") + SEASON_EN[si];
+    }
+    $("seasonOut").textContent = label;
+  }
+  // The dominant season at the centre of the view, or null if unknown.
+  function seasonHere() {
+    var info = seasonOf.get(Math.floor((cam.x + view.wu / 2) / CW));
+    return info ? info.dom : null;
   }
 
   var lastScroll = null;
@@ -5484,6 +7159,7 @@
     if (dirty || Math.abs(cam.x - lastRefreshX) > 60 || (dx && t - lastRefreshT > 400)) refresh();
     processInserts(dx ? 6 : 24);
     fxStep(dt, dx);
+    soundStep(dt, dx);
 
     var moving = cam.glide || cam.vel || cam.keyDir || cam.keyVel || cam.drift || drag;
     if (moving && cam.drift && t - lastUrlT > 3000) {
@@ -5589,6 +7265,8 @@
       e.preventDefault();
     } else if (k == "f" || k == "F") {
       toggleFullscreen();
+    } else if (k == "m" || k == "M") {
+      setSound(!soundOn);
     } else if (k == "Escape") {
       if (!$("shot").hidden) closeShot();
       else if (!$("menu").hidden) toggleMenu(false);
@@ -5643,6 +7321,7 @@
     b.title = on ? "Pause drift (Space)" : "Drift (Space)";
     b.querySelector("span").textContent = on ? "❚❚" : "▶";
     $("driftChk").checked = on;
+    updateWakeLock();
     kick();
   }
 
@@ -5654,11 +7333,15 @@
     return window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
   }
 
+  function defaultStyle() {
+    return systemDark() ? "night" : TRADITIONS[state.trad].styles[0][0];
+  }
   function applyStyle(name, chosen, save) {
-    if (!(name in STYLES)) name = "ink";
+    if (tradStyles(state.trad).indexOf(name) < 0) name = defaultStyle();
     state.style = name;
     if (chosen) state.styleChosen = true;
     var st = STYLES[name];
+    inkEl.style.opacity = st.inkOpacity || "";
     root.setAttribute("data-style", name);
     themeCss.textContent = st.css.replace(/\$/g, "#ink");
     inkEl.style.mixBlendMode = st.inkBlend;
@@ -5671,6 +7354,8 @@
       b.tabIndex = b.dataset.style == name ? 0 : -1;
     });
     if (save) {
+      prefs.styles = prefs.styles || {};
+      prefs.styles[state.trad] = name;
       savePrefs();
       scheduleUrl();
     }
@@ -5715,7 +7400,7 @@
 
   // Follow the viewer's light/dark setting until they pick a style.
   function followSystem() {
-    if (!state.styleChosen) applyStyle(systemDark() ? "night" : "ink", false);
+    if (!state.styleChosen) applyStyle(defaultStyle(), false);
   }
   if (window.matchMedia) {
     var mq = matchMedia("(prefers-color-scheme: dark)");
@@ -5798,6 +7483,146 @@
     ctx.globalAlpha = 1;
   }
 
+  // ---------- ambient mode ----------
+  // After a few idle seconds the controls fade and the scroll drifts on its
+  // own; any input brings the controls back.
+  var idleTimer = 0;
+  var idle = false;
+  function wake() {
+    if (idle) {
+      idle = false;
+      document.body.classList.remove("idle");
+    }
+    clearTimeout(idleTimer);
+    if (state.ambient) idleTimer = setTimeout(goIdle, 6000);
+  }
+  function goIdle() {
+    if (!state.ambient) return;
+    if (!$("menu").hidden || !$("shot").hidden || drag) {
+      idleTimer = setTimeout(goIdle, 6000);
+      return;
+    }
+    idle = true;
+    document.body.classList.add("idle");
+    dismissHint();
+    if (!cam.drift) setDrift(true);
+  }
+  ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"].forEach(function(ev) {
+    window.addEventListener(ev, wake, { passive: true });
+  });
+  function setAmbient(on) {
+    state.ambient = on;
+    $("ambientChk").checked = on;
+    savePrefs();
+    updateWakeLock();
+    wake();
+  }
+  $("ambientChk").addEventListener("change", function(e) {
+    setAmbient(e.target.checked);
+  });
+
+  var wakeLock = null;
+  function updateWakeLock() {
+    var want = cam.drift && document.visibilityState == "visible" && (state.ambient || !!document.fullscreenElement);
+    if (want && !wakeLock && navigator.wakeLock) {
+      wakeLock = "pending";
+      navigator.wakeLock.request("screen").then(
+        function(l) {
+          wakeLock = l;
+          l.addEventListener("release", function() {
+            wakeLock = null;
+          });
+        },
+        function() {
+          wakeLock = null;
+        },
+      );
+    } else if (!want && wakeLock && wakeLock.release) {
+      wakeLock.release().catch(function() {});
+      wakeLock = null;
+    }
+  }
+  document.addEventListener("visibilitychange", updateWakeLock);
+  document.addEventListener("fullscreenchange", updateWakeLock);
+
+  // ---------- sound ----------
+  // Landscape features passing the centre of the view play the music.
+  var hasSound = typeof window.Sound != "undefined";
+  var soundOn = false;
+  var soundX = null;
+  var lastSeason = -1;
+  var SEASON_KEYS = ["spring", "summer", "autumn", "winter"];
+  function setSound(on) {
+    if (!hasSound || on == soundOn) return;
+    soundOn = on;
+    var b = $("soundBtn");
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+    b.title = on ? "Sound off (M)" : "Sound on (M)";
+    $("soundChk").checked = on;
+    if (on) {
+      Sound.setVolume(state.volume);
+      Sound.setTradition(state.trad);
+      lastSeason = -1;
+      soundX = null;
+      var pr = Sound.start(state.trad);
+      if (pr && pr.catch) {
+        pr.catch(function() {
+          setSound(false);
+        });
+      }
+      kick();
+    } else Sound.stop();
+  }
+  function soundStep(dt, dx) {
+    if (!soundOn) return;
+    var si = state.seasons ? seasonHere() : 1;
+    if (si != null && si !== lastSeason) {
+      lastSeason = si;
+      Sound.setSeason(SEASON_KEYS[si]);
+    }
+    Sound.setMotion(dt > 0 ? Math.abs(dx) / dt : 0);
+    var c = cam.x + view.wu / 2;
+    if (soundX === null || Math.abs(c - soundX) > view.wu * 2) {
+      soundX = c;
+      return;
+    }
+    var a = Math.min(soundX, c),
+      b = Math.max(soundX, c);
+    soundX = c;
+    if (a == b) return;
+    live.ink.concat(live.ann).forEach(function(it) {
+      if (it.x > a && it.x <= b) soundEvent(it);
+    });
+  }
+  function soundEvent(it) {
+    var m = it.meta || {};
+    var kind = null;
+    if (it.tag == "mount") kind = m.fall ? "fall" : m.house ? "house" : "mount";
+    else if (it.tag == "distmount" || it.tag == "fuji") kind = "mount";
+    else if (it.tag == "flatmount") kind = m.bridge ? "bridge" : "house";
+    else if (it.tag == "boat" || it.tag == "birds") kind = it.tag;
+    else if (it.tag == "inscription") kind = "ins";
+    if (!kind) return;
+    var far = it.tag == "distmount" || it.tag == "fuji";
+    var depth = far ? 0.05 : Math.max(0, Math.min(1, (it.y - 280) / 460));
+    var height = m.h ? Math.min(1, m.h / 500) : it.tag == "fuji" ? 0.9 : 0.3;
+    var pan = (((it.i * 0.618) % 1) * 2 - 1) * (0.25 + depth * 0.5);
+    Sound.event({ kind: kind, depth: depth, height: height, pan: pan });
+  }
+  $("soundBtn").hidden = $("soundSec").hidden = !hasSound;
+  $("soundBtn").addEventListener("click", function() {
+    setSound(!soundOn);
+  });
+  $("soundChk").addEventListener("change", function(e) {
+    setSound(e.target.checked);
+  });
+  $("volIn").value = state.volume;
+  $("volIn").addEventListener("input", function(e) {
+    state.volume = +e.target.value;
+    if (hasSound) Sound.setVolume(state.volume);
+    savePrefs();
+  });
+
   // ---------- URL ----------
   var urlTimer = 0;
   function scheduleUrl() {
@@ -5807,7 +7632,9 @@
   }
   function shareUrl() {
     var q = "?seed=" + encodeURIComponent(state.seed) + "&x=" + Math.round(cam.x);
+    if (state.trad != "shanshui") q += "&trad=" + state.trad;
     if (state.styleChosen) q += "&style=" + state.style;
+    if (!state.seasons) q += "&seasons=0";
     return location.origin + location.pathname + q;
   }
   function writeUrl() {
@@ -5822,6 +7649,12 @@
     seed = String(seed).trim() || String(Date.now());
     state.seed = seed;
     $("seedIn").value = seed;
+    resetWorld(x || 0);
+  }
+
+  // Throw away everything painted and start again at x, after the seed,
+  // tradition or seasons changed.
+  function resetWorld(x) {
     epoch++;
     live.ink.concat(live.ann).forEach(function(it) {
       it.el = null;
@@ -5830,16 +7663,33 @@
     inkWorld.textContent = "";
     annWorld.textContent = "";
     plans.clear();
+    itemIndex.clear();
+    seasonOf.clear();
     cache.clear();
     cacheSize = 0;
     insertQueue = [];
-    cam.x = x || 0;
+    cam.x = x;
     cam.glide = cam.vel = 0;
     rebase();
     applyCamera();
     sendInit();
     writeUrl();
     kick();
+  }
+
+  function setTradition(t) {
+    if (!(t in TRADITIONS) || t == state.trad) return;
+    state.trad = t;
+    var remembered = prefs.styles && prefs.styles[t];
+    buildStyleButtons();
+    applyStyle(remembered || defaultStyle(), !!remembered, false);
+    document.querySelectorAll("#trads button").forEach(function(b) {
+      b.setAttribute("aria-checked", b.dataset.trad == t ? "true" : "false");
+      b.tabIndex = b.dataset.trad == t ? 0 : -1;
+    });
+    savePrefs();
+    resetWorld(cam.x);
+    if (soundOn) Sound.setTradition(t);
   }
 
   // ---------- status & hint ----------
@@ -5909,27 +7759,83 @@
     jumpTo(0);
   });
 
-  var styleWrap = $("styles");
-  STYLE_ORDER.forEach(function(name) {
-    var st = STYLES[name];
+  function optButton(native, en, lang) {
     var b = document.createElement("button");
     b.type = "button";
     b.setAttribute("role", "radio");
-    b.dataset.style = name;
-    b.innerHTML = '<span class="zh" lang="zh-Hant">' + st.zh + '</span><span class="en">' + st.en + "</span>";
-    b.addEventListener("click", function() {
-      applyStyle(name, true, true);
+    b.innerHTML = native
+      ? '<span class="zh" lang="' + lang + '">' + native + '</span><span class="en">' + en + "</span>"
+      : '<span class="en big">' + en + "</span>";
+    return b;
+  }
+  // Arrow keys move through a radio group, as in native radio buttons.
+  function radioKeys(wrap, list, current, pick) {
+    wrap.addEventListener("keydown", function(e) {
+      var d = e.key == "ArrowRight" || e.key == "ArrowDown" ? 1 : e.key == "ArrowLeft" || e.key == "ArrowUp" ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var l = list();
+      var i = (l.indexOf(current()) + d + l.length) % l.length;
+      pick(l[i]);
+      wrap.querySelectorAll("button")[i].focus();
     });
-    styleWrap.appendChild(b);
+  }
+  var styleWrap = $("styles");
+  function buildStyleButtons() {
+    styleWrap.textContent = "";
+    var tr = TRADITIONS[state.trad];
+    styleWrap.style.setProperty("--cols", tr.styles.length);
+    tr.styles.forEach(function(sd) {
+      var b = optButton(sd[1], sd[2], tr.lang);
+      b.dataset.style = sd[0];
+      b.addEventListener("click", function() {
+        applyStyle(sd[0], true, true);
+      });
+      styleWrap.appendChild(b);
+    });
+  }
+  radioKeys(
+    styleWrap,
+    function() {
+      return tradStyles(state.trad);
+    },
+    function() {
+      return state.style;
+    },
+    function(n) {
+      applyStyle(n, true, true);
+    },
+  );
+  var tradWrap = $("trads");
+  TRAD_ORDER.forEach(function(t) {
+    var tr = TRADITIONS[t];
+    var b = optButton(tr.zh, tr.en, tr.lang);
+    b.dataset.trad = t;
+    b.setAttribute("aria-checked", t == state.trad ? "true" : "false");
+    b.tabIndex = t == state.trad ? 0 : -1;
+    b.addEventListener("click", function() {
+      setTradition(t);
+    });
+    tradWrap.appendChild(b);
   });
-  styleWrap.addEventListener("keydown", function(e) {
-    var d = e.key == "ArrowRight" || e.key == "ArrowDown" ? 1 : e.key == "ArrowLeft" || e.key == "ArrowUp" ? -1 : 0;
-    if (!d) return;
-    e.preventDefault();
-    e.stopPropagation();
-    var i = (STYLE_ORDER.indexOf(state.style) + d + STYLE_ORDER.length) % STYLE_ORDER.length;
-    applyStyle(STYLE_ORDER[i], true, true);
-    styleWrap.querySelector('[data-style="' + STYLE_ORDER[i] + '"]').focus();
+  radioKeys(
+    tradWrap,
+    function() {
+      return TRAD_ORDER;
+    },
+    function() {
+      return state.trad;
+    },
+    setTradition,
+  );
+  buildStyleButtons();
+
+  $("seasonChk").checked = state.seasons;
+  $("seasonChk").addEventListener("change", function(e) {
+    state.seasons = e.target.checked;
+    savePrefs();
+    resetWorld(cam.x);
   });
 
   var fsOK = document.fullscreenEnabled && root.requestFullscreen;
@@ -5978,7 +7884,17 @@
     var g = function(n) {
       return cs.getPropertyValue(n).trim();
     };
-    return { paper: g("--paper"), ins: g("--ins"), seal: g("--seal"), cut: g("--seal-cut"), zh: g("--font-zh") };
+    return {
+      paper: g("--paper"),
+      ins: g("--ins"),
+      seal: g("--seal"),
+      cut: g("--seal-cut"),
+      cart: g("--cart"),
+      cartLine: g("--cart-line"),
+      zh: g("--font-zh"),
+      ja: g("--font-ja"),
+      en: g("--font-en"),
+    };
   }
 
   function visibleItems(layer) {
@@ -5996,7 +7912,11 @@
       ".seal-line{fill:none;stroke:" + tk.seal + ";opacity:.9}" +
       ".seal-cut{fill:" + tk.cut + ";font-family:" + tk.zh + "}" +
       ".seal-zhu{fill:" + tk.seal + ";font-family:" + tk.zh + "}" +
-      ".speck{fill:" + tk.cut + "}"
+      ".speck{fill:" + tk.cut + "}" +
+      ".cart{fill:" + tk.cart + ";opacity:.95}" +
+      ".cart-line{fill:none;stroke:" + tk.cartLine + "}" +
+      "text.f-ja{font-family:" + tk.ja + "}" +
+      "text.f-en{font-family:" + tk.en + ";font-style:italic}"
     );
   }
 
@@ -6107,11 +8027,15 @@
           i ? ctx.lineTo(X(v[0]), Y(v[1])) : ctx.moveTo(X(v[0]), Y(v[1]));
         });
         ctx.closePath();
-        if (p.k == "seal-line") {
+        if (p.k == "seal-line" || p.k == "cart-line") {
           ctx.globalAlpha = 0.9;
-          ctx.strokeStyle = tk.seal;
-          ctx.lineWidth = p.sw * view.s * k;
+          ctx.strokeStyle = p.k == "cart-line" ? tk.cartLine : tk.seal;
+          ctx.lineWidth = (p.sw || 0.7) * view.s * k;
           ctx.stroke();
+        } else if (p.k == "cart") {
+          ctx.globalAlpha = 0.95;
+          ctx.fillStyle = tk.cart;
+          ctx.fill();
         } else {
           ctx.globalAlpha = p.k == "seal" ? 0.9 : 1;
           ctx.fillStyle = p.k == "seal" ? tk.seal : tk.cut;
@@ -6120,8 +8044,9 @@
       } else {
         ctx.globalAlpha = p.o;
         ctx.fillStyle = p.k == "ins" ? tk.ins : p.k == "seal-cut" ? tk.cut : tk.seal;
-        ctx.font = p.w + " " + (p.s * view.s * k).toFixed(2) + "px " + tk.zh;
-        ctx.textAlign = "center";
+        var f = p.f == "ja" ? tk.ja : p.f == "en" ? tk.en : tk.zh;
+        ctx.font = (p.f == "en" ? "italic " : "") + p.w + " " + (p.s * view.s * k).toFixed(2) + "px " + f;
+        ctx.textAlign = p.a == "start" ? "left" : p.a == "end" ? "right" : "center";
         ctx.textBaseline = "middle";
         ctx.fillText(p.t, X(p.x), Y(p.y));
       }
@@ -6188,7 +8113,11 @@
       ctx.drawImage(img, 0, 0, W, Hp);
       if (state.ins) {
         try {
-          await document.fonts.load("20px " + tk.zh, "山水");
+          await Promise.all([
+            document.fonts.load("20px " + tk.zh, "山水"),
+            document.fonts.load("20px " + tk.ja, "古池や"),
+            document.fonts.load("italic 20px " + tk.en, "Season"),
+          ]);
         } catch (e) {}
         ctx.globalCompositeOperation = st.annBlend == "multiply" ? "multiply" : "source-over";
         visibleItems("ann").forEach(function(it) {
@@ -6219,7 +8148,7 @@
   }
 
   function fileBase() {
-    return "shan-shui-" + state.seed.replace(/[^\w-]+/g, "_").slice(0, 40) + "-" + Math.round(cam.x);
+    return "shan-shui-" + state.trad + "-" + state.seed.replace(/[^\w-]+/g, "_").slice(0, 40) + "-" + Math.round(cam.x);
   }
   function openShot(url) {
     $("shotImg").src = url;
@@ -6254,19 +8183,30 @@
   // ---------- fonts ----------
   // Ask Google Fonts for just the characters the page uses.
   (function loadFonts() {
-    var chars = new Set();
-    var src = genSource() + STYLE_ORDER.map(function(n) {
-      return STYLES[n].zh;
-    }).join("") + document.title;
-    (src.match(/[㐀-鿿]/g) || []).forEach(function(c) {
-      chars.add(c);
-    });
-    var link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href =
-      "https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap&text=" +
-      encodeURIComponent(Array.from(chars).join(""));
-    document.head.appendChild(link);
+    function uniq(str) {
+      var set = new Set();
+      (str.match(/[\u3040-\u30ff\u3400-\u9fff\u3005]/g) || []).forEach(function(c) {
+        set.add(c);
+      });
+      return encodeURIComponent(Array.from(set).join(""));
+    }
+    function link(href) {
+      var l = document.createElement("link");
+      l.rel = "stylesheet";
+      l.href = href;
+      document.head.appendChild(l);
+    }
+    var src = genSource();
+    var labels = TRAD_ORDER.map(function(t) {
+      var tr = TRADITIONS[t];
+      return tr.zh + tr.styles.map(function(x) {
+        return x[1];
+      }).join("") + (tr.seasons || []).join("");
+    }).join("");
+    var haiku = src.slice(src.indexOf("var HAIKU"), src.indexOf("var VERSE")) + "極";
+    link("https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap&text=" + uniq(src + labels));
+    link("https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap&text=" + uniq(haiku));
+    link("https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap");
   })();
 
   // A handle for tinkering from the console: add ?debug to the URL.
@@ -6291,6 +8231,8 @@
   }
 
   // ---------- boot ----------
+  $("ambientChk").checked = state.ambient;
+  wake();
   $("seedIn").value = state.seed;
   applyStyle(params.style || prefs.style || (systemDark() ? "night" : "ink"), !!(params.style || prefs.style), false);
   if (!state.ins) annEl.style.display = "none";
